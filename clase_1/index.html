@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bienvenidos — Proyecto, Diseño e Implementación de Sistemas Computacionales · 7° · 2026</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --ink: #111827;
+    --ink-soft: #4b5563;
+    --ink-light: #9ca3af;
+    --border: #e5e7eb;
+    --border-soft: #f3f4f6;
+    --accent: #4f46e5;
+    --accent-dark: #3730a3;
+    --accent-soft: #eef2ff;
+    --warm: #7c3aed;
+    --warm-soft: #f5f3ff;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 1px 4px rgba(15,23,42,.04);
+    --shadow-lg: 0 4px 12px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.06);
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 1.6em 5em;
+    color: var(--ink);
+    line-height: 1.7;
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s; }
+  a:hover { border-bottom-color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+  .icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+  .icon-lg { width: 36px; height: 36px; stroke-width: 1.6; }
+  .icon-xl { width: 48px; height: 48px; stroke-width: 1.5; }
+
+  /* HERO */
+  .hero {
+    background: var(--accent-dark);
+    color: white;
+    padding: 3.5em 2.4em 3em;
+    border-radius: var(--radius-lg);
+    margin: 2.5em 0 3em;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.1) 1px, transparent 0);
+    background-size: 28px 28px;
+    opacity: .5;
+    pointer-events: none;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .eyebrow {
+    opacity: .85;
+    font-size: .78em;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 1.1em;
+  }
+  .hero .welcome {
+    font-size: 1.1em;
+    opacity: .95;
+    margin-bottom: .3em;
+    font-weight: 400;
+  }
+  .hero h1 {
+    margin: 0 0 .8em;
+    font-size: 2.1em;
+    line-height: 1.2;
+    color: white;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    max-width: 760px;
+  }
+  .hero .sub {
+    opacity: .92;
+    font-size: 1.08em;
+    line-height: 1.55;
+    max-width: 640px;
+    font-weight: 400;
+  }
+
+  /* HEADINGS */
+  h2 {
+    font-size: 1.55em;
+    margin-top: 3.5em;
+    margin-bottom: 1.2em;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: .65em;
+    padding-bottom: .6em;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700;
+    letter-spacing: -.4px;
+  }
+  h2 .icon { color: var(--accent); }
+
+  /* PILLARS */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2em;
+    margin: 1.5em 0;
+  }
+  .pillar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.6em 1.4em;
+    box-shadow: var(--shadow);
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+  }
+  .pillar:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-lg);
+  }
+  .pillar .pillar-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: .8em;
+  }
+  .pillar h3 {
+    margin: 0 0 .4em;
+    font-size: 1.1em;
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: -.2px;
+  }
+  .pillar p { margin: 0; color: var(--ink-soft); font-size: .95em; line-height: 1.55; }
+
+  /* CHECKLISTS */
+  .checklist { list-style: none; padding: 0; margin: 1.2em 0; }
+  .checklist li {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: .85em 1.2em;
+    margin-bottom: .6em;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    box-shadow: var(--shadow);
+    line-height: 1.55;
+  }
+  .checklist li strong { color: var(--accent-dark); }
+
+  /* MATERIAL CARDS */
+  .materials {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.4em;
+    margin: 1.5em 0;
+  }
+  .material-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.8em;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .material-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent);
+  }
+  .material-card .card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1em;
+  }
+  .material-card.practice .card-icon { background: var(--warm-soft); color: var(--warm); }
+  .material-card .tag {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: .72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: .7em;
+    align-self: flex-start;
+  }
+  .material-card .tag.warm { background: var(--warm-soft); color: var(--warm); }
+  .material-card h3 {
+    margin: 0 0 .5em;
+    font-size: 1.2em;
+    color: var(--ink);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -.2px;
+  }
+  .material-card p {
+    color: var(--ink-soft);
+    flex-grow: 1;
+    margin: 0 0 1.3em;
+    font-size: .95em;
+    line-height: 1.55;
+  }
+  .material-card .actions { display: flex; gap: .6em; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4em;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    font-size: .9em;
+    font-weight: 600;
+    transition: all .15s;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-dark); color: white; border-color: var(--accent-dark); }
+
+  /* TIMELINE */
+  .timeline { margin: 1.5em 0; }
+  .timeline-track {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .timeline-track::before {
+    content: "";
+    position: absolute;
+    left: 7%;
+    right: 7%;
+    top: 22px;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .timeline-step {
+    position: relative;
+    text-align: center;
+    padding: 0 .6em;
+  }
+  .timeline-dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1em;
+    margin: 0 auto .7em;
+    position: relative;
+    z-index: 1;
+    box-shadow: var(--shadow);
+  }
+  .timeline-step.active .timeline-dot {
+    background: var(--accent);
+    color: white;
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(79,70,229,.3);
+  }
+  .step-when {
+    color: var(--ink-light);
+    font-size: .82em;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: .3em;
+    font-weight: 600;
+  }
+  .step-title {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: .98em;
+    margin-bottom: .25em;
+    line-height: 1.25;
+  }
+  .step-desc {
+    color: var(--ink-soft);
+    font-size: .88em;
+    line-height: 1.5;
+  }
+  .timeline-step.active .step-badge {
+    display: inline-block;
+    margin-top: .5em;
+    font-size: .7em;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: var(--warm);
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+
+  /* FOOTER NAV */
+  .footer-nav {
+    margin-top: 3.5em;
+    padding: 1.5em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    font-size: .95em;
+  }
+  .footer-nav a { font-weight: 600; }
+
+  /* MOBILE */
+  @media (max-width: 760px) {
+    body { padding: 0 1.1em 4em; }
+    .pillars, .materials { grid-template-columns: 1fr; }
+    .hero { padding: 2.4em 1.5em; }
+    .hero h1 { font-size: 1.55em; }
+    .hero .sub { font-size: 1em; }
+    h2 { font-size: 1.3em; margin-top: 2.5em; }
+
+    .timeline-track { grid-template-columns: 1fr; gap: 0; }
+    .timeline-track::before { left: 21px; right: auto; top: 0; bottom: 0; width: 2px; height: auto; }
+    .timeline-step { text-align: left; display: grid; grid-template-columns: auto 1fr; gap: 1em; padding: .8em 0; }
+    .timeline-dot { margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">7° año · Ciclo 2026</div>
+  <div class="welcome">Bienvenidos a</div>
+  <h1>Proyecto, Diseño e Implementación de Sistemas Computacionales</h1>
+  <p class="sub">Durante este año vamos a construir un sistema informático real, de principio a fin, en equipo. No son ejercicios sueltos: es un proyecto que arranca en mayo y se entrega en noviembre.</p>
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+  ¿De qué se trata la materia?
+</h2>
+
+<div class="pillars">
+  <div class="pillar">
+    <div class="pillar-icon">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-9h6v9"/></svg>
+    </div>
+    <h3>Proyecto</h3>
+    <p>Una sola cosa, construida en el tiempo, con principio y final. No son ejercicios aislados.</p>
+  </div>
+  <div class="pillar">
+    <div class="pillar-icon">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+    </div>
+    <h3>Diseño</h3>
+    <p>Antes de programar, pensamos: qué hace, quién lo usa, qué guarda, qué reglas tiene.</p>
+  </div>
+  <div class="pillar">
+    <div class="pillar-icon">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    </div>
+    <h3>Implementación</h3>
+    <p>No alcanza con que esté pensado. Tiene que funcionar. De verdad.</p>
+  </div>
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  Qué esperamos de vos
+</h2>
+
+<ul class="checklist">
+  <li><strong>Participación activa</strong> en cada etapa del proyecto.</li>
+  <li><strong>Trabajo en equipo:</strong> vas a tener un rol y compañeros que dependen de vos.</li>
+  <li><strong>Compromiso con las entregas parciales</strong> (una por etapa).</li>
+  <li><strong>Pensamiento crítico:</strong> vas a equivocarte, y eso es parte del aprendizaje.</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+  Qué vas a aprender
+</h2>
+
+<ul class="checklist">
+  <li><strong>1.</strong> Relevar y entender un problema real antes de empezar a programar.</li>
+  <li><strong>2.</strong> Diseñar un sistema con diagramas y modelado de datos.</li>
+  <li><strong>3.</strong> Programar en equipo con Git y GitHub.</li>
+  <li><strong>4.</strong> Probar, documentar y defender tu solución.</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+  Recorrido del año
+</h2>
+
+<div class="timeline">
+  <div class="timeline-track">
+    <div class="timeline-step active">
+      <div class="timeline-dot">1</div>
+      <div class="step-content">
+        <div class="step-when">Mayo</div>
+        <div class="step-title">Exploración y contexto</div>
+        <div class="step-desc">HTML/CSS/Bootstrap + Git. Problema y usuarios.</div>
+        <span class="step-badge">acá estamos</span>
+      </div>
+    </div>
+    <div class="timeline-step">
+      <div class="timeline-dot">2</div>
+      <div class="step-content">
+        <div class="step-when">Jun – Ago</div>
+        <div class="step-title">Análisis y diseño</div>
+        <div class="step-desc">MySQL + SQL + diagrama ER + prototipo.</div>
+      </div>
+    </div>
+    <div class="timeline-step">
+      <div class="timeline-dot">3</div>
+      <div class="step-content">
+        <div class="step-when">Ago – Oct</div>
+        <div class="step-title">Desarrollo</div>
+        <div class="step-desc">PHP + MySQL. CRUD, login, validaciones.</div>
+      </div>
+    </div>
+    <div class="timeline-step">
+      <div class="timeline-dot">4</div>
+      <div class="step-content">
+        <div class="step-when">Oct – Nov</div>
+        <div class="step-title">Validación y entrega</div>
+        <div class="step-desc">Pruebas, documentación, defensa oral.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+  Materiales de la Clase 1
+</h2>
+
+<div class="materials">
+  <div class="material-card">
+    <div class="card-icon">
+      <svg class="icon icon-xl" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <span class="tag">Teoría</span>
+    <h3>Introducción a los sistemas informáticos y primer formulario en PHP</h3>
+    <p>El soporte para repasar lo de la clase: qué es un sistema, cliente/servidor, GET vs POST, PHP. Con quiz de autoevaluación al final.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="clase-01-teoria.html">Abrir teoría →</a>
+    </div>
+  </div>
+
+  <div class="material-card practice">
+    <div class="card-icon">
+      <svg class="icon icon-xl" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    </div>
+    <span class="tag warm">Práctica</span>
+    <h3>TP: Formulario de inscripción</h3>
+    <p>El primer trabajo práctico. Construir una mini-aplicación PHP con formulario, procesamiento y validación. Sin base de datos todavía.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="clase-01-tp-formulario.html">Abrir TP →</a>
+    </div>
+  </div>
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+  ¿Por dónde empezar?
+</h2>
+
+<ol class="checklist">
+  <li><strong>Leé la teoría</strong> arriba si querés repasar antes del TP.</li>
+  <li><strong>Hacé el TP</strong> en clase. Si no terminás, lo seguís en casa.</li>
+  <li><strong>Subí tu carpeta</strong> <code>clase01/</code> al espacio compartido del grupo.</li>
+  <li><strong>Para la próxima clase:</strong> traé dos ideas de proyecto anual.</li>
+</ol>
+
+<div class="footer-nav">
+  <a href="../">← Volver al índice principal</a>
+  &nbsp;·&nbsp;
+  <a href="../01-analisis-relevamiento/">Siguiente etapa: Análisis y relevamiento →</a>
+</div>
+
+</body>
+</html>

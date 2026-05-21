@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 1 — TP: Formulario de inscripción al proyecto</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --ink: #111827;
+    --ink-soft: #4b5563;
+    --ink-light: #9ca3af;
+    --border: #e5e7eb;
+    --border-soft: #f3f4f6;
+    --accent: #4f46e5;
+    --accent-dark: #3730a3;
+    --accent-soft: #eef2ff;
+    --warm: #7c3aed;
+    --warm-soft: #f5f3ff;
+    --ok: #10b981;
+    --shadow: 0 1px 2px rgba(15,23,42,.04), 0 1px 4px rgba(15,23,42,.04);
+    --shadow-lg: 0 4px 12px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.06);
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.6em 5em;
+    color: var(--ink);
+    line-height: 1.7;
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+  .icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+
+  .hero {
+    background: var(--accent-dark);
+    color: white;
+    padding: 2.8em 2em;
+    border-radius: var(--radius-lg);
+    margin: 2em 0 2em;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.1) 1px, transparent 0);
+    background-size: 28px 28px;
+    opacity: .5;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .eyebrow { opacity: .85; font-size: .78em; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600; }
+  .hero h1 { margin: .5em 0 .5em; font-size: 1.85em; line-height: 1.2; color: white; font-weight: 700; letter-spacing: -.5px; border: 0; }
+  .hero .sub { opacity: .92; font-size: .95em; }
+
+  h2 {
+    color: var(--ink); margin-top: 2.8em; padding-bottom: .5em;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.4em; display: flex; align-items: center; gap: .55em;
+    font-weight: 700; letter-spacing: -.3px;
+  }
+  h2 .icon { color: var(--accent); }
+  h3 { color: var(--ink); margin-top: 1.8em; font-size: 1.1em; font-weight: 700; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s; }
+  a:hover { border-bottom-color: var(--accent); }
+  ul, ol { padding-left: 1.6em; }
+  li { margin-bottom: .4em; }
+
+  table {
+    border-collapse: collapse; width: 100%; margin: 1.3em 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+  }
+  th, td { border-bottom: 1px solid var(--border-soft); padding: 11px 15px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  tr:hover td { background: #fafbff; }
+
+  code {
+    background: #f1f5f9; color: #0f172a; padding: 2px 6px; border-radius: 4px;
+    font-family: "SF Mono", "JetBrains Mono", Consolas, Monaco, monospace; font-size: .9em;
+  }
+  .code-wrap { position: relative; margin: 1em 0; }
+  pre {
+    background: #1e1b4b; color: #e0e7ff; padding: 1.1em 1.3em;
+    border-radius: var(--radius); overflow-x: auto;
+    font-family: "SF Mono", "JetBrains Mono", Consolas, Monaco, monospace;
+    font-size: .87em; line-height: 1.55; margin: 0; box-shadow: var(--shadow);
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .copy-btn {
+    position: absolute; top: .5em; right: .5em;
+    background: rgba(255,255,255,.1); color: #e0e7ff;
+    border: 1px solid rgba(255,255,255,.2); border-radius: 5px;
+    padding: 4px 10px; font-size: .78em; cursor: pointer;
+    font-family: inherit; transition: all .15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,.2); }
+  .copy-btn.ok { background: var(--ok); border-color: var(--ok); color: white; }
+
+  blockquote {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    margin: 1em 0; padding: .7em 1.1em;
+    border-radius: 0 var(--radius) var(--radius) 0; color: var(--ink);
+    font-style: italic;
+  }
+  blockquote p { margin: .4em 0; }
+
+  .callout {
+    border-radius: var(--radius); padding: 1em 1.2em; margin: 1.2em 0;
+    border-left: 3px solid; background: var(--surface);
+    border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .callout-warn { border-left-color: var(--warm); }
+  .callout-title { font-weight: 700; margin-bottom: .35em; font-size: .82em; text-transform: uppercase; letter-spacing: 1px; color: var(--warm); }
+
+  .meta {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1em 1.2em; border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 1em 0 1.8em; box-shadow: var(--shadow); font-size: .93em;
+  }
+  .nav { margin-top: 3em; padding-top: 1.2em; border-top: 1px solid var(--border); text-align: center; }
+
+  @media (max-width: 600px) {
+    body { padding: 0 1.1em 4em; }
+    .hero { padding: 2em 1.4em; }
+    .hero h1 { font-size: 1.5em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 1</div>
+  <h1>Formulario de inscripción al proyecto</h1>
+  <p class="sub">Mini-aplicación PHP · Sin base de datos · 70 minutos de trabajo en clase</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Tiempo de trabajo en clase:</strong> 70 minutos
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+  Consigna
+</h2>
+
+<p>Construir una mini-aplicación PHP que simule la inscripción de un estudiante al proyecto anual. <strong>Sin base de datos:</strong> los datos se procesan en memoria y se pierden al cerrar el navegador.</p>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  Obligatorio
+</h2>
+
+<h3>1. Estructura de carpetas</h3>
+
+<div class="code-wrap">
+<pre><code>clase01/
+├── index.php
+├── procesar.php
+├── includes/
+│   ├── cabecera.php
+│   └── pie.php
+└── css/
+    └── estilos.css</code></pre>
+</div>
+
+<h3>2. <code>index.php</code> — formulario</h3>
+
+<p>Debe mostrar un formulario con los siguientes campos:</p>
+
+<ul>
+  <li><strong>Nombre y apellido</strong> (texto)</li>
+  <li><strong>DNI</strong> (texto)</li>
+  <li><strong>Curso y división</strong> (texto)</li>
+  <li><strong>Idea de proyecto</strong> (textarea)</li>
+  <li><strong>Tecnologías que ya conocés</strong> (checkbox múltiple): HTML, CSS, JS, PHP, MySQL, Git, otra</li>
+</ul>
+
+<p>El formulario envía por <strong>POST</strong> a <code>procesar.php</code>.</p>
+
+<h3>3. <code>procesar.php</code> — procesamiento</h3>
+
+<p>Debe:</p>
+
+<ul>
+  <li>Validar que ningún campo obligatorio esté vacío.</li>
+  <li>Mostrar los datos recibidos en una tabla clara.</li>
+  <li>Mostrar un mensaje personalizado:
+    <blockquote><code>Hola {nombre}, tu propuesta "{idea}" fue registrada.</code></blockquote>
+  </li>
+  <li>Incluir <code>cabecera.php</code> y <code>pie.php</code> con <code>include</code>.</li>
+  <li>Aplicar Bootstrap por CDN para que tenga aspecto presentable.</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+  Opcional (si terminás antes)
+</h2>
+
+<ul>
+  <li>Validar que el <strong>DNI sea solo números</strong> (usar <code>is_numeric</code> o <code>ctype_digit</code>).</li>
+  <li>Si falta algún campo, <strong>volver a index.php</strong> con un mensaje de error visible.</li>
+  <li>Contador de inscripciones con <code>$_SESSION</code>: cada vez que se completa una, se suma 1.</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  Reglas del TP
+</h2>
+
+<ul>
+  <li><strong>Trabajo individual</strong>, cada estudiante en su PC.</li>
+  <li>Pueden consultar la documentación oficial: <a href="https://www.php.net/manual/es/" target="_blank">https://www.php.net/manual/es/</a></li>
+  <li>Pueden consultar a un compañero, pero cada uno entrega su carpeta.</li>
+  <li><strong>No</strong> copiar y pegar soluciones completas de internet sin entender qué hacen.</li>
+  <li>Si traés código que funciona pero no podés explicar, esa solución no cuenta.</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+  Qué se observa
+</h2>
+
+<table>
+  <tr><th>Aspecto</th><th>Qué se mira</th></tr>
+  <tr><td>Organización</td><td>Respeta la estructura de carpetas pedida</td></tr>
+  <tr><td>Flujo PHP</td><td>Comprende el ciclo index → POST → procesar</td></tr>
+  <tr><td>Sintaxis</td><td>Usa <code>=</code> y <code>==</code> correctamente, cierra con <code>;</code></td></tr>
+  <tr><td>Validación</td><td>Valida los datos antes de usarlos</td></tr>
+  <tr><td>Inclusión</td><td>Usa <code>include</code>/<code>require</code> para no repetir código</td></tr>
+  <tr><td>Autonomía</td><td>Resuelve solo, pregunta con criterio o se traba</td></tr>
+  <tr><td>Higiene del código</td><td>Indenta, nombra con sentido, separa HTML de PHP</td></tr>
+</table>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  Patrón mínimo de <code>procesar.php</code> (referencia)
+</h2>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  $nombre = $_POST['nombre'] ?? '';
+  $dni    = $_POST['dni']    ?? '';
+
+  if ($nombre == '' || $dni == '') {
+     echo "Faltan datos";
+     exit;
+  }
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+  &lt;h1&gt;Hola &lt;?= $nombre ?&gt;, tu inscripcion fue registrada&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Importante</div>
+  Este es el mínimo. El TP pide expandirlo con más campos, validaciones, inclusión de cabecera y pie, y Bootstrap.
+</div>
+
+<hr style="margin: 2em 0; border: 0; border-top: 1px solid var(--border);">
+
+<p>¿Tenés dudas con los conceptos? Mirá el <a href="clase-01-teoria.html"><strong>soporte teórico de la Clase 1</strong></a>.</p>
+
+<div class="nav">
+  <a href="index.html">← Volver a Bienvenida</a>
+</div>
+
+<script>
+  document.querySelectorAll('.code-wrap').forEach(wrap => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Copiar';
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(wrap.querySelector('pre').textContent);
+        btn.textContent = '✓ Copiado'; btn.classList.add('ok');
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('ok'); }, 1500);
+      } catch (e) { btn.textContent = 'Error'; }
+    });
+    wrap.appendChild(btn);
+  });
+</script>
+
+</body>
+</html>

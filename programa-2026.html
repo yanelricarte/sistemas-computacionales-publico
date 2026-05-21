@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Programa — Proyecto, Diseño e Implementación de Sistemas Computacionales</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; max-width: 900px; margin: 2em auto; padding: 0 1em; color: #222; line-height: 1.5; }
+  h1, h2, h3 { color: #1a1a1a; }
+  h1 { border-bottom: 2px solid #333; padding-bottom: 0.3em; }
+  h2 { border-bottom: 1px solid #aaa; padding-bottom: 0.2em; margin-top: 2em; }
+  h3 { margin-top: 1.5em; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { border: 1px solid #888; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #e8e8e8; font-weight: bold; }
+  tr:nth-child(even) td { background: #f7f7f7; }
+  code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-family: Consolas, monospace; }
+  hr { border: 0; border-top: 1px solid #ccc; margin: 2em 0; }
+  ul { margin: 0.5em 0 1em 1.5em; }
+  li { margin-bottom: 0.3em; }
+</style>
+</head>
+<body>
+
+<h1>Programa de la materia</h1>
+<p>
+<strong>Proyecto, Diseño e Implementación de Sistemas Computacionales</strong><br>
+7.º año — Tecnicatura en Informática Profesional y Personal<br>
+Escuela de Educación Secundaria Técnica N.º 3 — Mar del Plata<br>
+Ciclo lectivo 2026
+</p>
+
+<hr>
+
+<h2>1. Portada</h2>
+<table>
+  <tr><th>Institución</th><td>EEST N.º 3 — Mar del Plata</td></tr>
+  <tr><th>Especialidad</th><td>Tecnicatura en Informática Profesional y Personal</td></tr>
+  <tr><th>Curso</th><td>7.º año</td></tr>
+  <tr><th>Espacio curricular</th><td>Proyecto, Diseño e Implementación de Sistemas Computacionales</td></tr>
+  <tr><th>Carga horaria</th><td>4 horas semanales (modalidad taller)</td></tr>
+  <tr><th>Ciclo lectivo</th><td>2026</td></tr>
+  <tr><th>Modalidad pedagógica</th><td>Aprendizaje Basado en Proyectos (ABP)</td></tr>
+  <tr><th>Producción esperada</th><td>Sistema informático funcional desarrollado en grupos, presentado al cierre del ciclo</td></tr>
+</table>
+
+<hr>
+
+<h2>2. Fundamentación</h2>
+<p>El 7.º año es el tramo final de la formación técnica. En este espacio, los estudiantes integran los conocimientos construidos durante toda la tecnicatura para diseñar, desarrollar y presentar un sistema informático real, trabajando en equipo y con una metodología similar a la del ámbito profesional.</p>
+
+<p>La materia se organiza como un <strong>taller de proyecto anual</strong>: cada grupo identifica una necesidad concreta (de la escuela, del barrio, de una organización o de un usuario tipo) y la convierte en un sistema funcional. El recorrido no se centra en aprender herramientas aisladas, sino en aprender a <strong>decidir qué herramienta usar y por qué</strong>, documentar lo que se hace y poder explicarlo.</p>
+
+<p>Se trabaja con tecnologías ampliamente utilizadas en el mercado y disponibles en cualquier equipo: <strong>HTML, CSS, Bootstrap, JavaScript, PHP, MySQL y Git/GitHub</strong>. A medida que el grupo avanza, se incorporan herramientas más potentes como <strong>Laravel</strong> o <strong>APIs</strong>, siempre como profundización sobre lo ya aprendido, no como un salto técnico forzado.</p>
+
+<hr>
+
+<h2>3. Objetivos del espacio curricular</h2>
+<p>Al finalizar el ciclo lectivo, se espera que los estudiantes sean capaces de:</p>
+<ul>
+  <li>Llevar adelante un proyecto informático completo, desde el relevamiento inicial hasta la presentación final.</li>
+  <li>Diseñar interfaces de usuario claras, accesibles y consistentes, aplicando criterios básicos de usabilidad.</li>
+  <li>Modelar datos en MySQL, escribir consultas SQL y vincular la base de datos con una aplicación PHP.</li>
+  <li>Desarrollar aplicaciones web con PHP, incorporando buenas prácticas de organización del código.</li>
+  <li>Utilizar Git y GitHub como herramienta cotidiana de trabajo colaborativo.</li>
+  <li>Documentar el proyecto de manera clara: requerimientos, decisiones de diseño, manual de uso.</li>
+  <li>Trabajar en equipo, distribuyendo tareas, respetando acuerdos y resolviendo conflictos técnicos.</li>
+  <li>Comunicar oralmente y por escrito el funcionamiento del sistema desarrollado.</li>
+  <li>Reconocer cuándo conviene incorporar herramientas más avanzadas (frameworks, APIs) y poder fundamentar la decisión.</li>
+</ul>
+
+<hr>
+
+<h2>4. Contenidos por etapas</h2>
+<p>El programa se organiza en las <strong>cuatro etapas</strong> del enfoque ABP. Cada etapa tiene contenidos técnicos y producciones esperadas.</p>
+
+<h3>Etapa 1 — Exploración y contextualización</h3>
+<p><strong>Propósito:</strong> identificar el problema a resolver y el contexto en el que se va a usar el sistema.</p>
+<ul>
+  <li>Conformación de equipos de trabajo y acuerdos internos.</li>
+  <li>Identificación de un problema o necesidad real. Análisis de usuarios destinatarios.</li>
+  <li>Investigación de sistemas existentes que resuelvan problemas similares.</li>
+  <li>Repaso y nivelación de HTML y CSS. Estructura semántica de una página.</li>
+  <li>Introducción a <strong>Bootstrap</strong>: grilla, componentes básicos, diseño responsive.</li>
+  <li><strong>Git y GitHub</strong> desde el primer día: creación de repositorio, commits, ramas básicas, trabajo colaborativo.</li>
+</ul>
+<p><strong>Producción de la etapa:</strong> documento de relevamiento (problema, usuarios, alcance), mockups o bocetos de las pantallas principales, repositorio creado en GitHub con un README inicial.</p>
+
+<h3>Etapa 2 — Análisis y diseño del sistema</h3>
+<p><strong>Propósito:</strong> definir qué va a hacer el sistema, cómo van a moverse los datos y cómo va a verse.</p>
+<ul>
+  <li>Requerimientos funcionales y no funcionales. Casos de uso simples.</li>
+  <li>Diseño de la base de datos: entidades, atributos, relaciones. Diagrama entidad-relación.</li>
+  <li><strong>MySQL</strong>: creación de tablas, claves primarias y foráneas, normalización básica.</li>
+  <li><strong>SQL</strong>: SELECT, INSERT, UPDATE, DELETE, JOIN, WHERE, ORDER BY, GROUP BY.</li>
+  <li>Diseño de interfaces: wireframes, prototipos navegables. Criterios de usabilidad básica (jerarquía visual, contraste, claridad de los formularios).</li>
+  <li>Accesibilidad básica: etiquetas, contraste, navegación por teclado, textos alternativos.</li>
+  <li><strong>JavaScript básico</strong> para validaciones visuales de formularios (campos requeridos, formato, feedback al usuario).</li>
+</ul>
+<p><strong>Producción de la etapa:</strong> diagrama entidad-relación, script SQL de creación de la base, prototipo de interfaz (puede ser en HTML+CSS+Bootstrap sin lógica), documento de requerimientos.</p>
+
+<h3>Etapa 3 — Desarrollo y programación</h3>
+<p><strong>Propósito:</strong> construir el sistema. Es la etapa más larga del año.</p>
+<ul>
+  <li>Estructura de un proyecto <strong>PHP</strong> organizado: separación de vistas, lógica y acceso a datos.</li>
+  <li>Conexión PHP–MySQL. Consultas preparadas. Prevención de inyección SQL.</li>
+  <li>Implementación de CRUD completo sobre las entidades del proyecto.</li>
+  <li>Manejo de sesiones, login y control de acceso por rol.</li>
+  <li>Validación de datos en cliente (JavaScript) y en servidor (PHP). Por qué siempre se valida en el servidor.</li>
+  <li>Manejo de errores y mensajes al usuario.</li>
+  <li>Buenas prácticas: no guardar contraseñas en texto plano (uso de <code>password_hash</code>), no exponer datos sensibles, no confiar en lo que viene del navegador.</li>
+  <li>Trabajo continuo con <strong>Git</strong>: ramas por funcionalidad, pull requests internos del equipo, resolución de conflictos.</li>
+  <li><strong>Introducción progresiva a Laravel</strong> (segunda mitad del año, según avance del grupo): qué es un framework, qué problemas resuelve, comparación con el PHP que ya escribieron. Rutas, controladores y vistas. Si el tiempo y el grupo lo permiten, migración parcial del proyecto a Laravel o desarrollo de un módulo nuevo dentro del framework.</li>
+  <li><strong>Contenidos complementarios opcionales</strong> (solo si el grupo avanza con holgura): consumo de una API pública desde el proyecto, introducción a un framework frontend (Vue o React) para una pantalla puntual. Estos contenidos <strong>no son obligatorios</strong> ni condicionan la aprobación.</li>
+</ul>
+<p><strong>Producción de la etapa:</strong> sistema funcional desplegado en local con todas las funcionalidades núcleo, base de datos cargada con datos de prueba, repositorio actualizado.</p>
+
+<h3>Etapa 4 — Validación y presentación</h3>
+<p><strong>Propósito:</strong> poner a prueba el sistema, corregir lo que haga falta y comunicarlo.</p>
+<ul>
+  <li>Pruebas funcionales con usuarios reales o simulados. Registro de errores y mejoras.</li>
+  <li>Corrección de bugs y ajustes finales. Trabajo con el repositorio para llegar a una versión estable.</li>
+  <li>Documentación final: manual de usuario, manual técnico breve, README del repositorio.</li>
+  <li>Preparación de la presentación oral: demo en vivo, explicación de decisiones técnicas, distribución de roles dentro del equipo.</li>
+  <li>Reflexión final: qué aprendieron, qué dificultades tuvieron, qué harían distinto.</li>
+</ul>
+<p><strong>Producción de la etapa:</strong> sistema en su versión final, documentación completa, presentación oral ante docentes y compañeros.</p>
+
+<hr>
+
+<h2>5. Cronograma</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Etapa</th>
+      <th>Período aproximado</th>
+      <th>Semanas</th>
+      <th>Hitos principales</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1 — Exploración y contextualización</td>
+      <td>Mayo</td>
+      <td>4</td>
+      <td>Equipos conformados, problema definido, repositorio creado, mockups iniciales</td>
+    </tr>
+    <tr>
+      <td>2 — Análisis y diseño</td>
+      <td>Junio – principios de agosto</td>
+      <td>7</td>
+      <td>Diagrama ER aprobado, base de datos creada, prototipo de interfaz</td>
+    </tr>
+    <tr>
+      <td><strong>Receso invernal</strong></td>
+      <td>Julio</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>3 — Desarrollo y programación</td>
+      <td>Mediados de agosto – mediados de octubre</td>
+      <td>10</td>
+      <td>CRUD completo, login funcional, base cargada. Introducción a Laravel en la última parte.</td>
+    </tr>
+    <tr>
+      <td>4 — Validación y presentación</td>
+      <td>Mediados de octubre – mediados de noviembre</td>
+      <td>5</td>
+      <td>Pruebas, ajustes, documentación, presentación final</td>
+    </tr>
+    <tr>
+      <td>Cierre y recuperatorios</td>
+      <td>Fines de noviembre – diciembre</td>
+      <td>2</td>
+      <td>Coloquios, entregas pendientes</td>
+    </tr>
+  </tbody>
+</table>
+<p><em>El cronograma es orientativo y puede reajustarse según el avance real del grupo.</em></p>
+
+<hr>
+
+<h2>6. Modalidad de trabajo</h2>
+<ul>
+  <li><strong>Taller con producción permanente.</strong> Cada clase combina un momento corto de presentación de contenido y un bloque extenso de trabajo en el proyecto.</li>
+  <li><strong>Equipos estables de 3 a 4 estudiantes</strong> durante todo el año, con roles rotativos (coordinación, frontend, backend, documentación).</li>
+  <li><strong>Bitácora del grupo</strong>: cada equipo lleva un registro semanal de avances, problemas encontrados y decisiones tomadas. Forma parte de la evaluación.</li>
+  <li><strong>Entregas parciales obligatorias</strong> al cierre de cada etapa. No se acumulan al final.</li>
+  <li><strong>Trabajo continuo en GitHub</strong>: todo el código vive en el repositorio del equipo. El docente puede revisar el avance en cualquier momento.</li>
+  <li><strong>Acompañamiento docente</strong> en el aula durante el desarrollo. Se prioriza que los estudiantes resuelvan, no que reciban la solución hecha.</li>
+  <li><strong>Articulación con la otra materia de 7.º</strong> que también trabaja con PHP y MySQL: se busca evitar superposiciones y aprovechar los aprendizajes en ambos espacios.</li>
+</ul>
+
+<hr>
+
+<h2>7. Evaluación</h2>
+<p>La evaluación es <strong>continua, por etapas y por proceso</strong>. No hay un único examen final: la calificación surge del conjunto de producciones del año.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Instancia</th>
+      <th>Qué se evalúa</th>
+      <th>Peso aproximado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Etapa 1 — Relevamiento y bocetos</td>
+      <td>Claridad del problema, calidad de los mockups, organización del repositorio</td>
+      <td>10 %</td>
+    </tr>
+    <tr>
+      <td>Etapa 2 — Diseño y base de datos</td>
+      <td>Diagrama ER, script SQL, prototipo de interfaz, requerimientos</td>
+      <td>20 %</td>
+    </tr>
+    <tr>
+      <td>Etapa 3 — Desarrollo</td>
+      <td>Sistema funcional, calidad del código, uso de Git, validaciones, seguridad básica</td>
+      <td>35 %</td>
+    </tr>
+    <tr>
+      <td>Etapa 4 — Versión final y presentación</td>
+      <td>Estabilidad del sistema, documentación, defensa oral</td>
+      <td>25 %</td>
+    </tr>
+    <tr>
+      <td>Trabajo sostenido</td>
+      <td>Bitácora, participación, cumplimiento de entregas, trabajo en equipo</td>
+      <td>10 %</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Criterios generales que se aplican a todas las instancias:</strong></p>
+<ul>
+  <li>Funcionamiento real de lo entregado, no solo de la apariencia.</li>
+  <li>Coherencia entre lo diseñado, lo documentado y lo construido.</li>
+  <li>Calidad del código: organización, nombres claros, ausencia de errores graves.</li>
+  <li>Uso correcto de la base de datos y del versionado.</li>
+  <li>Capacidad del equipo para explicar lo que hicieron y por qué.</li>
+  <li>Cumplimiento de los plazos pactados.</li>
+</ul>
+
+<hr>
+
+<h2>8. Instrumentos de evaluación</h2>
+<ul>
+  <li><strong>Rúbricas por etapa</strong>, entregadas al inicio de cada una, donde se explicita qué se va a observar.</li>
+  <li><strong>Revisión del repositorio en GitHub</strong>: commits, ramas, historial de cambios, README.</li>
+  <li><strong>Bitácora del equipo</strong> (digital o en papel), revisada periódicamente.</li>
+  <li><strong>Demostraciones funcionales</strong> al cierre de cada etapa: el grupo muestra lo que tiene corriendo.</li>
+  <li><strong>Defensa oral final</strong>: presentación del sistema, preguntas del docente y de compañeros.</li>
+  <li><strong>Coevaluación entre pares dentro del equipo</strong> al cierre del año, para reflexionar sobre el aporte individual.</li>
+  <li><strong>Autoevaluación escrita</strong> al finalizar cada etapa.</li>
+</ul>
+
+<hr>
+
+<h2>9. Bibliografía y recursos para estudiantes</h2>
+
+<p><strong>Documentación oficial (referencia principal):</strong></p>
+<ul>
+  <li>MDN Web Docs — HTML, CSS y JavaScript: <a href="https://developer.mozilla.org/es/">developer.mozilla.org/es</a></li>
+  <li>PHP — Manual oficial en español: <a href="https://www.php.net/manual/es/">php.net/manual/es</a></li>
+  <li>MySQL — Documentación oficial: <a href="https://dev.mysql.com/doc/">dev.mysql.com/doc</a></li>
+  <li>Bootstrap — Documentación: <a href="https://getbootstrap.com/">getbootstrap.com</a></li>
+  <li>Git — Libro Pro Git en español: <a href="https://git-scm.com/book/es/v2">git-scm.com/book/es/v2</a></li>
+  <li>Laravel — Documentación oficial: <a href="https://laravel.com/docs">laravel.com/docs</a></li>
+</ul>
+
+<p><strong>Recursos de práctica recomendados:</strong></p>
+<ul>
+  <li>W3Schools — repaso rápido de sintaxis (HTML, CSS, SQL, PHP).</li>
+  <li>SQLBolt — ejercicios interactivos de SQL.</li>
+  <li>Roadmap.sh — mapas de aprendizaje de desarrollo web (orientativo, no obligatorio).</li>
+</ul>
+
+<p><strong>Herramientas de trabajo:</strong></p>
+<ul>
+  <li>Editor de código: Visual Studio Code (recomendado) o el editor que el estudiante prefiera.</li>
+  <li>Entorno PHP/MySQL local: XAMPP, Laragon o equivalente.</li>
+  <li>Cliente MySQL: phpMyAdmin o DBeaver.</li>
+  <li>Control de versiones: Git instalado localmente, cuenta personal en GitHub.</li>
+  <li>Diseño de mockups: Figma (versión gratuita) o lápiz y papel para los primeros bocetos.</li>
+</ul>
+
+</body>
+</html>

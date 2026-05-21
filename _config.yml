@@ -1,0 +1,17 @@
+title: Sistemas Computacionales 2026
+description: Material para estudiantes — Proyecto, Diseño e Implementación de Sistemas Computacionales
+theme: jekyll-theme-cayman
+show_downloads: false
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+plugins:
+  - jekyll-relative-links
+  - jekyll-readme-index
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - README.md
+  - "clase_1"

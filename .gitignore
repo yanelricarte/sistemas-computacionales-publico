@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+vendor/
+*.tmp
+*.bak
+*.log
+~$*
+.~lock.*
