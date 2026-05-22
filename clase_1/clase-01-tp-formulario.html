@@ -25,7 +25,12 @@
   Consigna
 </h2>
 
-<p>Construir una mini-aplicación PHP que simule la inscripción de un estudiante al proyecto anual. <strong>Sin base de datos:</strong> los datos se procesan en memoria y se pierden al cerrar el navegador.</p>
+<p>Construir una mini-aplicación PHP que registre la inscripción de un estudiante al proyecto anual. <strong>Sin base de datos:</strong> los datos se procesan en memoria y se pierden al cerrar el navegador.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Temática libre</div>
+  <p>Cada estudiante elige <strong>su propio tema</strong> para el proyecto anual: un sistema para un negocio del barrio, una organización, la escuela, un club, un emprendimiento propio, etc. No hay temas obligatorios ni está limitado a lo que vimos en clase. La única condición es que sea <strong>un problema real</strong> que se pueda resolver con un sistema informático.</p>
+</div>
 
 <h2>
   <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -53,7 +58,7 @@
   <li><strong>Nombre y apellido</strong> (texto)</li>
   <li><strong>DNI</strong> (texto)</li>
   <li><strong>Curso y división</strong> (texto)</li>
-  <li><strong>Idea de proyecto</strong> (textarea)</li>
+  <li><strong>Idea de proyecto</strong> (textarea) — describí brevemente qué problema querés resolver y quiénes lo usarían</li>
   <li><strong>Tecnologías que ya conocés</strong> (checkbox múltiple): HTML, CSS, JS, PHP, MySQL, Git, otra</li>
 </ul>
 
@@ -67,7 +72,7 @@
   <li>Validar que ningún campo obligatorio esté vacío.</li>
   <li>Mostrar los datos recibidos en una tabla clara.</li>
   <li>Mostrar un mensaje personalizado:
-    <blockquote><code>Hola {nombre}, tu propuesta "{idea}" fue registrada.</code></blockquote>
+    <blockquote><code>Hola {nombre}, tu proyecto "{idea}" fue registrado. ¡A diseñarlo!</code></blockquote>
   </li>
   <li>Incluir <code>cabecera.php</code> y <code>pie.php</code> con <code>include</code>.</li>
   <li>Aplicar Bootstrap por CDN para que tenga aspecto presentable.</li>
@@ -110,6 +115,7 @@
   <tr><td>Validación</td><td>Valida los datos antes de usarlos</td></tr>
   <tr><td>Inclusión</td><td>Usa <code>include</code>/<code>require</code> para no repetir código</td></tr>
   <tr><td>Autonomía</td><td>Resuelve solo, pregunta con criterio o se traba</td></tr>
+  <tr><td>Idea propia</td><td>La idea de proyecto es original y está pensada por el estudiante, no copiada</td></tr>
   <tr><td>Higiene del código</td><td>Indenta, nombra con sentido, separa HTML de PHP</td></tr>
 </table>
 
