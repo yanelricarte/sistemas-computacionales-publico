@@ -127,7 +127,36 @@ clase01/
 
 ---
 
-## 7. Patrón mínimo de `procesar.php`
+## 7. PHP y HTML en un mismo archivo: los delimitadores
+
+PHP y HTML pueden convivir en el mismo archivo. El servidor (Apache con PHP) lee el archivo de arriba a abajo. Cuando encuentra la marca `<?php`, **entra en modo PHP** e interpreta todo lo que sigue como código. Cuando encuentra `?>`, **vuelve a modo HTML** y el resto se envía tal cual al navegador.
+
+```
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Hola <?php echo "mundo"; ?> acá estamos</h1>
+</body>
+</html>
+```
+En la línea de arriba el servidor:
+1. Envía `<h1>Hola ` como HTML, 
+2. entra a `<?php`, ejecuta `echo "mundo";` e imprime `mundo`,
+3. encuentra `?>`, sale de PHP,
+4. envía ` acá estamos</h1>` como HTML.
+
+> **Regla:** cada vez que abrís `<?php` el servidor cambia a "modo código". Cada vez que cerrás con `?>` vuelve a "modo HTML". Podés abrir y cerrar cuantas veces sea necesario en un mismo archivo.
+
+Hay dos formas de abrir PHP:
+
+| Marca | Significa |
+|---|---|
+| `<?php ... ?>` | Bloque de código PHP estándar |
+| `<?= ... ?>` | Forma corta de `<?php echo ... ?>` (imprime directo) |
+
+---
+
+## 8. Patrón mínimo de `procesar.php`
 
 ```php
 <?php
@@ -155,7 +184,7 @@ clase01/
 
 ---
 
-## 8. Errores frecuentes
+## 9. Errores frecuentes
 
 - **El formulario no envía nada** → falta `method="POST"` o `name="..."` en los inputs. Debugear con `var_dump($_POST)`.
 - **`action=""`** → significa "enviar al mismo archivo". Mejor explícito: `action="procesar.php"`.
@@ -166,7 +195,7 @@ clase01/
 
 ---
 
-## 9. Glosario
+## 10. Glosario
 
 | Palabra | Definición |
 |---|---|
@@ -185,7 +214,7 @@ clase01/
 
 ---
 
-## 10. Buenas prácticas
+## 11. Buenas prácticas
 
 1. **Siempre validar** lo que viene de `$_POST`.
 2. **Usar `include`** para no repetir cabecera y pie.
@@ -195,7 +224,7 @@ clase01/
 
 ---
 
-## 11. Para profundizar
+## 12. Para profundizar
 
 - PHP — Manual oficial en español: https://www.php.net/manual/es/
 - MDN Web Docs — Formularios HTML: https://developer.mozilla.org/es/docs/Learn/Forms
@@ -203,7 +232,7 @@ clase01/
 
 ---
 
-## 12. Próximos pasos
+## 13. Próximos pasos
 
 [**→ TP Clase 1: Formulario de inscripción**](clase-01-tp-formulario.md)
 

@@ -42,7 +42,7 @@ Vamos a desarrollar un **sistema informático funcional** para resolver una nece
 ## Stack del año
 
 - **Lenguajes:** HTML, CSS, JavaScript
-- **Framework:** Ionic + Vue.js o React
+- **Framework:** Laravel
 - **Base de datos:** SQL
 - **Control de versiones:** Git + GitHub
 - **Documentación:** Markdown
@@ -51,6 +51,5 @@ Vamos a desarrollar un **sistema informático funcional** para resolver una nece
 
 ## Enlaces útiles
 
-- [Programa completo en formato web](programa-2026.html)
-- [Programa en markdown](programa-2026.md)
+- [Programa](programa-2026.html)
 - [Clase 1 — Teoría y TP](clase_1/)

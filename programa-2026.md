@@ -29,7 +29,7 @@ Desarrollar un sistema informático funcional para resolver una necesidad real d
 
 ### Unidad 3 — Desarrollo y programación
 - Programación estructurada y orientada a eventos.
-- Framework: **Ionic + Vue.js o React**.
+- Framework: **Laravel**.
 - Propiedades, métodos, eventos.
 - Formularios, cuadros de diálogo, controles.
 - Funciones y procedimientos.
@@ -107,7 +107,7 @@ Desarrollar un sistema informático funcional para resolver una necesidad real d
 
 ## Recursos y herramientas
 
-- **Lenguajes / frameworks:** JavaScript, Vue.js o React, Ionic.
+- **Lenguajes / frameworks:** PHP, Laravel.
 - **Base de datos:** SQL.
 - **Control de versiones:** Git + GitHub.
 - **Modelado:** diagramas ER, diagramas de flujo.
