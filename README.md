@@ -1,9 +1,9 @@
 ---
 layout: default
-title: Sistemas Computacionales 2026
+title: Proyecto, Diseño e Implementación de Sistemas Computacionales 2026
 ---
 
-# Sistemas Computacionales 2026
+# Proyecto, Diseño e Implementación de Sistemas Computacionales 2026
 
 **Espacio curricular:** Proyecto, Diseño e Implementación de Sistemas Computacionales
 **Ciclo lectivo:** 2026
