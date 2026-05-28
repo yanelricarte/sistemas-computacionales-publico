@@ -325,6 +325,26 @@ details[open] summary::before { transform: rotate(90deg); }
 .quiz-opt.wrong { background: #fee2e2; border-color: #dc2626; color: #991b1b; }
 .quiz-feedback { margin-top: .6em; font-size: .9em; color: var(--ink-soft); min-height: 1.4em; }
 
+/* ─── Checkpoint inline (en el transcurso de la teoría) ─── */
+.checkpoint {
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1em 1.2em 0.9em;
+  margin: 1.8em 0;
+}
+.checkpoint-title {
+  margin: 0 0 0.6em;
+  font-size: 0.85em;
+  color: var(--accent-dark);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.checkpoint .quiz-q { margin: 0; border-bottom: 0; padding-bottom: 0; }
+.checkpoint .quiz-q p { margin-top: 0; }
+.checkpoint .quiz-opt { background: var(--surface); }
+
 /* ─── Meta block (tp-formulario) ─── */
 .meta {
   background: var(--surface); border: 1px solid var(--border);

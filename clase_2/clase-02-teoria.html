@@ -467,6 +467,17 @@ form button {
   <p>Si te complicás con rutas relativas, podés usar una ruta absoluta tipo <code>href="/clase02/css/estilos.css"</code>. La barra del principio significa "desde la raíz del servidor" y funciona desde cualquier subcarpeta.</p>
 </details>
 
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Pausa para pensar</p>
+  <div class="quiz-q" data-correct="b" data-explanation="Es el principio DRY: un solo archivo de estilos linkeado en todas las páginas. Si después cambiás un color o un tamaño, no tenés que tocar cada PHP.">
+    <p>¿Por qué movemos los estilos a un <code>.css</code> aparte en lugar de dejarlos inline en cada <code>.php</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Porque PHP no entiende CSS dentro del HTML</button>
+    <button class="quiz-opt" data-opt="b">b) Para que cuando cambies un color, se actualice en todas las páginas a la vez</button>
+    <button class="quiz-opt" data-opt="c">c) Porque el navegador no carga archivos <code>.css</code> si no están separados</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
 <h2 id="s3">
   <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
   3. Redirecciones server-side
@@ -581,6 +592,17 @@ Location: bienvenido.php
 <blockquote>
   <p>El link HTML es navegación que <strong>el usuario inicia</strong>. La redirección server-side es navegación que <strong>el servidor decide</strong> por el usuario.</p>
 </blockquote>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Pausa para pensar</p>
+  <div class="quiz-q" data-correct="c" data-explanation="header() solo funciona si todavía no se mandó nada al navegador. Cualquier echo, espacio en blanco o HTML antes hace que falle con 'headers already sent'.">
+    <p>Si en <code>procesar.php</code> escribís <code>echo "Hola";</code> y después <code>header('Location: index.php');</code>, ¿qué pasa?</p>
+    <button class="quiz-opt" data-opt="a">a) El usuario ve "Hola" y después redirige</button>
+    <button class="quiz-opt" data-opt="b">b) Redirige a index.php sin mostrar nada</button>
+    <button class="quiz-opt" data-opt="c">c) PHP tira error porque ya hubo output antes del <code>header()</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
 
 <h2 id="s5">
   <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
@@ -701,6 +723,17 @@ En cada petición:
     <li><strong>El valor de sesión es como cualquier variable</strong>: podés sumarle, restarle, concatenar, lo que necesites. <code>$_SESSION['visitas']++</code> es lo mismo que <code>$_SESSION['visitas'] = $_SESSION['visitas'] + 1</code>.</li>
     <li><strong>La sesión es por usuario y por navegador</strong>: dos personas, dos contadores; el mismo usuario en dos navegadores distintos, dos contadores; el mismo usuario en el mismo navegador con varias pestañas, un solo contador compartido.</li>
   </ol>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Pausa para pensar</p>
+  <div class="quiz-q" data-correct="b" data-explanation="La cookie PHPSESSID es solo la llave. El contenido real (los datos del usuario) vive en el servidor, asociado a esa llave. Por eso es seguro guardar ahí cosas como 'este usuario está logueado'.">
+    <p>¿Dónde se guardan los datos de <code>$_SESSION</code> (por ejemplo <code>$_SESSION['usuario'] = 'admin'</code>)?</p>
+    <button class="quiz-opt" data-opt="a">a) En el navegador del usuario, dentro de la cookie</button>
+    <button class="quiz-opt" data-opt="b">b) En el servidor, asociado a la cookie de sesión</button>
+    <button class="quiz-opt" data-opt="c">c) En un archivo en la PC del estudiante</button>
+    <div class="quiz-feedback"></div>
+  </div>
 </div>
 
 <h2 id="s7">
@@ -1021,16 +1054,27 @@ Navegador                          Servidor (bienvenido.php)
   <li><strong>No escribir el <code>?&gt;</code> de cierre</strong> en archivos que sólo tienen PHP. Evita errores de "headers already sent" por espacios al final.</li>
 </ol>
 
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Pausa para pensar</p>
+  <div class="quiz-q" data-correct="b" data-explanation="GET sirve para datos que viajan en la URL: cambian con el link, son visibles, se pueden compartir o marcar como favorito. Para datos sensibles o que tienen que sobrevivir entre páginas, sesión.">
+    <p>¿Cuándo conviene pasar un dato por GET (en la URL) en lugar de por sesión?</p>
+    <button class="quiz-opt" data-opt="a">a) Cuando el dato es sensible (contraseñas, datos personales)</button>
+    <button class="quiz-opt" data-opt="b">b) Cuando el dato cambia con el link y el usuario podría compartirlo (qué sección mostrar, qué producto ver)</button>
+    <button class="quiz-opt" data-opt="c">c) Cuando el dato tiene que guardarse hasta que el usuario cierre el navegador</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
 <h2 id="quiz">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
   Mini-quiz de autoevaluación
 </h2>
 
-<div class="quiz">
+<div class="quiz" id="quiz-final">
   <h3>Probá si entendiste</h3>
   <p style="color: var(--ink-soft); font-size: .92em; margin-top: -.3em;">Hacé click en la opción que te parezca correcta. Te marca al instante si acertaste.</p>
 
-  <div class="quiz-q" data-correct="b">
+  <div class="quiz-q" data-correct="b" data-explanation="session_start() es lo primero que hay que llamar en cualquier archivo que use $_SESSION. Recupera la caja existente o crea una nueva.">
     <p><strong>1.</strong> ¿Qué hace <code>session_start()</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Crea un usuario nuevo en la base de datos</button>
     <button class="quiz-opt" data-opt="b">b) Abre o recupera la sesión del usuario en el servidor</button>
@@ -1038,7 +1082,7 @@ Navegador                          Servidor (bienvenido.php)
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="c">
+  <div class="quiz-q" data-correct="c" data-explanation="Sin exit, PHP sigue procesando el archivo después del header. Eso puede ejecutar consultas, mandar emails u operar sobre datos que no querías procesar.">
     <p><strong>2.</strong> ¿Por qué siempre poner <code>exit;</code> después de <code>header('Location: ...')</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Porque PHP lo exige por sintaxis</button>
     <button class="quiz-opt" data-opt="b">b) Para que el navegador entienda la redirección</button>
@@ -1046,7 +1090,7 @@ Navegador                          Servidor (bienvenido.php)
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="a">
+  <div class="quiz-q" data-correct="a" data-explanation="Es el patrón de protección. Sin esto, cualquier persona escribiendo la URL directamente entra a la página interna aunque no se haya logueado.">
     <p><strong>3.</strong> ¿Para qué sirve <code>if (!isset($_SESSION['usuario'])) { header('Location: index.php'); exit; }</code> al inicio de una página interna?</p>
     <button class="quiz-opt" data-opt="a">a) Para proteger la página: si no estás logueado, te echa al login</button>
     <button class="quiz-opt" data-opt="b">b) Para crear un usuario nuevo en la sesión</button>
@@ -1054,7 +1098,7 @@ Navegador                          Servidor (bienvenido.php)
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="b">
+  <div class="quiz-q" data-correct="b" data-explanation="El link es navegación visible que el usuario inicia. El header es redirección invisible que el servidor decide, típicamente después de procesar algo.">
     <p><strong>4.</strong> Diferencia entre <code>&lt;a href="info.php"&gt;</code> y <code>header('Location: info.php')</code>:</p>
     <button class="quiz-opt" data-opt="a">a) Son exactamente lo mismo</button>
     <button class="quiz-opt" data-opt="b">b) El link lo decide el usuario al clickear; el header lo decide el servidor sin mostrar HTML intermedio</button>
@@ -1062,7 +1106,7 @@ Navegador                          Servidor (bienvenido.php)
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="c">
+  <div class="quiz-q" data-correct="c" data-explanation="Los datos en la URL después del ? llegan a $_GET. POST sirve para datos enviados desde un form con method='POST'.">
     <p><strong>5.</strong> En la URL <code>info.php?seccion=ayuda</code>, ¿cómo se accede al valor "ayuda" desde PHP?</p>
     <button class="quiz-opt" data-opt="a">a) <code>$_POST['seccion']</code></button>
     <button class="quiz-opt" data-opt="b">b) <code>$_SESSION['seccion']</code></button>
@@ -1228,66 +1272,65 @@ Navegador                          Servidor (bienvenido.php)
     wrap.appendChild(btn);
   });
 
-  const explanations = {
-    1: "session_start() es lo primero que hay que llamar en cualquier archivo que use $_SESSION. Recupera la caja existente o crea una nueva.",
-    2: "Sin exit, PHP sigue procesando el archivo después del header. Eso puede ejecutar consultas, mandar emails u operar sobre datos que no querías procesar.",
-    3: "Es el patrón de protección. Sin esto, cualquier persona escribiendo la URL directamente entra a la página interna aunque no se haya logueado.",
-    4: "El link es navegación visible que el usuario inicia. El header es redirección invisible que el servidor decide, típicamente después de procesar algo.",
-    5: "Los datos en la URL después del ? llegan a $_GET. POST sirve para datos enviados desde un form con method='POST'."
-  };
-  let answered = 0, correct = 0;
-  document.querySelectorAll('.quiz-q').forEach((q, idx) => {
+  // === Handler unificado de quiz-q (cubre quiz final + checkpoints inline) ===
+  const finalQuiz = document.getElementById('quiz-final');
+  const finalScore = document.getElementById('quiz-score');
+
+  function updateFinalScore() {
+    if (!finalQuiz || !finalScore) return;
+    const finalQs = finalQuiz.querySelectorAll('.quiz-q');
+    const answered = finalQuiz.querySelectorAll('.quiz-q[data-answered="1"]').length;
+    const correctCount = finalQuiz.querySelectorAll('.quiz-q[data-result="ok"]').length;
+    if (answered === finalQs.length) {
+      let msg = `Resultado: ${correctCount} de ${answered}. `;
+      if (correctCount === answered) msg += '¡Todo perfecto!';
+      else if (correctCount >= 3) msg += 'Bien. Repasá lo que no salió.';
+      else msg += 'Releé las secciones marcadas en las explicaciones.';
+      finalScore.textContent = msg;
+    } else if (answered > 0) {
+      finalScore.textContent = `Respondidas: ${answered} / ${finalQs.length}`;
+    }
+  }
+
+  document.querySelectorAll('.quiz-q').forEach(q => {
     const correctOpt = q.dataset.correct;
     const feedback = q.querySelector('.quiz-feedback');
+    const explanation = q.dataset.explanation || '';
     q.querySelectorAll('.quiz-opt').forEach(opt => {
       opt.addEventListener('click', () => {
         if (q.dataset.answered) return;
-        q.dataset.answered = '1'; answered++;
+        q.dataset.answered = '1';
         if (opt.dataset.opt === correctOpt) {
+          q.dataset.result = 'ok';
           opt.classList.add('correct');
-          feedback.textContent = '✓ ¡Correcto! ' + explanations[idx + 1];
+          feedback.textContent = '✓ ¡Correcto! ' + explanation;
           feedback.style.color = 'var(--ok)';
-          correct++;
         } else {
+          q.dataset.result = 'wrong';
           opt.classList.add('wrong');
           q.querySelector('[data-opt="' + correctOpt + '"]').classList.add('correct');
-          feedback.textContent = '✗ La correcta era la ' + correctOpt + '. ' + explanations[idx + 1];
+          feedback.textContent = '✗ La correcta era la ' + correctOpt + '. ' + explanation;
           feedback.style.color = 'var(--warm)';
         }
-        const score = document.getElementById('quiz-score');
-        if (answered === document.querySelectorAll('.quiz-q').length) {
-          let msg = `Resultado: ${correct} de ${answered}. `;
-          if (correct === answered) msg += '¡Todo perfecto!';
-          else if (correct >= 3) msg += 'Bien. Repasá lo que no salió.';
-          else msg += 'Releé las secciones marcadas en las explicaciones.';
-          score.textContent = msg;
-        } else {
-          score.textContent = `Respondidas: ${answered} / ${document.querySelectorAll('.quiz-q').length}`;
-        }
+        if (finalQuiz && finalQuiz.contains(q)) updateFinalScore();
       });
     });
   });
 
 
-  // === Reset del quiz ===
+  // === Reset del quiz final ===
   (function () {
     const resetBtn = document.getElementById('quiz-reset');
-    const score = document.getElementById('quiz-score');
-    if (!resetBtn) return;
-    const questions = document.querySelectorAll('.quiz-q');
-    const total = questions.length;
+    if (!resetBtn || !finalQuiz) return;
+    const total = finalQuiz.querySelectorAll('.quiz-q').length;
 
-    // Mostrar el botón cuando se complete el quiz
     function checkComplete() {
-      const answeredCount = document.querySelectorAll('.quiz-q[data-answered="1"]').length;
+      const answeredCount = finalQuiz.querySelectorAll('.quiz-q[data-answered="1"]').length;
       resetBtn.style.display = (answeredCount === total) ? 'inline-block' : 'none';
     }
-    // Polling rápido cuando se interactúa (solución simple sin reescribir el loop principal)
-    document.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => setTimeout(checkComplete, 10)));
+    finalQuiz.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => setTimeout(checkComplete, 10)));
 
     resetBtn.addEventListener('click', () => {
-      // Recargamos la página manteniendo el hash al quiz: la forma más simple
-      // y robusta de resetear todo el estado del quiz sin tocar el script principal.
       window.location.hash = '#quiz';
       window.location.reload();
     });
