@@ -9,6 +9,14 @@
 </head>
 <body>
 
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
 <div class="hero">
   <div class="eyebrow">Trabajo práctico · Clase 1</div>
   <h1>Formulario de inscripción al proyecto</h1>
@@ -75,7 +83,6 @@
     <blockquote><code>Hola {nombre}, tu proyecto "{idea}" fue registrado. ¡A diseñarlo!</code></blockquote>
   </li>
   <li>Incluir <code>cabecera.php</code> y <code>pie.php</code> con <code>include</code>.</li>
-  <li>Aplicar Bootstrap por CDN para que tenga aspecto presentable.</li>
 </ul>
 
 <h2>
@@ -96,7 +103,7 @@
 
 <ul>
   <li><strong>Trabajo individual</strong>, cada estudiante en su PC.</li>
-  <li>Pueden consultar la documentación oficial: <a href="https://www.php.net/manual/es/" target="_blank">https://www.php.net/manual/es/</a></li>
+  <li>Pueden consultar la documentación oficial: <a href="https://www.php.net/manual/es/" target="_blank" rel="noopener noreferrer">https://www.php.net/manual/es/</a></li>
   <li>Pueden consultar a un compañero, pero cada uno entrega su carpeta.</li>
   <li><strong>No</strong> copiar y pegar soluciones completas de internet sin entender qué hacen.</li>
   <li>Si traés código que funciona pero no podés explicar, esa solución no cuenta.</li>
@@ -144,7 +151,7 @@
 
 <div class="callout callout-warn">
   <div class="callout-title">Importante</div>
-  Este es el mínimo. El TP pide expandirlo con más campos, validaciones, inclusión de cabecera y pie, y Bootstrap.
+  Este es el mínimo. El TP pide expandirlo con más campos, validaciones e inclusión de cabecera y pie.
 </div>
 
 <hr style="margin: 2em 0; border: 0; border-top: 1px solid var(--border);">
@@ -153,9 +160,61 @@
 
 <div class="nav">
   <a href="../">← Volver al inicio</a>
+  <a href="../clase_2/clase-02-tp-mini-sistema.html" style="margin-left: 1em;">Siguiente: TP Clase 2 →</a>
 </div>
 
 <script>
+  // === Theme controls (dark + big) ===
+  (function () {
+    const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
+    const body = document.body;
+    const dark = document.getElementById('toggleDark');
+    const big  = document.getElementById('toggleBig');
+
+    if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
+    if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
+
+    function syncDark() {
+      const on = body.classList.contains('dark');
+      dark.textContent = on ? '☀️' : '🌙';
+      dark.setAttribute('aria-pressed', on);
+    }
+    function syncBig() {
+      const on = body.classList.contains('big');
+      big.textContent = on ? 'A−' : 'A+';
+      big.setAttribute('aria-pressed', on);
+    }
+    syncDark(); syncBig();
+
+    dark.addEventListener('click', () => {
+      body.classList.toggle('dark');
+      localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
+      syncDark();
+    });
+    big.addEventListener('click', () => {
+      body.classList.toggle('big');
+      localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
+      syncBig();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'd' || e.key === 'D') dark.click();
+      if (e.key === '+' || e.key === '=') big.click();
+    });
+  })();
+
+  // === Volver arriba ===
+  (function () {
+    const btn = document.getElementById('scrollTop');
+    if (!btn) return;
+    const toggle = () => btn.classList.toggle('visible', window.scrollY > 400);
+    window.addEventListener('scroll', toggle, { passive: true });
+    toggle();
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+
+
+
   document.querySelectorAll('.code-wrap').forEach(wrap => {
     const btn = document.createElement('button');
     btn.className = 'copy-btn';

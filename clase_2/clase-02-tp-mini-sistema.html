@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TP Clase 2 — Mini-sistema web con login</title>
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 2</div>
+  <h1>Mini-sistema web con login</h1>
+  <p class="sub">Transformar el login básico que veníamos usando en un mini-sistema funcional: CSS común, redirecciones, sesiones, páginas protegidas y navegación con GET. Sin base de datos todavía.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Tiempo de trabajo en clase:</strong> 50 minutos
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+  Consigna
+</h2>
+
+<p>Tomar el login básico (usuario + contraseña) que vienen trabajando y transformarlo en un <strong>mini-sistema web funcional</strong> con:</p>
+
+<ul>
+  <li>CSS común en archivo aparte.</li>
+  <li>Redirecciones server-side después de validar.</li>
+  <li>Sesiones que recuerden al usuario entre páginas.</li>
+  <li>Páginas internas protegidas (no se entra escribiendo la URL directa).</li>
+  <li>Navegación con GET para una página de información.</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">Sin base de datos todavía</div>
+  Los usuarios están <strong>hardcodeados</strong> en el código (escritos directamente). La autenticación real, con contraseñas hasheadas en base de datos, la vemos cuando entremos a MySQL.
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  Obligatorio (piso del TP)
+</h2>
+
+<h3>1. Estructura de carpetas</h3>
+
+<div class="code-wrap">
+<pre><code>clase02/
+├── index.php              ← formulario de login
+├── procesar-login.php     ← valida, abre sesión, redirige
+├── bienvenido.php         ← página interna protegida
+├── info.php               ← secciones vía GET
+├── logout.php             ← destruye sesión
+├── includes/
+│   ├── cabecera.php       ← &lt;head&gt;, &lt;link CSS&gt;, navbar
+│   └── pie.php
+└── css/
+    └── estilos.css        ← todos los estilos</code></pre>
+</div>
+
+<h3>2. <code>index.php</code> — Formulario de login</h3>
+
+<ul>
+  <li>Inputs: <code>usuario</code> (texto), <code>clave</code> (password).</li>
+  <li>Envía por <strong>POST</strong> a <code>procesar-login.php</code>.</li>
+  <li>Botón "Entrar".</li>
+</ul>
+
+<h3>3. <code>procesar-login.php</code> — Validación + sesión + redirect</h3>
+
+<ul>
+  <li><code>session_start()</code> al principio.</li>
+  <li>Validar contra al menos un usuario hardcodeado (<code>admin/1234</code> está bien).</li>
+  <li>Si OK: guardar <code>$_SESSION['usuario']</code>, redirigir a <code>bienvenido.php</code>.</li>
+  <li>Si MAL: redirigir a <code>index.php</code>.</li>
+  <li>Siempre <code>header('Location: ...');</code> seguido de <code>exit;</code>.</li>
+</ul>
+
+<h3>4. <code>bienvenido.php</code> — Página interna protegida</h3>
+
+<ul>
+  <li><code>session_start()</code> al principio.</li>
+  <li>Si <code>$_SESSION['usuario']</code> no existe, redirigir a <code>index.php</code> con <code>exit;</code>.</li>
+  <li>Mostrar "Hola, <strong>[nombre del usuario]</strong>" usando el dato de la sesión.</li>
+  <li>Incluir <code>cabecera.php</code> y <code>pie.php</code>.</li>
+</ul>
+
+<h3>5. <code>info.php</code> — Secciones dinámicas con GET</h3>
+
+<ul>
+  <li>Protegida por sesión (mismo patrón que <code>bienvenido.php</code>).</li>
+  <li>Leer <code>$_GET['seccion']</code> con default razonable (<code>?? 'ayuda'</code>).</li>
+  <li>Mostrar contenido distinto según el valor: <code>ayuda</code>, <code>contacto</code>, <code>nosotros</code>.</li>
+</ul>
+
+<h3>6. <code>logout.php</code> — Cerrar sesión</h3>
+
+<ul>
+  <li><code>session_start()</code>, <code>session_destroy()</code>, redirigir a <code>index.php</code>.</li>
+</ul>
+
+<h3>7. <code>cabecera.php</code> y <code>pie.php</code> — Comunes</h3>
+
+<ul>
+  <li><strong><code>cabecera.php</code></strong>: <code>&lt;head&gt;</code> con <code>&lt;link rel="stylesheet" href="css/estilos.css"&gt;</code>, abrir <code>&lt;body&gt;</code>, navbar con links a Inicio, Ayuda, Contacto, Salir.</li>
+  <li><strong><code>pie.php</code></strong>: cerrar <code>&lt;body&gt;</code> y <code>&lt;html&gt;</code>.</li>
+</ul>
+
+<h3>8. <code>css/estilos.css</code> — CSS común</h3>
+
+<ul>
+  <li>Todos los estilos en este único archivo, linkeado desde <code>cabecera.php</code>.</li>
+  <li>Selectores de tipo (<code>body</code>, <code>nav</code>, <code>h1</code>, <code>form</code>) para estilos base.</li>
+  <li>Selectores de clase (<code>.boton</code>, <code>.mensaje</code>, etc.) para variantes.</li>
+  <li>Si tenías <code>style="..."</code> inline en archivos previos, movelos a <code>estilos.css</code> como reglas.</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+  Opcional (si terminás antes)
+</h2>
+
+<ul>
+  <li><strong>Más usuarios</strong>: aceptar <code>admin/1234</code>, <code>prof/abc</code>, <code>alumno/2026</code>.</li>
+  <li><strong>Mensajes distintos</strong>: que el login distinga entre "no completaste un campo" y "usuario o contraseña incorrectos". Se puede pasar el motivo por GET de vuelta a <code>index.php</code> (<code>?error=vacio</code> o <code>?error=invalido</code>) o usar sesión.</li>
+  <li><strong>Saludo personalizado</strong> en <code>bienvenido.php</code>: mostrar también la hora actual o un mensaje según el rol del usuario.</li>
+  <li><strong>Más secciones en <code>info.php</code></strong>: agregar <code>?seccion=ayuda-php</code>, <code>?seccion=git</code>, etc.</li>
+  <li><strong>Estilos con clases</strong>: aplicar <code>.boton</code>, <code>.mensaje</code>, <code>.tarjeta</code> con variantes (ver el <a href="clase-02-teoria.html#s2">material teórico</a>).</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  Paso a paso para implementarlo
+</h2>
+
+<p>No intentes armarlo todo de una. Andá <strong>de a un paso por vez</strong>, probando que funcione antes de pasar al siguiente. Si te trabás en alguno, mirá el material teórico de la sección correspondiente o pedile ayuda a la docente.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El código de esta guía es un ejemplo — adaptalo a tu sistema</div>
+  <p>Los bloques de código que aparecen en cada paso son <strong>una versión mínima de referencia</strong>, no el código que tenés que copiar tal cual. Tu sistema puede tener variaciones: otros usuarios válidos, más secciones en <code>info.php</code>, distintos estilos, mensajes propios. Lo que importa es <strong>entender qué hace cada parte</strong> y por qué va en ese orden, no transcribirlo letra por letra.</p>
+  <p>Si copiás sin entender, cuando algo no funcione no vas a poder arreglarlo — y eso te lo van a notar enseguida.</p>
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Antes de empezar</div>
+  Creá la carpeta <code>clase02/</code> donde guardás tus archivos del año. <strong>Abrila en VS Code con Archivo → Abrir carpeta...</strong> (no archivo por archivo). Eso te ahorra muchos problemas con rutas.
+</div>
+
+<h3>Paso 1 — Estructura mínima de carpetas</h3>
+
+<p>Antes de escribir código, armá la estructura vacía:</p>
+
+<div class="code-wrap">
+<pre><code>clase02/
+├── includes/        (carpeta vacía)
+└── css/             (carpeta vacía)</code></pre>
+</div>
+
+<p>Solo las carpetas, sin archivos todavía. Esto te obliga a pensar la organización antes de empezar.</p>
+
+<h3>Paso 2 — Cabecera, pie y CSS común</h3>
+
+<p>Antes que el login, armá el "esqueleto" del sitio. Tres archivos:</p>
+
+<ol>
+  <li>
+    <strong><code>includes/cabecera.php</code></strong> con la apertura del HTML, <code>&lt;head&gt;</code>, el <code>&lt;link&gt;</code> al CSS y la navbar (de momento, links que no apuntan a nada todavía):
+    <div class="code-wrap">
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Mi sistema&lt;/title&gt;
+  &lt;link rel="stylesheet" href="css/estilos.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;nav&gt;
+    &lt;a href="index.php"&gt;Inicio&lt;/a&gt;
+    &lt;a href="info.php?seccion=ayuda"&gt;Ayuda&lt;/a&gt;
+    &lt;a href="logout.php"&gt;Salir&lt;/a&gt;
+  &lt;/nav&gt;</code></pre>
+    </div>
+  </li>
+  <li>
+    <strong><code>includes/pie.php</code></strong> con el cierre:
+    <div class="code-wrap">
+<pre><code>&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    </div>
+  </li>
+  <li>
+    <strong><code>css/estilos.css</code></strong> vacío por ahora (lo vas llenando a medida que avanzás).
+  </li>
+</ol>
+
+<h3>Paso 3 — Página de inicio (formulario de login)</h3>
+
+<p>Creá <code>index.php</code> que incluya cabecera y pie, y tenga el formulario:</p>
+
+<div class="code-wrap">
+<pre><code>&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;h1&gt;Iniciar sesión&lt;/h1&gt;
+
+&lt;form action="procesar-login.php" method="POST"&gt;
+  &lt;label&gt;Usuario:
+    &lt;input type="text" name="usuario"&gt;
+  &lt;/label&gt;
+  &lt;label&gt;Contraseña:
+    &lt;input type="password" name="clave"&gt;
+  &lt;/label&gt;
+  &lt;button type="submit"&gt;Entrar&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<p><strong>Probalo en el navegador.</strong> Tiene que verse el formulario. Apretá Entrar y va a tirar error porque <code>procesar-login.php</code> no existe todavía. Está bien, próximo paso.</p>
+
+<h3>Paso 4 — Procesar el login (sin sesión todavía)</h3>
+
+<p>Creá <code>procesar-login.php</code>. Solo validación + redirect, sin sesión por ahora:</p>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  $usuario = $_POST['usuario'] ?? '';
+  $clave   = $_POST['clave']   ?? '';
+
+  if ($usuario == 'admin' &amp;&amp; $clave == '1234') {
+    echo "Login OK (después acá redirigimos)";
+  } else {
+    echo "Login MAL (después acá volvemos a index)";
+  }</code></pre>
+</div>
+
+<p><strong>Probalo</strong>. Cargá el formulario, escribí <code>admin</code> / <code>1234</code> → tiene que decir "Login OK". Probá con otros datos → "Login MAL". Si esto no funciona, todavía no tiene sentido seguir.</p>
+
+<h3>Paso 5 — Sumar sesión y redirect</h3>
+
+<p>Ahora reemplazá los <code>echo</code> por los redirects reales y guardá el usuario en la sesión:</p>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+
+  $usuario = $_POST['usuario'] ?? '';
+  $clave   = $_POST['clave']   ?? '';
+
+  if ($usuario == 'admin' &amp;&amp; $clave == '1234') {
+    $_SESSION['usuario'] = $usuario;
+    header('Location: bienvenido.php');
+    exit;
+  } else {
+    header('Location: index.php');
+    exit;
+  }</code></pre>
+</div>
+
+<p>Importante: <code>session_start()</code> tiene que ir <strong>antes</strong> de cualquier <code>echo</code> o HTML (en este archivo no hay HTML, perfecto).</p>
+
+<h3>Paso 6 — Página interna protegida (<code>bienvenido.php</code>)</h3>
+
+<p>Creá <code>bienvenido.php</code> con el patrón de protección al inicio:</p>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  if (!isset($_SESSION['usuario'])) {
+    header('Location: index.php');
+    exit;
+  }
+?&gt;
+&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;h1&gt;Hola, &lt;?= $_SESSION['usuario'] ?&gt;&lt;/h1&gt;
+&lt;p&gt;Estás dentro del sistema.&lt;/p&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<p><strong>Probalo.</strong> Logueate desde index.php → tiene que llevarte a bienvenido y mostrar "Hola, admin". Ahora probá la protección: cerrá el navegador (o abrí incógnito), escribí directo la URL de <code>bienvenido.php</code> → tiene que mandarte al login.</p>
+
+<h3>Paso 7 — Logout</h3>
+
+<p>Creá <code>logout.php</code> para cerrar sesión:</p>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  session_destroy();
+  header('Location: index.php');
+  exit;</code></pre>
+</div>
+
+<p><strong>Probalo.</strong> Logueate, andá a bienvenido, después clickeá "Salir" en la navbar (que apunta a logout.php) → tiene que devolverte al login. Probá ir a bienvenido directo → te bota al login (porque ya no tenés sesión).</p>
+
+<h3>Paso 8 — Página con secciones dinámicas (GET)</h3>
+
+<p>Creá <code>info.php</code> protegida y con contenido según <code>?seccion=...</code>:</p>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  if (!isset($_SESSION['usuario'])) {
+    header('Location: index.php');
+    exit;
+  }
+  $seccion = $_GET['seccion'] ?? 'ayuda';
+?&gt;
+&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;?php if ($seccion == 'ayuda'): ?&gt;
+  &lt;h1&gt;Ayuda&lt;/h1&gt;
+  &lt;p&gt;Esto es un sistema de ejemplo. Logueate con admin / 1234.&lt;/p&gt;
+&lt;?php elseif ($seccion == 'contacto'): ?&gt;
+  &lt;h1&gt;Contacto&lt;/h1&gt;
+  &lt;p&gt;Escribinos a contacto@ejemplo.com&lt;/p&gt;
+&lt;?php elseif ($seccion == 'nosotros'): ?&gt;
+  &lt;h1&gt;Nosotros&lt;/h1&gt;
+  &lt;p&gt;Somos un equipo de 7° año aprendiendo PHP.&lt;/p&gt;
+&lt;?php endif; ?&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<p>Acordate de tener los links a info.php?seccion=... en la navbar de <code>cabecera.php</code>.</p>
+
+<h3>Paso 9 — Estilos en <code>estilos.css</code></h3>
+
+<p>Hasta acá el sitio funciona pero se ve "feo" (HTML sin estilo). Es momento de meterle CSS:</p>
+
+<ul>
+  <li>Estilos base: <code>body</code>, <code>nav</code>, <code>h1</code>, <code>form</code>, <code>input</code>, <code>button</code>.</li>
+  <li>Si tenés clases (<code>.boton</code>, <code>.mensaje</code>, etc.), agregalas en HTML y en CSS.</li>
+  <li>Si tenías <code>style="..."</code> inline en archivos previos, movelos a <code>estilos.css</code>.</li>
+</ul>
+
+<h3>Paso 10 — Probá todo el flujo entero</h3>
+
+<ol>
+  <li>Abrir navegador en modo incógnito (sesión limpia).</li>
+  <li>Ir a <code>http://localhost/clase02/bienvenido.php</code> directo → te debería echar al login.</li>
+  <li>Loguearte con admin/1234 → te debería llevar a bienvenido.</li>
+  <li>Clickear los links de la navbar (Ayuda, Contacto, Nosotros) → cada uno carga su contenido.</li>
+  <li>Logout → vuelve a login.</li>
+  <li>Probar la URL directa de bienvenido otra vez → te echa de nuevo.</li>
+</ol>
+
+<p>Si los 6 puntos funcionan, <strong>tenés el TP terminado</strong>. Si querés sumar techo (opcionales), seguí con la lista de arriba.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Si te trabás</div>
+  <ul>
+    <li>"Headers already sent": revisá que el <code>&lt;?php</code> sea la <strong>primera línea</strong> del archivo. Sin espacios ni líneas en blanco antes.</li>
+    <li>La sesión "se pierde" entre páginas: te falta <code>session_start()</code> en alguna página.</li>
+    <li>CSS no carga: revisá la ruta del <code>&lt;link&gt;</code> con F12 → Network.</li>
+    <li>Ver <a href="clase-02-teoria.html#s10">errores frecuentes en la teoría</a> para más casos.</li>
+  </ul>
+</div>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  Reglas del TP
+</h2>
+
+<ul>
+  <li><strong>Código: trabajo individual</strong>, cada uno en su PC. Cada uno entrega su carpeta <code>clase02/</code>.</li>
+  <li><strong>Proyecto anual: pueden conversar en grupo</strong> mientras programan (viabilidad, usuarios, qué resuelve cada idea).</li>
+  <li>Pueden consultar la <a href="https://www.php.net/manual/es/" target="_blank" rel="noopener noreferrer">documentación oficial de PHP</a>.</li>
+  <li>Pueden consultar al compañero sobre código, pero <strong>no copiar/pegar sin entender</strong> — la solución que no podés explicar no cuenta.</li>
+</ul>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+  Qué se observa
+</h2>
+
+<table>
+  <tr><th>Aspecto</th><th>Qué se mira</th></tr>
+  <tr><td>Estructura del proyecto</td><td>5 archivos PHP + <code>includes/</code> + <code>css/</code> separados</td></tr>
+  <tr><td>Redirección</td><td><code>header('Location:')</code> antes de cualquier HTML; <code>exit;</code> después</td></tr>
+  <tr><td>Sesión — apertura</td><td><code>session_start()</code> al principio de cada archivo que la usa</td></tr>
+  <tr><td>Sesión — protección</td><td>Páginas internas con <code>if (!isset($_SESSION['usuario']))</code></td></tr>
+  <tr><td>GET</td><td><code>info.php</code> reacciona al <code>?seccion=...</code> con default</td></tr>
+  <tr><td>CSS común</td><td><code>&lt;link&gt;</code> en <code>cabecera.php</code> aplica en todas las páginas</td></tr>
+  <tr><td>CSS — uso de clases</td><td>Al menos dos variantes con clases (botones, mensajes, etc.)</td></tr>
+  <tr><td>Comprensión de sesión</td><td>Cuando te pregunten oralmente, podés explicarlo con tus palabras</td></tr>
+</table>
+
+<h2>
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  Patrón mínimo de cada archivo (referencia)
+</h2>
+
+<p>Si te trabás, este es el esqueleto mínimo de cada archivo. <strong>Tenés que entender qué hace cada línea</strong>, no copiarlo a ciegas.</p>
+
+<h3><code>procesar-login.php</code></h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+
+  $usuario = $_POST['usuario'] ?? '';
+  $clave   = $_POST['clave']   ?? '';
+
+  if ($usuario == 'admin' &amp;&amp; $clave == '1234') {
+    $_SESSION['usuario'] = $usuario;
+    header('Location: bienvenido.php');
+    exit;
+  } else {
+    header('Location: index.php');
+    exit;
+  }</code></pre>
+</div>
+
+<h3><code>bienvenido.php</code> (protegida)</h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  if (!isset($_SESSION['usuario'])) {
+    header('Location: index.php');
+    exit;
+  }
+?&gt;
+&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;h1&gt;Hola, &lt;?= $_SESSION['usuario'] ?&gt;&lt;/h1&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<h3><code>info.php</code> (secciones vía GET)</h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  if (!isset($_SESSION['usuario'])) {
+    header('Location: index.php');
+    exit;
+  }
+  $seccion = $_GET['seccion'] ?? 'ayuda';
+?&gt;
+&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;?php if ($seccion == 'ayuda'): ?&gt;
+  &lt;h1&gt;Ayuda&lt;/h1&gt;
+  &lt;p&gt;Como usar el sistema...&lt;/p&gt;
+&lt;?php elseif ($seccion == 'contacto'): ?&gt;
+  &lt;h1&gt;Contacto&lt;/h1&gt;
+  &lt;p&gt;Escribinos a contacto@ejemplo.com&lt;/p&gt;
+&lt;?php endif; ?&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<h3><code>logout.php</code></h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  session_destroy();
+  header('Location: index.php');
+  exit;</code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Importante</div>
+  Estos son los <strong>mínimos</strong>. La consigna espera que los expandas: navbar, validación más rica, CSS propio con clases, contenido en las secciones. Si copiás solo lo mínimo no estás resolviendo el TP.
+</div>
+
+<hr style="margin: 2em 0; border: 0; border-top: 1px solid var(--border);">
+
+<p>¿Tenés dudas con los conceptos? Mirá el <a href="clase-02-teoria.html"><strong>soporte teórico de la Clase 2</strong></a>.</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script>
+  // === Theme controls (dark + big) ===
+  (function () {
+    const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
+    const body = document.body;
+    const dark = document.getElementById('toggleDark');
+    const big  = document.getElementById('toggleBig');
+
+    if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
+    if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
+
+    function syncDark() {
+      const on = body.classList.contains('dark');
+      dark.textContent = on ? '☀️' : '🌙';
+      dark.setAttribute('aria-pressed', on);
+    }
+    function syncBig() {
+      const on = body.classList.contains('big');
+      big.textContent = on ? 'A−' : 'A+';
+      big.setAttribute('aria-pressed', on);
+    }
+    syncDark(); syncBig();
+
+    dark.addEventListener('click', () => {
+      body.classList.toggle('dark');
+      localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
+      syncDark();
+    });
+    big.addEventListener('click', () => {
+      body.classList.toggle('big');
+      localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
+      syncBig();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'd' || e.key === 'D') dark.click();
+      if (e.key === '+' || e.key === '=') big.click();
+    });
+  })();
+
+  // === Volver arriba ===
+  (function () {
+    const btn = document.getElementById('scrollTop');
+    if (!btn) return;
+    const toggle = () => btn.classList.toggle('visible', window.scrollY > 400);
+    window.addEventListener('scroll', toggle, { passive: true });
+    toggle();
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+
+
+
+  document.querySelectorAll('.code-wrap').forEach(wrap => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Copiar';
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(wrap.querySelector('pre').textContent);
+        btn.textContent = '✓ Copiado'; btn.classList.add('ok');
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('ok'); }, 1500);
+      } catch (e) { btn.textContent = 'Error'; }
+    });
+    wrap.appendChild(btn);
+  });
+</script>
+
+</body>
+</html>

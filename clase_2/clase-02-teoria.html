@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 2 — De un login suelto a un mini-sistema web</title>
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 2 · Sistemas Computacionales · 7°</div>
+  <h1>De un login suelto a un mini-sistema web</h1>
+  <p class="sub">Soporte teórico de la segunda clase — CSS común, redirecciones, sesiones y navegación por URL. Material para repasar después de clase o consultar mientras armás el TP.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s1">Punto de partida</a></li>
+    <li><a href="#s2">CSS en archivo aparte</a></li>
+    <li><a href="#s3">Redirecciones server-side</a></li>
+    <li><a href="#s4">Navegación con links HTML</a></li>
+    <li><a href="#s5">Sesiones: la idea</a></li>
+    <li><a href="#s6">Sesiones: cómo se usan</a></li>
+    <li><a href="#s7">Login con sesión (patrón completo)</a></li>
+    <li><a href="#s8">Protegiendo páginas internas</a></li>
+    <li><a href="#s9">GET aplicado: secciones dinámicas</a></li>
+    <li><a href="#s10">Errores frecuentes</a></li>
+    <li><a href="#s11">Glosario</a></li>
+    <li><a href="#s12">Buenas prácticas</a></li>
+    <li><a href="#quiz">Mini-quiz</a></li>
+    <li><a href="#s14">Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<h2 id="s1">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+  1. Punto de partida
+</h2>
+
+<p>Veníamos trabajando con un <strong>login básico</strong>: una página con formulario de usuario y contraseña que valida los datos y muestra un mensaje. Funciona, pero todavía no es un sistema:</p>
+
+<ul>
+  <li>Una vez que validás, el sistema no recuerda quién entró.</li>
+  <li>Cualquiera que escriba la URL de una página interna entra sin pasar por el login.</li>
+  <li>El estilo visual es desparejo entre archivos.</li>
+  <li>No hay navegación clara entre páginas del proyecto.</li>
+</ul>
+
+<p>Estos son los cinco temas que vamos a incorporar para que ese login deje de ser una página suelta y pase a ser <strong>un mini-sistema web funcional</strong>:</p>
+
+<ul>
+  <li><strong>CSS común</strong> en un solo archivo que aplica a todas las páginas.</li>
+  <li><strong>Redirecciones</strong> server-side para mover al usuario entre páginas después de procesar algo.</li>
+  <li><strong>Sesiones</strong> para que el sistema recuerde quién está logueado al pasar de una página a otra.</li>
+  <li><strong>Protección de páginas internas</strong> para que sólo los usuarios logueados puedan entrar.</li>
+  <li><strong>Navegación por URL</strong> con GET (una sola página que muestra contenido distinto según un parámetro).</li>
+</ul>
+
+<blockquote>
+  <p>Al final de la clase vas a tener <strong>un mini-sistema web</strong>. Sigue chiquito, sigue sin base de datos, sigue con usuarios hardcodeados. Pero ya tiene forma de sistema.</p>
+</blockquote>
+
+<h3>Una sola carpeta del proyecto</h3>
+
+<p>Antes de tocar código, una cosa de hábito profesional que vale para todo el año:</p>
+
+<p>Todo lo de esta clase vive dentro de <strong>una carpeta única</strong>, por ejemplo <code>clase02/</code>. Adentro están los archivos PHP, una subcarpeta <code>includes/</code>, una subcarpeta <code>css/</code>. <strong>Es la carpeta entera la que es tu proyecto</strong>, no los archivos por separado.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Abrí el editor "en la carpeta", no archivo por archivo</div>
+  <p>Cuando abrís VS Code (u otro editor) hacé <strong>Archivo → Abrir carpeta...</strong> y elegí <code>clase02/</code>. <strong>No abras los archivos sueltos uno por uno.</strong></p>
+  <p>¿Por qué importa? Porque tus archivos se referencian entre sí con rutas relativas (<code>includes/cabecera.php</code>, <code>css/estilos.css</code>). Si abrís un archivo solo, el editor no entiende el contexto: las rutas no autocompletan, los includes no se navegan, y cuando algo no funciona no tenés cómo ver el árbol completo del proyecto.</p>
+  <p>Abrir la carpeta es lo que hace todo desarrollador profesional. <strong>Acostumbrate desde ahora.</strong></p>
+</div>
+
+<details>
+  <summary>Cómo se ve "abrir la carpeta" en VS Code</summary>
+  <ol>
+    <li>VS Code abierto, sin nada cargado.</li>
+    <li>Menú <strong>Archivo → Abrir carpeta...</strong> (o <code>Ctrl+K Ctrl+O</code>).</li>
+    <li>Navegás hasta <code>clase02/</code> y la seleccionás.</li>
+    <li>El panel de la izquierda (Explorador) ahora muestra todo el árbol del proyecto: archivos PHP en la raíz, <code>includes/</code> y <code>css/</code> como subcarpetas. Podés clickear cualquier archivo y navegar entre ellos sin perderte.</li>
+  </ol>
+</details>
+
+<h3>Estructura recomendada del proyecto</h3>
+
+<p>Así es como va a quedar tu carpeta <code>clase02/</code> al final de la clase. <strong>Esto es lo que vas a armar paso a paso</strong>; no esperés tenerlo todo de entrada:</p>
+
+<div class="code-wrap">
+<pre><code>clase02/
+├── index.php              ← formulario de login
+├── procesar-login.php     ← valida usuario + clave, abre sesión, redirige
+├── bienvenido.php         ← página interna protegida por sesión
+├── info.php               ← una página, contenido distinto según ?seccion=...
+├── logout.php             ← cierra la sesión y vuelve al login
+│
+├── includes/
+│   ├── cabecera.php       ← &lt;head&gt;, &lt;link CSS&gt;, navbar
+│   └── pie.php            ← cierre de &lt;body&gt; y &lt;html&gt;
+│
+└── css/
+    └── estilos.css        ← todos los estilos del sitio en un solo archivo</code></pre>
+</div>
+
+<p>Cada archivo tiene una responsabilidad clara. Cuando algo no funciona, ya sabés dónde buscar: si el estilo está raro, mirás <code>estilos.css</code>; si la navbar no aparece, mirás <code>cabecera.php</code>; si después de loguearte no entrás, mirás <code>procesar-login.php</code>.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">No es la única forma de organizarlo</div>
+  Esta estructura es <strong>una convención razonable</strong> para proyectos chicos de PHP, pero no es la única. En proyectos más grandes hay frameworks (Laravel, Symfony) que imponen estructuras propias. Por ahora, esta forma te alcanza para todo lo del año hasta MySQL.
+</div>
+
+<h3>Cómo funciona la web por debajo: HTTP en 2 minutos</h3>
+
+<p>Antes de meternos en CSS, sesiones y redirecciones, conviene tener claro cómo viaja la información entre tu navegador y el servidor. El protocolo se llama <strong>HTTP</strong> (HyperText Transfer Protocol). Es el lenguaje con el que se hablan navegador y servidor.</p>
+
+<h4>Petición y respuesta</h4>
+
+<p>Cada vez que escribís una URL o clickeás un link, el navegador <strong>manda una petición</strong> (request) al servidor y el servidor <strong>devuelve una respuesta</strong> (response). Eso es todo. Cada interacción con la web es ese ciclo.</p>
+
+<div class="code-wrap">
+<pre><code>Navegador                              Servidor
+   |                                       |
+   |---- PETICIÓN (GET / POST) ----------->|
+   |     "Dame esta URL"                   |
+   |     o "Acá van estos datos"           |
+   |                                       |  procesa
+   |&lt;---- RESPUESTA --------------------- |
+   |     status: 200 / 404 / 302 ...       |
+   |     headers: Content-Type, etc.       |
+   |     body: HTML, CSS, JSON, ...        |
+   |                                       |</code></pre>
+</div>
+
+<h4>Métodos HTTP (verbos)</h4>
+
+<p>La petición tiene un <strong>método</strong> que indica la intención. Los dos que usamos este año:</p>
+
+<table>
+  <tr><th>Método</th><th>Para qué</th><th>Dónde van los datos</th></tr>
+  <tr><td><strong>GET</strong></td><td>Pedir información (mostrar una página, buscar, filtrar)</td><td>En la URL, después del <code>?</code>: <code>info.php?seccion=ayuda</code></td></tr>
+  <tr><td><strong>POST</strong></td><td>Enviar datos al servidor (formularios, login, alta de algo)</td><td>En el cuerpo de la petición, ocultos en la URL</td></tr>
+</table>
+
+<p>Existen otros (PUT, DELETE, PATCH...) que aparecen cuando hablemos de APIs, pero los dos de arriba son el 95% del tráfico web normal.</p>
+
+<h4>Códigos de respuesta (status codes)</h4>
+
+<p>El servidor devuelve un número de 3 dígitos que dice cómo fue la cosa. Los que vas a ver más:</p>
+
+<table>
+  <tr><th>Código</th><th>Significa</th><th>Cuándo</th></tr>
+  <tr><td><strong>200</strong></td><td>OK</td><td>Todo bien, acá está tu respuesta.</td></tr>
+  <tr><td><strong>302</strong></td><td>Redirección</td><td>Cuando PHP hace <code>header('Location: ...')</code>. Le dice al navegador "andá a otra URL".</td></tr>
+  <tr><td><strong>404</strong></td><td>Not Found</td><td>El archivo o ruta no existe. Típico cuando tipeás mal una URL o falta un archivo.</td></tr>
+  <tr><td><strong>500</strong></td><td>Internal Server Error</td><td>PHP rompió. Hay un error en tu código. Mirá el log de errores.</td></tr>
+</table>
+
+<h4>Headers HTTP</h4>
+
+<p>Tanto la petición como la respuesta llevan, antes del contenido, una lista de <strong>headers</strong> (encabezados) con información sobre el pedido. Por ejemplo: qué tipo de contenido viene (<code>Content-Type: text/html</code>), qué idioma acepta el navegador, si hay cookies, etc.</p>
+
+<p>El header que más vamos a tocar este año se llama <strong><code>Location</code></strong>, y es el que usamos en las redirecciones server-side (sección 3). Cuando PHP manda un <code>Location:</code>, el navegador entiende que tiene que ir a otra URL.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Lo más importante: HTTP es "sin memoria"</div>
+  <p>Cada petición es <strong>independiente</strong> de las anteriores. El servidor, por sí solo, no sabe que vos ya pediste una página antes; cada vez que pedís algo, sos un desconocido nuevo para él.</p>
+  <p>Eso es un problema para cosas como un login: si me logueo y después pido la página de bienvenida, ¿cómo sabe el servidor que soy yo? La solución se llama <strong>sesiones</strong> (sección 5 — paciencia, ya llegamos).</p>
+</div>
+
+<details>
+  <summary>Cómo ver todo esto en el navegador</summary>
+  <p>Abrí cualquier página, apretá <strong>F12</strong> (DevTools) y andá a la pestaña <strong>Network / Red</strong>. Refrescá la página: vas a ver cada petición que hace el navegador (HTML, CSS, JS, imágenes...) con su método, su status code y sus headers. Hacé click en cualquier fila para ver los detalles. Es una herramienta indispensable cuando algo no funciona.</p>
+</details>
+
+<h2 id="s2">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+  2. CSS en archivo aparte
+</h2>
+
+<p>Hasta esta clase el CSS no estuvo en foco: cada uno tomó decisiones distintas. Algunos archivos pueden no tener estilos todavía, y si los tienen, probablemente fue con CSS <strong>inline</strong> (dentro del propio HTML con el atributo <code>style="..."</code>):</p>
+
+<div class="code-wrap">
+<pre><code>&lt;h1 style="color: blue; font-size: 32px;"&gt;Bienvenido&lt;/h1&gt;
+&lt;p style="color: gray; font-style: italic;"&gt;Iniciá sesión para continuar&lt;/p&gt;</code></pre>
+</div>
+
+<p>El CSS inline anda: la página se ve, los colores aparecen. Pero <strong>no escala</strong>. Si querés que ese mismo título tenga el mismo color en cinco archivos, lo escribís cinco veces; cuando lo cambies, lo cambiás cinco veces. Y el HTML termina lleno de detalles visuales que distraen de la estructura del contenido.</p>
+
+<h3>La forma profesional: archivo aparte</h3>
+
+<p>Todos los estilos viven en un único archivo <code>css/estilos.css</code>, linkeado <strong>una sola vez</strong> desde <code>cabecera.php</code>. Como <code>cabecera.php</code> se incluye en todas las páginas con <code>include</code>, todas las páginas heredan el link y aplican los mismos estilos automáticamente.</p>
+
+<h4>1) En <code>cabecera.php</code>, dentro del <code>&lt;head&gt;</code>, agregás el <code>&lt;link&gt;</code>:</h4>
+
+<div class="code-wrap">
+<pre><code>cabecera.php (fragmento)
+------------------------
+&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Sistema&lt;/title&gt;
+  &lt;link rel="stylesheet" href="css/estilos.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;nav&gt;
+    &lt;a href="index.php"&gt;Inicio&lt;/a&gt;
+    &lt;a href="info.php?seccion=ayuda"&gt;Ayuda&lt;/a&gt;
+    &lt;a href="info.php?seccion=contacto"&gt;Contacto&lt;/a&gt;
+    &lt;a href="logout.php"&gt;Salir&lt;/a&gt;
+  &lt;/nav&gt;</code></pre>
+</div>
+
+<h4>2) En <code>css/estilos.css</code>, escribís las reglas con <strong>selectores</strong>:</h4>
+
+<div class="code-wrap">
+<pre><code>css/estilos.css
+---------------
+/* Estilos generales del sitio */
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+/* Navbar superior */
+nav {
+  background: #1e4fc2;
+  padding: 12px 20px;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-right: 18px;
+  font-weight: 600;
+}
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Titulos */
+h1 {
+  color: #1e4fc2;
+  font-size: 32px;
+}
+
+/* Formularios */
+form {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 400px;
+  margin: 40px auto;
+}
+form label {
+  display: block;
+  margin-bottom: 12px;
+}
+form input[type="text"],
+form input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+form button {
+  background: #1e4fc2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}</code></pre>
+</div>
+
+<h4>3) En el HTML quitás los <code>style="..."</code> y dejás los elementos limpios:</h4>
+
+<div class="code-wrap">
+<pre><code>&lt;h1&gt;Bienvenido&lt;/h1&gt;
+&lt;p&gt;Iniciá sesión para continuar&lt;/p&gt;</code></pre>
+</div>
+
+<p>El estilo de <code>h1</code> ya está en <code>estilos.css</code> y se aplica automáticamente porque la regla <code>h1 { ... }</code> apunta a todos los <code>&lt;h1&gt;</code> de la página. Eso es un <strong>selector de tipo</strong>: selecciona todos los elementos de ese tipo.</p>
+
+<h3>Antes y después</h3>
+
+<table>
+  <tr><th>Antes (inline)</th><th>Después (CSS aparte)</th></tr>
+  <tr>
+    <td><code>&lt;h1 style="color: blue;"&gt;Hola&lt;/h1&gt;</code></td>
+    <td><strong>HTML:</strong> <code>&lt;h1&gt;Hola&lt;/h1&gt;</code><br><strong>CSS:</strong> <code>h1 { color: blue; }</code></td>
+  </tr>
+  <tr>
+    <td><code>&lt;nav style="background: blue;"&gt;...&lt;/nav&gt;</code></td>
+    <td><strong>HTML:</strong> <code>&lt;nav&gt;...&lt;/nav&gt;</code><br><strong>CSS:</strong> <code>nav { background: blue; }</code></td>
+  </tr>
+</table>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Regla DRY otra vez</div>
+  Es la misma idea que usamos en clase 1 con <code>cabecera.php</code> y <code>pie.php</code>: <strong>lo común vive una sola vez</strong>. Acá lo común son los estilos.
+</div>
+
+<h3>Tipos básicos de selectores</h3>
+
+<table>
+  <tr><th>Selector</th><th>Qué selecciona</th><th>Ejemplo</th></tr>
+  <tr>
+    <td><strong>Tipo</strong></td>
+    <td>Todos los elementos de ese tipo HTML</td>
+    <td><code>h1 { color: blue; }</code></td>
+  </tr>
+  <tr>
+    <td><strong>Clase</strong> (<code>.</code>)</td>
+    <td>Elementos con un <code>class="..."</code> específica</td>
+    <td><code>.error { color: red; }</code> aplica a <code>&lt;p class="error"&gt;</code></td>
+  </tr>
+  <tr>
+    <td><strong>ID</strong> (<code>#</code>)</td>
+    <td>Un único elemento con <code>id="..."</code></td>
+    <td><code>#login-box { ... }</code> aplica a <code>&lt;div id="login-box"&gt;</code></td>
+  </tr>
+</table>
+
+<div class="callout callout-tip">
+  <div class="callout-title">El selector de clase es el que más vas a usar</div>
+  <p>Las clases (<code>.</code>) son la forma estándar de aplicar estilos en CSS profesional. Los selectores de tipo (<code>h1</code>, <code>p</code>) sirven para los <strong>estilos base</strong> que valen para todo el sitio (todas las páginas, todos los <code>h1</code>). Los IDs (<code>#</code>) prácticamente no se usan en la práctica para estilos: están reservados para identificar elementos únicos para JavaScript o anchors.</p>
+  <p>Las clases son lo que te permite tener <strong>variaciones</strong>: dos botones distintos, tres tipos de mensajes, cuatro variantes de tarjetas, sin tener que tocar la regla base de <code>button</code> o <code>div</code>.</p>
+</div>
+
+<h3>Clases en la práctica: ejemplos típicos</h3>
+
+<h4>1) Mensajes según tipo</h4>
+
+<p>Imaginá que en distintas páginas tu sistema muestra mensajes al usuario: avisos de éxito, advertencias, errores. En vez de inventar el estilo cada vez, definís <strong>tres clases</strong> y las reutilizás:</p>
+
+<div class="code-wrap">
+<pre><code>/* En estilos.css */
+.mensaje {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+.mensaje.exito        { background: #e6f4ea; color: #1e6f3a; }
+.mensaje.advertencia  { background: #fff4e0; color: #8a5400; }
+.mensaje.error        { background: #fde6e6; color: #9b1b1b; }</code></pre>
+</div>
+
+<div class="code-wrap">
+<pre><code>&lt;!-- En cualquier .php --&gt;
+&lt;p class="mensaje exito"&gt;Tu inscripción fue registrada.&lt;/p&gt;
+&lt;p class="mensaje advertencia"&gt;Revisá que el DNI esté completo.&lt;/p&gt;
+&lt;p class="mensaje error"&gt;Usuario o contraseña incorrectos.&lt;/p&gt;</code></pre>
+</div>
+
+<p>Cada <code>&lt;p&gt;</code> tiene <strong>dos clases separadas por espacio</strong>: <code>mensaje</code> (la base, común a los tres) y una más específica que define color (<code>exito</code>, <code>advertencia</code> o <code>error</code>). Eso se llama <strong>combinar clases</strong>.</p>
+
+<h4>2) Botones con variantes</h4>
+
+<div class="code-wrap">
+<pre><code>/* En estilos.css */
+.boton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.boton.primario   { background: #1e4fc2; color: white; }
+.boton.secundario { background: #e1e3e0; color: #14161a; }
+.boton.peligro    { background: #c2261e; color: white; }</code></pre>
+</div>
+
+<div class="code-wrap">
+<pre><code>&lt;button class="boton primario"&gt;Iniciar sesión&lt;/button&gt;
+&lt;button class="boton secundario"&gt;Cancelar&lt;/button&gt;
+&lt;button class="boton peligro"&gt;Cerrar sesión&lt;/button&gt;</code></pre>
+</div>
+
+<h4>3) Tarjetas reutilizables</h4>
+
+<div class="code-wrap">
+<pre><code>/* En estilos.css */
+.tarjeta {
+  background: white;
+  border: 1px solid #e1e3e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.tarjeta h3 {
+  margin-top: 0;
+  color: #1e4fc2;
+}</code></pre>
+</div>
+
+<div class="code-wrap">
+<pre><code>&lt;div class="tarjeta"&gt;
+  &lt;h3&gt;Mi proyecto anual&lt;/h3&gt;
+  &lt;p&gt;Sistema de inscripciones para el kiosco escolar.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class="tarjeta"&gt;
+  &lt;h3&gt;Otro proyecto&lt;/h3&gt;
+  &lt;p&gt;Gestor de turnos para la salita.&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+</div>
+
+<p>Mirá lo que pasó: definiste <code>.tarjeta</code> <strong>una sola vez</strong> en el CSS y la usaste dos veces (podrían ser veinte) en el HTML. Eso es DRY funcionando.</p>
+
+<details>
+  <summary>Convenciones para nombrar clases</summary>
+  <ul>
+    <li><strong>En minúscula</strong>, con palabras separadas por guion (<code>-</code>): <code>.boton-primario</code>, <code>.tarjeta-grande</code>, <code>.mensaje-error</code>.</li>
+    <li><strong>Que describan el rol</strong>, no el aspecto. Mejor <code>.error</code> que <code>.rojo</code> — porque si después cambiás el color del error, el nombre <code>.rojo</code> se vuelve mentira.</li>
+    <li><strong>Cortas pero claras.</strong> Ni <code>.b</code> (no se entiende), ni <code>.elBotonRojoDelLoginPrincipal</code> (innecesariamente larga).</li>
+  </ul>
+</details>
+
+<div class="callout callout-info">
+  <div class="callout-title">Regla mental para decidir entre tipo y clase</div>
+  <ul>
+    <li>¿Es algo que vale para <strong>todos</strong> los elementos de ese tipo en tu sitio? → <strong>selector de tipo</strong> (<code>body</code>, <code>h1</code>, <code>form</code>, <code>nav</code>).</li>
+    <li>¿Es algo que aplicás a <strong>algunos</strong> elementos, según el rol que tienen? → <strong>selector de clase</strong> (<code>.boton</code>, <code>.tarjeta</code>, <code>.error</code>).</li>
+  </ul>
+</div>
+
+<h3>Cuidado con las rutas</h3>
+
+<p>Si el CSS no carga, casi siempre es por la ruta. La ruta del <code>&lt;link rel="stylesheet" href="..."&gt;</code> es <strong>relativa a la página que el navegador está mostrando</strong>, no al archivo <code>cabecera.php</code> en sí.</p>
+
+<p>Si todas tus páginas están en la raíz de <code>clase02/</code>, <code>href="css/estilos.css"</code> funciona. Si tenés páginas en subcarpetas, tenés que ajustar.</p>
+
+<details>
+  <summary>Cómo verificar que el CSS está cargando</summary>
+  <ol>
+    <li>Abrí la página en el navegador.</li>
+    <li>Apretá <strong>F12</strong> para abrir las DevTools.</li>
+    <li>Andá a la pestaña <strong>Network</strong> (o <strong>Red</strong>).</li>
+    <li>Refrescá la página (F5).</li>
+    <li>Buscá el archivo <code>estilos.css</code> en la lista. Si dice <strong>200</strong>, cargó bien. Si dice <strong>404</strong>, la ruta está mal.</li>
+  </ol>
+</details>
+
+<details>
+  <summary>Truco: ruta absoluta desde la raíz del servidor</summary>
+  <p>Si te complicás con rutas relativas, podés usar una ruta absoluta tipo <code>href="/clase02/css/estilos.css"</code>. La barra del principio significa "desde la raíz del servidor" y funciona desde cualquier subcarpeta.</p>
+</details>
+
+<h2 id="s3">
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  3. Redirecciones server-side
+</h2>
+
+<h3>Qué es un header HTTP</h3>
+
+<p>Cuando el servidor responde a una petición, antes del contenido (el HTML, la imagen, etc.) manda una <strong>lista de headers</strong>: información sobre la respuesta. Por ejemplo: qué tipo de contenido viene, qué encoding tiene, si hay cookies, cuánto tiempo cachearlo... Los headers son <strong>metadatos</strong>, no son el contenido en sí.</p>
+
+<p>Ejemplos de headers HTTP típicos en una respuesta:</p>
+
+<div class="code-wrap">
+<pre><code>HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 1452
+Set-Cookie: PHPSESSID=abc123; HttpOnly
+Cache-Control: no-cache
+
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+... el HTML del body ...</code></pre>
+</div>
+
+<p>Las líneas de arriba (antes del <code>&lt;!DOCTYPE html&gt;</code>) son los headers. El servidor las manda automáticamente; el navegador las lee y actúa en consecuencia.</p>
+
+<h3>El header <code>Location</code>: redirigir al navegador</h3>
+
+<p>PHP tiene una función llamada <code>header()</code> que sirve para <strong>agregar headers a la respuesta</strong>. El header que más vamos a usar este año se llama <code>Location</code>, y cuando lo mandamos le decimos al navegador <em>"andate a otra URL"</em>:</p>
+
+<div class="code-wrap">
+<pre><code>header('Location: bienvenido.php');
+exit;</code></pre>
+</div>
+
+<p>Esto manda como respuesta:</p>
+
+<div class="code-wrap">
+<pre><code>HTTP/1.1 302 Found
+Location: bienvenido.php
+
+(sin body HTML)</code></pre>
+</div>
+
+<p>El navegador, al recibir un <strong>302</strong> con un <code>Location</code>, automáticamente hace una nueva petición a esa URL. <strong>El usuario nunca ve un "HTML intermedio"</strong>: ve directamente la página destino. La transición es transparente.</p>
+
+<h3>El esquema del redirect (status 302)</h3>
+
+<div class="code-wrap">
+<pre><code>Navegador                              Servidor
+   |                                       |
+   |---- POST /procesar-login.php -------->|
+   |     usuario=admin, clave=1234         |
+   |                                       |  valida
+   |                                       |  $_SESSION['usuario'] = 'admin'
+   |                                       |
+   |&lt;---- 302 Found ---------------------- |
+   |     Location: bienvenido.php          |
+   |     (sin body HTML)                   |
+   |                                       |
+   |  ← el navegador entiende y pide       |
+   |     automáticamente la nueva URL      |
+   |                                       |
+   |---- GET /bienvenido.php ------------->|
+   |                                       |  verifica $_SESSION
+   |&lt;---- 200 OK ------------------------- |
+   |     HTML: "Hola, admin"               |
+   |                                       |</code></pre>
+</div>
+
+<p>Lo interesante: el navegador hace <strong>dos peticiones</strong> aunque el usuario solo apretó "Entrar" una vez. La primera POST devuelve un 302, y al recibirlo el navegador automáticamente lanza una nueva petición GET a la URL del <code>Location</code>. Esa segunda página es la que el usuario termina viendo.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Tres reglas innegociables con <code>header()</code></div>
+  <ol>
+    <li><strong><code>header()</code> tiene que ir antes de cualquier <code>echo</code> o HTML.</strong> Si ya escupiste una línea de HTML, después no podés mandar headers (te tira el famoso error <em>"Headers already sent"</em>).</li>
+    <li><strong>Siempre <code>exit;</code> después del <code>header('Location:')</code>.</strong> Si no, PHP sigue ejecutando código después y se manda problemas.</li>
+    <li><strong>La ruta del <code>Location</code> es relativa al sitio</strong>, no al archivo PHP que la ejecuta.</li>
+  </ol>
+</div>
+
+<details>
+  <summary>¿Cuándo usar <code>header('Location:')</code>?</summary>
+  <ul>
+    <li>Después de procesar un formulario exitoso (login OK → ir a bienvenido).</li>
+    <li>Cuando una página interna recibe un usuario no logueado (echarlo al login).</li>
+    <li>Después de un logout (limpiar sesión → volver al login).</li>
+    <li>Cuando una página recibe datos inválidos y querés mandar al usuario "atrás" a corregir.</li>
+  </ul>
+</details>
+
+<h2 id="s4">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+  4. Navegación con links HTML
+</h2>
+
+<p>Hay <strong>dos formas</strong> de moverse entre páginas del proyecto. Las usamos ambas:</p>
+
+<table>
+  <tr><th>Forma</th><th>Quién decide</th><th>Cuándo se usa</th></tr>
+  <tr>
+    <td><strong>Link HTML</strong><br><code>&lt;a href="..."&gt;</code></td>
+    <td>El usuario (clickea)</td>
+    <td>Navbar, botones, menúes. Navegación visible.</td>
+  </tr>
+  <tr>
+    <td><strong>Redirección server-side</strong><br><code>header('Location:')</code></td>
+    <td>El servidor (PHP)</td>
+    <td>Después de procesar algo: validar login, redirigir tras logout, echar a un usuario no autorizado.</td>
+  </tr>
+</table>
+
+<blockquote>
+  <p>El link HTML es navegación que <strong>el usuario inicia</strong>. La redirección server-side es navegación que <strong>el servidor decide</strong> por el usuario.</p>
+</blockquote>
+
+<h2 id="s5">
+  <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+  5. Sesiones: la idea
+</h2>
+
+<p>Pensá en un servidor que recibe pedidos de mucha gente al mismo tiempo. Vos te logueás, pero la página siguiente que pidas no sabe que sos vos: HTTP es un protocolo <strong>sin memoria</strong>. Cada pedido es independiente. Para el servidor, sin sesiones, cada vez que pedís una página sos un desconocido nuevo.</p>
+
+<p>Una <strong>sesión</strong> resuelve eso. Es una <strong>caja de datos que el servidor recuerda</strong> mientras vos tenés el navegador abierto. Cada usuario tiene su propia caja. El servidor sabe cuál caja es tuya por una <em>llavecita</em> (cookie) que el navegador le manda en cada pedido.</p>
+
+<h3>Cómo funciona por dentro</h3>
+
+<div class="code-wrap">
+<pre><code>NAVEGADOR (del usuario)               SERVIDOR
+                                       ┌──────────────────────────┐
+   cookie:                             │  Cajas de sesión          │
+   PHPSESSID = abc123       ──────►   │                          │
+                                       │  abc123 → {usuario:admin}│
+                                       │  xyz789 → {usuario:prof} │
+                                       │  ...                     │
+                                       └──────────────────────────┘
+                                       (cada caja es un usuario distinto)
+
+En cada petición:
+  - El navegador manda su cookie PHPSESSID en los headers.
+  - El servidor usa ese ID para encontrar la caja correcta.
+  - El servidor lee/escribe $_SESSION en esa caja.
+  - El usuario nunca ve el contenido de la caja, solo tiene la llavecita.</code></pre>
+</div>
+
+<p>La cookie <code>PHPSESSID</code> es la <strong>llave</strong>. El contenido real (<code>$_SESSION</code>) <strong>vive en el servidor</strong>, no en la cookie. Por eso es seguro guardar ahí cosas sensibles como "este usuario está logueado": el cliente no puede falsificar el contenido, solo la llave.</p>
+
+<table>
+  <tr><th>Pregunta</th><th>Respuesta</th></tr>
+  <tr><td>¿Dónde vive la caja?</td><td>En el servidor.</td></tr>
+  <tr><td>¿Quién accede a mi caja?</td><td>Sólo vos (mientras tu navegador esté abierto).</td></tr>
+  <tr><td>¿Cuánto dura?</td><td>Hasta que cerrás el navegador o pasa un rato sin actividad.</td></tr>
+  <tr><td>¿Sirve para guardar datos en serio?</td><td>No. Para eso usamos base de datos (más adelante).</td></tr>
+  <tr><td>¿Se pierde si cerrás el navegador?</td><td>Sí. Eso es lo que diferencia una sesión de una BD.</td></tr>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">¿Cuándo usar una sesión?</div>
+  <ul>
+    <li>Cuando necesitás recordar quién es el usuario entre páginas (caso del login).</li>
+    <li>Cuando querés contar algo durante la visita (cuántas veces clickeó X, cuántos formularios completó).</li>
+    <li>Cuando un dato tiene que viajar de una página a otra sin pasarlo por URL ni por formulario.</li>
+  </ul>
+</div>
+
+<h2 id="s6">
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  6. Sesiones: cómo se usan
+</h2>
+
+<p>En PHP, una sesión es básicamente una variable especial llamada <code>$_SESSION</code>, que se comporta como un array asociativo.</p>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();                  // abrir/recuperar la sesion
+
+  $_SESSION['usuario'] = 'admin';   // guardar
+  echo $_SESSION['usuario'];        // leer
+  unset($_SESSION['usuario']);      // borrar una clave
+  session_destroy();                // destruir toda la sesion</code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Las 3 reglas innegociables</div>
+  <ol>
+    <li><strong>Siempre <code>session_start();</code> al principio</strong> de cualquier archivo que use <code>$_SESSION</code>. Tiene que ir <strong>antes de cualquier <code>echo</code> o HTML</strong> (igual que <code>header()</code>).</li>
+    <li><strong>Verificar antes de usar</strong>: usar <code>isset($_SESSION['clave'])</code> antes de leer <code>$_SESSION['clave']</code>, sino PHP tira warning si la clave no existe.</li>
+    <li><strong>Para cerrar sesión</strong>: <code>session_destroy()</code> y después redirigir al login. No quedarse en la misma página con la sesión destruida.</li>
+  </ol>
+</div>
+
+<h3>Ejemplo aparte del login: contador de visitas</h3>
+
+<p>El uso más conocido de <code>$_SESSION</code> es el login, pero no es el único. Sirve para cualquier cosa que tenga que <strong>recordarse entre páginas</strong> del mismo usuario. Veamos un ejemplo simple: contar cuántas veces el usuario recargó una página durante su sesión actual del navegador.</p>
+
+<div class="code-wrap">
+<pre><code>contador.php
+============
+&lt;?php
+  session_start();
+
+  // Si la clave 'visitas' todavia no existe, la inicializamos en 0
+  if (!isset($_SESSION['visitas'])) {
+    $_SESSION['visitas'] = 0;
+  }
+
+  // Aumentamos en 1 cada vez que se carga la pagina
+  $_SESSION['visitas']++;
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+  &lt;h1&gt;Visitaste esta página &lt;?= $_SESSION['visitas'] ?&gt; veces&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</div>
+
+<details>
+  <summary>Probalo y mirá cómo se comporta</summary>
+  <ul>
+    <li>La primera vez que entrás: muestra <strong>"Visitaste esta página 1 veces"</strong>.</li>
+    <li>Apretás F5 (recargar): muestra <strong>2</strong>. Y 3. Y 4.</li>
+    <li>Abrís una pestaña nueva y entrás de nuevo: sigue contando desde donde quedó (la sesión es la misma, son la misma "caja").</li>
+    <li>Cerrás el navegador entero, lo volvés a abrir y entrás: vuelve a <strong>1</strong>. La sesión anterior se perdió.</li>
+    <li>Otro usuario en otra PC entra: tiene su propio contador, empieza en 1. Las sesiones no se comparten entre usuarios.</li>
+  </ul>
+</details>
+
+<div class="callout callout-info">
+  <div class="callout-title">Tres cosas que ilustra este ejemplo</div>
+  <ol>
+    <li><strong>Patrón "inicializar si no existe"</strong>: el <code>if (!isset(...))</code> evita el warning de la regla 2. Antes de usar una clave que tal vez no exista todavía, la creás con un valor por defecto.</li>
+    <li><strong>El valor de sesión es como cualquier variable</strong>: podés sumarle, restarle, concatenar, lo que necesites. <code>$_SESSION['visitas']++</code> es lo mismo que <code>$_SESSION['visitas'] = $_SESSION['visitas'] + 1</code>.</li>
+    <li><strong>La sesión es por usuario y por navegador</strong>: dos personas, dos contadores; el mismo usuario en dos navegadores distintos, dos contadores; el mismo usuario en el mismo navegador con varias pestañas, un solo contador compartido.</li>
+  </ol>
+</div>
+
+<h2 id="s7">
+  <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  7. Login con sesión: patrón completo
+</h2>
+
+<p>Este es el flujo del login completo. Tres archivos: el form, el procesador, la página interna. Más logout.</p>
+
+<h3>El flujo en un diagrama</h3>
+
+<div class="code-wrap">
+<pre><code>index.php  --POST--&gt;  procesar-login.php
+                      session_start + valida
+                      $_SESSION['usuario'] = X
+                      header(Location: bienvenido.php)
+
+bienvenido.php  --&gt; session_start
+                    if (!isset $_SESSION) ir a index
+
+logout.php  --&gt; session_destroy + ir a index</code></pre>
+</div>
+
+<p>Cada flecha es un viaje del usuario entre páginas. El <code>POST</code> es la única transición que dispara el usuario (apretando "Entrar" en el formulario). Las demás son redirects server-side (<code>header('Location:')</code>) o verificaciones.</p>
+
+<h3><code>index.php</code> — el formulario de login</h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;h1&gt;Iniciar sesión&lt;/h1&gt;
+
+&lt;form action="procesar-login.php" method="POST"&gt;
+  &lt;label&gt;Usuario:
+    &lt;input type="text" name="usuario"&gt;
+  &lt;/label&gt;
+  &lt;label&gt;Contraseña:
+    &lt;input type="password" name="clave"&gt;
+  &lt;/label&gt;
+  &lt;button type="submit"&gt;Entrar&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<h3><code>procesar-login.php</code> — valida y abre sesión</h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+
+  $usuario = $_POST['usuario'] ?? '';
+  $clave   = $_POST['clave']   ?? '';
+
+  if ($usuario == 'admin' &amp;&amp; $clave == '1234') {
+    $_SESSION['usuario'] = $usuario;
+    header('Location: bienvenido.php');
+    exit;
+  } else {
+    header('Location: index.php');
+    exit;
+  }</code></pre>
+</div>
+
+<details>
+  <summary>Línea por línea</summary>
+  <ul>
+    <li><code>session_start()</code>: abre o recupera la sesión de este usuario.</li>
+    <li><code>$_POST['usuario'] ?? ''</code>: agarra el dato del form, con default vacío si no vino.</li>
+    <li><code>if ($usuario == 'admin' &amp;&amp; $clave == '1234')</code>: valida contra usuario y contraseña hardcodeados. El <code>&amp;&amp;</code> es "y lógico": las dos condiciones tienen que cumplirse.</li>
+    <li><code>$_SESSION['usuario'] = $usuario</code>: guarda el nombre del usuario en su caja de sesión.</li>
+    <li><code>header('Location: bienvenido.php')</code> + <code>exit</code>: redirige a la página interna.</li>
+    <li>Si la validación falla: redirige de vuelta al login.</li>
+  </ul>
+</details>
+
+<h3><code>logout.php</code> — cierra la sesión</h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  session_destroy();
+  header('Location: index.php');
+  exit;</code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Aviso importante sobre la contraseña en duro</div>
+  La validación <code>$usuario == 'admin' &amp;&amp; $clave == '1234'</code> <strong>nunca</strong> se usa así en producción. La contraseña real se guarda <strong>hasheada</strong> en base de datos y se compara con <code>password_verify()</code>. Hoy escribimos así porque no tenemos base de datos y la idea es entender el mecanismo de sesión, no el de seguridad. La autenticación real la vemos cuando entremos a MySQL.
+</div>
+
+<h2 id="s8">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  8. Protegiendo páginas internas
+</h2>
+
+<p>Tener un login que abre sesión no alcanza. <strong>Cada página interna tiene que verificar que el usuario esté logueado</strong>, sino cualquiera puede entrar escribiendo la URL directamente.</p>
+
+<h3>Los dos escenarios posibles</h3>
+
+<div class="code-wrap">
+<pre><code>CASO A — Usuario logueado entra a bienvenido.php
+─────────────────────────────────────────────────
+Navegador                          Servidor (bienvenido.php)
+   |                                   |
+   |---- GET /bienvenido.php --------->|
+   |     cookie: PHPSESSID=abc123      |  session_start()
+   |                                   |  $_SESSION['usuario'] = 'admin' ✓
+   |                                   |  isset() → true → CONTINÚA
+   |&lt;---- 200 OK ----------------------|
+   |     HTML "Hola, admin"            |
+
+
+CASO B — Alguien escribe la URL directa SIN loguearse
+─────────────────────────────────────────────────────
+Navegador                          Servidor (bienvenido.php)
+   |                                   |
+   |---- GET /bienvenido.php --------->|
+   |     (sin cookie o cookie vacía)   |  session_start()
+   |                                   |  $_SESSION['usuario'] no existe
+   |                                   |  isset() → false → REDIRIGE
+   |&lt;---- 302 ------------------------ |
+   |     Location: index.php           |
+   |                                   |
+   |---- GET /index.php -------------->|  ← termina en el login
+   |&lt;---- 200 OK (formulario login) -- |</code></pre>
+</div>
+
+<p>Las 4 líneas del patrón de protección hacen exactamente esa decisión: <strong>si tenés sesión, te dejo entrar; si no, te mando al login</strong>. Sin esas líneas, la página es pública aunque exista un login en el sitio.</p>
+
+<div class="code-wrap">
+<pre><code>bienvenido.php (protegido por sesión)
+-------------------------------------
+&lt;?php
+  session_start();
+
+  if (!isset($_SESSION['usuario'])) {
+    header('Location: index.php');
+    exit;
+  }
+?&gt;
+&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;h1&gt;Hola, &lt;?= $_SESSION['usuario'] ?&gt;&lt;/h1&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<blockquote>
+  <p>Esas 4 líneas de <code>session_start + if !isset</code> son <strong>el patrón de protección</strong>. Van al principio de <strong>toda</strong> página interna del sistema. Si no están, esa página es pública.</p>
+</blockquote>
+
+<div class="callout callout-tip">
+  <div class="callout-title">El "ajá" del login</div>
+  Una vez que entendés esto, entendés el login completo: el form pide datos, el procesador valida y guarda en sesión, las páginas internas verifican la sesión antes de mostrar nada, el logout destruye la sesión. Esa es toda la mecánica de autenticación clásica en PHP.
+</div>
+
+<h2 id="s9">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  9. GET aplicado: secciones dinámicas
+</h2>
+
+<p>En clase 1 vimos GET conceptualmente: los datos viajan en la URL después del <code>?</code>. Hoy lo usamos para algo concreto: una sola página que muestra contenido distinto según un parámetro.</p>
+
+<p>En la navbar (que vive en <code>cabecera.php</code>) hay tres links:</p>
+
+<div class="code-wrap">
+<pre><code>&lt;a href="info.php?seccion=ayuda"&gt;Ayuda&lt;/a&gt;
+&lt;a href="info.php?seccion=contacto"&gt;Contacto&lt;/a&gt;
+&lt;a href="info.php?seccion=nosotros"&gt;Nosotros&lt;/a&gt;</code></pre>
+</div>
+
+<p>Los tres llevan a <strong>la misma página</strong> (<code>info.php</code>), pero con un parámetro distinto en la URL.</p>
+
+<h3>El flujo de GET en un diagrama</h3>
+
+<div class="code-wrap">
+<pre><code>NAVBAR (links)               info.php
+[Ayuda]    --GET-->          $_GET['seccion'] = 'ayuda'
+[Contacto] --GET-->          $_GET['seccion'] = 'contacto'
+[Nosotros] --GET-->          $_GET['seccion'] = 'nosotros'
+
+                             el if/elseif decide qué bloque
+                             de HTML mostrar segun el valor</code></pre>
+</div>
+
+<p>Cada link es un GET distinto a la misma página. El parámetro <code>?seccion=...</code> es el dato que el usuario "le pasa" a <code>info.php</code> para que decida qué mostrar. PHP recibe ese valor en <code>$_GET['seccion']</code>.</p>
+
+<table>
+  <tr><th>URL que clickea el usuario</th><th>Valor que llega a PHP</th><th>Bloque que se muestra</th></tr>
+  <tr><td><code>info.php?seccion=ayuda</code></td><td><code>$_GET['seccion'] = 'ayuda'</code></td><td>Bloque Ayuda</td></tr>
+  <tr><td><code>info.php?seccion=contacto</code></td><td><code>$_GET['seccion'] = 'contacto'</code></td><td>Bloque Contacto</td></tr>
+  <tr><td><code>info.php?seccion=nosotros</code></td><td><code>$_GET['seccion'] = 'nosotros'</code></td><td>Bloque Nosotros</td></tr>
+  <tr><td><code>info.php</code> (sin parámetro)</td><td><code>$_GET['seccion'] = null</code></td><td>Bloque por defecto (gracias al <code>??</code>)</td></tr>
+</table>
+
+<h3><code>info.php</code> — patrón completo</h3>
+
+<div class="code-wrap">
+<pre><code>&lt;?php
+  session_start();
+  if (!isset($_SESSION['usuario'])) {
+    header('Location: index.php');
+    exit;
+  }
+
+  $seccion = $_GET['seccion'] ?? 'ayuda';
+?&gt;
+&lt;?php include 'includes/cabecera.php'; ?&gt;
+
+&lt;?php if ($seccion == 'ayuda'): ?&gt;
+  &lt;h1&gt;Ayuda&lt;/h1&gt;
+  &lt;p&gt;Cómo usar el sistema...&lt;/p&gt;
+&lt;?php elseif ($seccion == 'contacto'): ?&gt;
+  &lt;h1&gt;Contacto&lt;/h1&gt;
+  &lt;p&gt;Escribinos a contacto@ejemplo.com&lt;/p&gt;
+&lt;?php elseif ($seccion == 'nosotros'): ?&gt;
+  &lt;h1&gt;Nosotros&lt;/h1&gt;
+  &lt;p&gt;Somos un equipo de 7° año...&lt;/p&gt;
+&lt;?php endif; ?&gt;
+
+&lt;?php include 'includes/pie.php'; ?&gt;</code></pre>
+</div>
+
+<details>
+  <summary>Tres cosas para mirar acá</summary>
+  <ol>
+    <li><code>info.php</code> también está protegida por sesión: las 4 líneas iniciales son el mismo patrón que en <code>bienvenido.php</code>.</li>
+    <li><code>$_GET['seccion'] ?? 'ayuda'</code> agarra el valor de la URL, y si no hay nada usa <code>'ayuda'</code> por defecto. Sin el default, PHP tiraría warning si entran a <code>info.php</code> sin <code>?seccion=...</code>.</li>
+    <li>El <code>if/elseif</code> con la sintaxis <code>&lt;?php if (...): ?&gt; ... &lt;?php endif; ?&gt;</code> es <strong>sintaxis alternativa</strong>, equivalente a las llaves pero más legible cuando hay mucho HTML adentro. Las dos formas son válidas.</li>
+  </ol>
+</details>
+
+<div class="callout callout-info">
+  <div class="callout-title">¿Por qué no tres archivos separados?</div>
+  Podrías hacer <code>ayuda.php</code>, <code>contacto.php</code>, <code>nosotros.php</code>. Pero entonces tendrías que repetir el <code>session_start</code>, la protección, el include de cabecera y la estructura en cada archivo. Con un solo <code>info.php</code> parametrizado por GET, el código común vive una sola vez (DRY otra vez).
+</div>
+
+<h2 id="s10">
+  <svg class="icon" viewBox="0 0 24 24"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2M5 7l3 2M19 13h-3M5 13h3M19 19l-3-2M5 19l3-2M12 20V8"/></svg>
+  10. Errores frecuentes
+</h2>
+
+<details>
+  <summary><strong>"Headers already sent by..."</strong> (el error más típico de hoy)</summary>
+  <p>Te aparece cuando ya escupiste algo (un <code>echo</code>, un espacio, una línea en blanco antes del <code>&lt;?php</code>) y después intentás llamar a <code>header()</code> o <code>session_start()</code>.</p>
+  <p><strong>Soluciones:</strong></p>
+  <ul>
+    <li>Asegurate que el <code>&lt;?php</code> sea <strong>la primerísima cosa</strong> del archivo. Sin espacios, sin líneas en blanco antes.</li>
+    <li>Si el archivo no tiene HTML, <strong>no cierres con <code>?&gt;</code></strong>. Dejá el archivo abierto; PHP no se queja.</li>
+    <li>Revisá si tu editor está agregando un BOM al guardar (caracteres invisibles al principio del archivo). Notepad++ y VS Code permiten cambiarlo.</li>
+  </ul>
+</details>
+
+<details>
+  <summary><code>$_SESSION</code> se "pierde" entre páginas</summary>
+  <p>Te logueás, redirige a <code>bienvenido.php</code>, y <code>$_SESSION['usuario']</code> está vacío.</p>
+  <p><strong>Causa típica:</strong> falta <code>session_start()</code> en alguna de las páginas. Hay que ponerlo en <strong>todas</strong> las que usan <code>$_SESSION</code>, no solo en el procesador.</p>
+</details>
+
+<details>
+  <summary>Olvidar <code>exit;</code> después de <code>header('Location:')</code></summary>
+  <p>PHP sigue ejecutando código después del header. Esto puede causar comportamiento raro: la redirección sí ocurre, pero antes se procesan cosas que no querías que se procesaran.</p>
+  <p>Regla mental: <strong>header y exit van siempre juntos</strong>. Como un signo de puntuación.</p>
+</details>
+
+<details>
+  <summary>Login que valida pero no protege</summary>
+  <p>El usuario se loguea bien, pero después puede entrar a <code>bienvenido.php</code> escribiendo la URL directamente sin pasar por el login.</p>
+  <p><strong>Causa:</strong> falta el patrón de protección al inicio de <code>bienvenido.php</code> (las 4 líneas de <code>session_start</code> + <code>if !isset</code> + redirect). Sin eso, la página es pública aunque exista un login.</p>
+</details>
+
+<details>
+  <summary>CSS no carga</summary>
+  <p>Casi siempre es la ruta del <code>&lt;link&gt;</code>. Verificá en el navegador con F12 → Network → buscar el archivo CSS. Si dice 404, la ruta está mal.</p>
+</details>
+
+<details>
+  <summary><code>$_GET['seccion']</code> tira warning</summary>
+  <p>Si entrás a <code>info.php</code> sin el <code>?seccion=...</code>, la clave no existe y PHP tira warning. Solución: usar el operador <code>??</code> con un default, igual que con <code>$_POST</code>: <code>$_GET['seccion'] ?? 'ayuda'</code>.</p>
+</details>
+
+<h2 id="s11">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  11. Glosario (lo nuevo de hoy)
+</h2>
+
+<p>Vocabulario que se suma al de <a href="../clase_1/clase-01-teoria.html#s10">Clase 1</a>:</p>
+
+<table>
+  <tr><th>Palabra</th><th>Definición</th></tr>
+  <tr><td><strong>Sesión</strong></td><td>Caja de datos que el servidor recuerda para un usuario mientras tiene el navegador abierto.</td></tr>
+  <tr><td><code>$_SESSION</code></td><td>Variable especial de PHP donde se guardan/leen los datos de la sesión.</td></tr>
+  <tr><td><code>session_start()</code></td><td>Abre la sesión (o la recupera si ya existe). Va al principio de cada archivo que use <code>$_SESSION</code>.</td></tr>
+  <tr><td><code>session_destroy()</code></td><td>Destruye toda la sesión. Se usa en el logout.</td></tr>
+  <tr><td><strong>Header HTTP</strong></td><td>Información que el servidor manda al navegador antes del contenido. <code>Location:</code> es uno de los muchos headers posibles.</td></tr>
+  <tr><td><code>header('Location:')</code></td><td>Header HTTP que redirige al navegador a otra URL.</td></tr>
+  <tr><td><strong>Redirección server-side</strong></td><td>El servidor le dice al navegador que vaya a otra página. Sin mostrar HTML intermedio.</td></tr>
+  <tr><td><strong>Protección de página</strong></td><td>Patrón de código que verifica si el usuario está logueado y lo echa al login si no.</td></tr>
+  <tr><td><strong>Hardcodeado</strong></td><td>Valor escrito directamente en el código (como <code>'admin'</code> en el login). Lo opuesto a leer un valor desde una base de datos o archivo.</td></tr>
+  <tr><td><strong>Sintaxis alternativa</strong></td><td>Forma de escribir control de flujo PHP con <code>:</code> y <code>endif/endwhile</code> en lugar de llaves. Útil cuando se mezcla mucho HTML adentro.</td></tr>
+  <tr><td><code>isset()</code></td><td>Función que devuelve <code>true</code> si una variable existe y no es <code>null</code>. Se usa para chequear claves de <code>$_SESSION</code>, <code>$_POST</code>, <code>$_GET</code> antes de leerlas.</td></tr>
+  <tr><td><code>unset()</code></td><td>Borra una variable o una clave específica de un array.</td></tr>
+</table>
+
+<h2 id="s12">
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  12. Buenas prácticas
+</h2>
+
+<ol>
+  <li><strong>Siempre <code>session_start()</code> al principio</strong>, antes de cualquier HTML.</li>
+  <li><strong>Siempre <code>exit;</code> después de <code>header('Location:')</code>.</strong> Como un signo de puntuación: van juntos.</li>
+  <li><strong>Proteger todas las páginas internas</strong> con el patrón <code>if (!isset($_SESSION['usuario']))</code>. Si no, son públicas.</li>
+  <li><strong>Linkear el CSS una sola vez</strong> desde <code>cabecera.php</code>. Nunca repetir el <code>&lt;link&gt;</code> en cada archivo.</li>
+  <li><strong>Default en los parámetros GET</strong>: <code>$_GET['x'] ?? 'algo'</code>. Sino, warning cuando no llega.</li>
+  <li><strong>Cuando algo no anda, <code>var_dump()</code> tu sesión</strong>: <code>var_dump($_SESSION);</code> al principio del archivo te muestra qué tiene la caja. Es el debug más rápido.</li>
+  <li><strong>No escribir el <code>?&gt;</code> de cierre</strong> en archivos que sólo tienen PHP. Evita errores de "headers already sent" por espacios al final.</li>
+</ol>
+
+<h2 id="quiz">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Mini-quiz de autoevaluación
+</h2>
+
+<div class="quiz">
+  <h3>Probá si entendiste</h3>
+  <p style="color: var(--ink-soft); font-size: .92em; margin-top: -.3em;">Hacé click en la opción que te parezca correcta. Te marca al instante si acertaste.</p>
+
+  <div class="quiz-q" data-correct="b">
+    <p><strong>1.</strong> ¿Qué hace <code>session_start()</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Crea un usuario nuevo en la base de datos</button>
+    <button class="quiz-opt" data-opt="b">b) Abre o recupera la sesión del usuario en el servidor</button>
+    <button class="quiz-opt" data-opt="c">c) Empieza a contar el tiempo de conexión</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c">
+    <p><strong>2.</strong> ¿Por qué siempre poner <code>exit;</code> después de <code>header('Location: ...')</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Porque PHP lo exige por sintaxis</button>
+    <button class="quiz-opt" data-opt="b">b) Para que el navegador entienda la redirección</button>
+    <button class="quiz-opt" data-opt="c">c) Para que PHP no siga ejecutando código después del redirect</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a">
+    <p><strong>3.</strong> ¿Para qué sirve <code>if (!isset($_SESSION['usuario'])) { header('Location: index.php'); exit; }</code> al inicio de una página interna?</p>
+    <button class="quiz-opt" data-opt="a">a) Para proteger la página: si no estás logueado, te echa al login</button>
+    <button class="quiz-opt" data-opt="b">b) Para crear un usuario nuevo en la sesión</button>
+    <button class="quiz-opt" data-opt="c">c) Para que la página cargue más rápido</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b">
+    <p><strong>4.</strong> Diferencia entre <code>&lt;a href="info.php"&gt;</code> y <code>header('Location: info.php')</code>:</p>
+    <button class="quiz-opt" data-opt="a">a) Son exactamente lo mismo</button>
+    <button class="quiz-opt" data-opt="b">b) El link lo decide el usuario al clickear; el header lo decide el servidor sin mostrar HTML intermedio</button>
+    <button class="quiz-opt" data-opt="c">c) El link sirve sólo para CSS y el header sólo para PHP</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c">
+    <p><strong>5.</strong> En la URL <code>info.php?seccion=ayuda</code>, ¿cómo se accede al valor "ayuda" desde PHP?</p>
+    <button class="quiz-opt" data-opt="a">a) <code>$_POST['seccion']</code></button>
+    <button class="quiz-opt" data-opt="b">b) <code>$_SESSION['seccion']</code></button>
+    <button class="quiz-opt" data-opt="c">c) <code>$_GET['seccion']</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score" style="margin-top: 1.5em; font-size: 1.05em; font-weight: 700; color: var(--accent);"></p>
+  <button type="button" id="quiz-reset" class="btn" style="display:none; margin-top: 0.5em; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">↻ Volver a hacer el quiz</button>
+</div>
+
+<h2 id="s14">
+  <svg class="icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  Próximos pasos
+</h2>
+
+<p>El sistema que armaste hoy ya tiene forma. Lo que sigue es:</p>
+
+<ul>
+  <li><strong>Clase 3:</strong> Git. Aprender a versionar el código (qué es un repositorio, <code>git add</code>, <code>git commit</code>) + conceptualizar qué es una base de datos.</li>
+  <li><strong>Clase 4 en adelante:</strong> MySQL. Reemplazar el usuario hardcodeado por una tabla real de usuarios, con contraseñas hasheadas. Persistencia de verdad.</li>
+  <li><strong>Más adelante en el año:</strong> Bootstrap para que el CSS no quede tan minimalista, validaciones más completas, mensajes flash entre redirecciones, y la base del proyecto integrador anual.</li>
+</ul>
+
+<p><strong>Documentación oficial</strong> para tener a mano:</p>
+<ul>
+  <li>Sesiones en PHP — <a href="https://www.php.net/manual/es/book.session.php" target="_blank" rel="noopener noreferrer">php.net (manual de sesiones en español)</a></li>
+  <li><code>header()</code> en PHP — <a href="https://www.php.net/manual/es/function.header.php" target="_blank" rel="noopener noreferrer">php.net (manual)</a></li>
+  <li>HTTP — <a href="https://developer.mozilla.org/es/docs/Web/HTTP/Overview" target="_blank" rel="noopener noreferrer">MDN Web Docs (overview)</a></li>
+</ul>
+
+<p>Si querés repasar lo de la clase anterior:</p>
+<p style="font-size: 1.05em;">
+  <a href="../clase_1/clase-01-teoria.html"><strong>→ Teoría de Clase 1</strong></a> ·
+  <a href="../clase_1/clase-01-tp-formulario.html"><strong>→ TP de Clase 1</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script>
+  // === Recorte en iframe ===
+  // Cuando esta página se carga DENTRO de un iframe con un #hash,
+  // ocultamos todo lo que no corresponde a la sección apuntada.
+  // Si la URL tiene ?to=sN, mostramos desde el hash hasta esa sección inclusive.
+  (function () {
+    if (window.self === window.top) return; // no es iframe
+    const hash = window.location.hash.substring(1);
+    if (!hash) return;
+    const start = document.getElementById(hash);
+    if (!start) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const toId = params.get('to');
+
+    // Marcar el rango visible
+    const visible = new Set();
+    let current = start;
+    let endReached = false;
+    while (current && !endReached) {
+      visible.add(current);
+      const next = current.nextElementSibling;
+      if (next && next.tagName === 'H2') {
+        if (!toId) {
+          endReached = true; // sin 'to', cortar antes del próximo h2
+        } else {
+          // chequear si ya pasamos el 'to'
+          // si el current actual ES el toId, terminar después del último elemento de su rango
+          if (current.id === toId) {
+            endReached = true;
+          }
+        }
+      }
+      current = next;
+    }
+
+    // Ocultar elementos fijos
+    document.querySelectorAll('.theme-controls, .scroll-top, #progress, .hero, nav.toc, .footer-nav, .nav')
+      .forEach(el => el.style.display = 'none');
+
+    // Ocultar todo lo que no está en visible
+    Array.from(document.body.children).forEach(el => {
+      if (el.tagName === 'SCRIPT') return;
+      if (visible.has(el)) return;
+      el.style.display = 'none';
+    });
+
+    // Ajustes visuales cuando estamos en iframe
+    document.body.style.padding = '12px 20px 20px';
+    document.body.style.maxWidth = 'none';
+    document.body.style.margin = '0';
+  })();
+
+  // === Theme controls (dark + big) ===
+  (function () {
+    const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
+    const body = document.body;
+    const dark = document.getElementById('toggleDark');
+    const big  = document.getElementById('toggleBig');
+
+    if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
+    if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
+
+    function syncDark() {
+      const on = body.classList.contains('dark');
+      dark.textContent = on ? '☀️' : '🌙';
+      dark.setAttribute('aria-pressed', on);
+    }
+    function syncBig() {
+      const on = body.classList.contains('big');
+      big.textContent = on ? 'A−' : 'A+';
+      big.setAttribute('aria-pressed', on);
+    }
+    syncDark(); syncBig();
+
+    dark.addEventListener('click', () => {
+      body.classList.toggle('dark');
+      localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
+      syncDark();
+    });
+    big.addEventListener('click', () => {
+      body.classList.toggle('big');
+      localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
+      syncBig();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'd' || e.key === 'D') dark.click();
+      if (e.key === '+' || e.key === '=') big.click();
+    });
+  })();
+
+  // === Volver arriba ===
+  (function () {
+    const btn = document.getElementById('scrollTop');
+    if (!btn) return;
+    const toggle = () => btn.classList.toggle('visible', window.scrollY > 400);
+    window.addEventListener('scroll', toggle, { passive: true });
+    toggle();
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+
+
+
+  const progress = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    progress.style.width = ((h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100) + '%';
+  });
+
+  document.querySelectorAll('.code-wrap').forEach(wrap => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Copiar';
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(wrap.querySelector('pre').textContent);
+        btn.textContent = '✓ Copiado'; btn.classList.add('ok');
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('ok'); }, 1500);
+      } catch (e) { btn.textContent = 'Error'; }
+    });
+    wrap.appendChild(btn);
+  });
+
+  const explanations = {
+    1: "session_start() es lo primero que hay que llamar en cualquier archivo que use $_SESSION. Recupera la caja existente o crea una nueva.",
+    2: "Sin exit, PHP sigue procesando el archivo después del header. Eso puede ejecutar consultas, mandar emails u operar sobre datos que no querías procesar.",
+    3: "Es el patrón de protección. Sin esto, cualquier persona escribiendo la URL directamente entra a la página interna aunque no se haya logueado.",
+    4: "El link es navegación visible que el usuario inicia. El header es redirección invisible que el servidor decide, típicamente después de procesar algo.",
+    5: "Los datos en la URL después del ? llegan a $_GET. POST sirve para datos enviados desde un form con method='POST'."
+  };
+  let answered = 0, correct = 0;
+  document.querySelectorAll('.quiz-q').forEach((q, idx) => {
+    const correctOpt = q.dataset.correct;
+    const feedback = q.querySelector('.quiz-feedback');
+    q.querySelectorAll('.quiz-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (q.dataset.answered) return;
+        q.dataset.answered = '1'; answered++;
+        if (opt.dataset.opt === correctOpt) {
+          opt.classList.add('correct');
+          feedback.textContent = '✓ ¡Correcto! ' + explanations[idx + 1];
+          feedback.style.color = 'var(--ok)';
+          correct++;
+        } else {
+          opt.classList.add('wrong');
+          q.querySelector('[data-opt="' + correctOpt + '"]').classList.add('correct');
+          feedback.textContent = '✗ La correcta era la ' + correctOpt + '. ' + explanations[idx + 1];
+          feedback.style.color = 'var(--warm)';
+        }
+        const score = document.getElementById('quiz-score');
+        if (answered === document.querySelectorAll('.quiz-q').length) {
+          let msg = `Resultado: ${correct} de ${answered}. `;
+          if (correct === answered) msg += '¡Todo perfecto!';
+          else if (correct >= 3) msg += 'Bien. Repasá lo que no salió.';
+          else msg += 'Releé las secciones marcadas en las explicaciones.';
+          score.textContent = msg;
+        } else {
+          score.textContent = `Respondidas: ${answered} / ${document.querySelectorAll('.quiz-q').length}`;
+        }
+      });
+    });
+  });
+
+
+  // === Reset del quiz ===
+  (function () {
+    const resetBtn = document.getElementById('quiz-reset');
+    const score = document.getElementById('quiz-score');
+    if (!resetBtn) return;
+    const questions = document.querySelectorAll('.quiz-q');
+    const total = questions.length;
+
+    // Mostrar el botón cuando se complete el quiz
+    function checkComplete() {
+      const answeredCount = document.querySelectorAll('.quiz-q[data-answered="1"]').length;
+      resetBtn.style.display = (answeredCount === total) ? 'inline-block' : 'none';
+    }
+    // Polling rápido cuando se interactúa (solución simple sin reescribir el loop principal)
+    document.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => setTimeout(checkComplete, 10)));
+
+    resetBtn.addEventListener('click', () => {
+      // Recargamos la página manteniendo el hash al quiz: la forma más simple
+      // y robusta de resetear todo el estado del quiz sin tocar el script principal.
+      window.location.hash = '#quiz';
+      window.location.reload();
+    });
+  })();
+</script>
+
+</body>
+</html>

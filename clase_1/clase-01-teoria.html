@@ -8,6 +8,14 @@
 </head>
 <body>
 
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
 <div id="progress"></div>
 
 <div class="hero">
@@ -34,6 +42,12 @@
     <li><a href="#s13">Próximos pasos</a></li>
   </ol>
 </nav>
+
+<div class="callout callout-info">
+  <div class="callout-title">Tu carpeta del año</div>
+  <p>Durante todo el año mantenés <strong>una sola carpeta</strong>, que es tu <strong>registro acumulativo</strong>. Ahí van: lo que copiás del pizarrón cada clase, los TPs que vas haciendo, las definiciones que se piden de tarea, las ideas de proyecto que se te ocurren, los errores que detectaste y resolviste.</p>
+  <p>Cuando llegue noviembre y tengas que defender el proyecto, ahí vas a encontrar <strong>todo lo que aprendiste</strong>. <strong>Si faltás a una clase</strong>, lo primero que la docente va a pedirte cuando vuelvas es la carpeta puesta al día con lo que perdiste.</p>
+</div>
 
 <h2 id="s1">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
@@ -195,7 +209,7 @@
 ├── procesar.php       ← recibe y procesa
 ├── includes/
 │   ├── cabecera.php   ← &lt;head&gt;, navbar, apertura de &lt;body&gt;
-│   └── pie.php        ← cierre, scripts de Bootstrap
+│   └── pie.php        ← cierre del &lt;body&gt; y &lt;/html&gt;
 └── css/
     └── estilos.css    ← estilos propios</code></pre>
 </div>
@@ -436,6 +450,7 @@ $_POST['nombre']</code></pre>
   </div>
 
   <p id="quiz-score" style="margin-top: 1.5em; font-size: 1.05em; font-weight: 700; color: var(--accent);"></p>
+  <button type="button" id="quiz-reset" class="btn" style="display:none; margin-top: 0.5em; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">↻ Volver a hacer el quiz</button>
 </div>
 
 <h2 id="s13">
@@ -451,16 +466,67 @@ $_POST['nombre']</code></pre>
 
 <p><strong>Documentación oficial</strong> para tener a mano:</p>
 <ul>
-  <li>PHP — <a href="https://www.php.net/manual/es/" target="_blank">php.net (manual en español)</a></li>
-  <li>HTML/CSS — <a href="https://developer.mozilla.org/es/docs/Learn/Forms" target="_blank">MDN Web Docs</a></li>
-  <li>Bootstrap — <a href="https://getbootstrap.com/" target="_blank">getbootstrap.com</a></li>
+  <li>PHP — <a href="https://www.php.net/manual/es/" target="_blank" rel="noopener noreferrer">php.net (manual en español)</a></li>
+  <li>HTML/CSS — <a href="https://developer.mozilla.org/es/docs/Learn/Forms" target="_blank" rel="noopener noreferrer">MDN Web Docs</a></li>
 </ul>
 
 <div class="nav">
   <a href="../">← Volver al inicio</a>
+  <a href="../clase_2/clase-02-teoria.html" style="margin-left: 1em;">Siguiente: Clase 2 →</a>
 </div>
 
 <script>
+  // === Theme controls (dark + big) ===
+  (function () {
+    const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
+    const body = document.body;
+    const dark = document.getElementById('toggleDark');
+    const big  = document.getElementById('toggleBig');
+
+    if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
+    if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
+
+    function syncDark() {
+      const on = body.classList.contains('dark');
+      dark.textContent = on ? '☀️' : '🌙';
+      dark.setAttribute('aria-pressed', on);
+    }
+    function syncBig() {
+      const on = body.classList.contains('big');
+      big.textContent = on ? 'A−' : 'A+';
+      big.setAttribute('aria-pressed', on);
+    }
+    syncDark(); syncBig();
+
+    dark.addEventListener('click', () => {
+      body.classList.toggle('dark');
+      localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
+      syncDark();
+    });
+    big.addEventListener('click', () => {
+      body.classList.toggle('big');
+      localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
+      syncBig();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'd' || e.key === 'D') dark.click();
+      if (e.key === '+' || e.key === '=') big.click();
+    });
+  })();
+
+  // === Volver arriba ===
+  (function () {
+    const btn = document.getElementById('scrollTop');
+    if (!btn) return;
+    const toggle = () => btn.classList.toggle('visible', window.scrollY > 400);
+    window.addEventListener('scroll', toggle, { passive: true });
+    toggle();
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+
+
+
   const progress = document.getElementById('progress');
   window.addEventListener('scroll', () => {
     const h = document.documentElement;
@@ -520,6 +586,31 @@ $_POST['nombre']</code></pre>
       });
     });
   });
+
+
+  // === Reset del quiz ===
+  (function () {
+    const resetBtn = document.getElementById('quiz-reset');
+    const score = document.getElementById('quiz-score');
+    if (!resetBtn) return;
+    const questions = document.querySelectorAll('.quiz-q');
+    const total = questions.length;
+
+    // Mostrar el botón cuando se complete el quiz
+    function checkComplete() {
+      const answeredCount = document.querySelectorAll('.quiz-q[data-answered="1"]').length;
+      resetBtn.style.display = (answeredCount === total) ? 'inline-block' : 'none';
+    }
+    // Polling rápido cuando se interactúa (solución simple sin reescribir el loop principal)
+    document.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => setTimeout(checkComplete, 10)));
+
+    resetBtn.addEventListener('click', () => {
+      // Recargamos la página manteniendo el hash al quiz: la forma más simple
+      // y robusta de resetear todo el estado del quiz sin tocar el script principal.
+      window.location.hash = '#quiz';
+      window.location.reload();
+    });
+  })();
 </script>
 
 </body>
