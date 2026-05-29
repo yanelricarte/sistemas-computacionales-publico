@@ -94,7 +94,7 @@
 <ul>
   <li>Validar que el <strong>DNI sea solo números</strong> (usar <code>is_numeric</code> o <code>ctype_digit</code>).</li>
   <li>Si falta algún campo, <strong>volver a index.php</strong> con un mensaje de error visible.</li>
-  <li>Contador de inscripciones con <code>$_SESSION</code>: cada vez que se completa una, se suma 1.</li>
+  <li>Contador de inscripciones con <code>$_SESSION</code> (acordate de <code>session_start()</code> al inicio de <code>procesar.php</code>): cada vez que se completa una, se suma 1.</li>
 </ul>
 
 <h2>
