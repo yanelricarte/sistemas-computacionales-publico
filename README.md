@@ -1,55 +1,40 @@
----
-layout: default
-title: Proyecto, Diseño e Implementación de Sistemas Computacionales 2026
----
-
 # Proyecto, Diseño e Implementación de Sistemas Computacionales 2026
 
-**Espacio curricular:** Proyecto, Diseño e Implementación de Sistemas Computacionales
-**Ciclo lectivo:** 2026
-**Modalidad:** Aprendizaje Basado en Proyectos (ABP)
-**Docente:** Yanel Ricarte
+Material público para estudiantes — 7.º año Informática (EEST N.º 3, Mar del Plata).
+
+**Sitio publicado:** [yanelricarte.github.io/sistemas-computacionales-publico](https://yanelricarte.github.io/sistemas-computacionales-publico/)
 
 ---
 
-## ¿De qué va este espacio?
+## Estructura
 
-Vamos a desarrollar un **sistema informático funcional** para resolver una necesidad real de la institución. Atravesamos todas las etapas del ciclo de vida del software: análisis, diseño, programación, validación y presentación.
+```
+clase_1/
+├── clase-01-teoria.html       → Teoría: sistemas informáticos, formularios PHP
+└── clase-01-tp-formulario.html → TP: formulario de inscripción
 
-> **Programa completo:** [programa-2026.md](programa-2026.md) · [versión web](programa-2026.html)
+clase_2/
+├── clase-02-teoria.html       → Teoría: CSS aparte, redirecciones, sesiones, GET
+└── clase-02-tp-mini-sistema.html → TP: mini-sistema web con login
 
----
+index.html                     → Página principal con índice de materiales
+programa-2026.html             → Programa completo de la materia
+css/                           → Estilos compartidos
+favicon.svg                    → Icono del sitio
+```
 
-## Recorrido del año
-
-| # | Unidad | Período | Material |
-|---|---|---|---|
-| 1 | [Análisis y relevamiento](01-analisis-relevamiento/) | Marzo – Abril | Entrevistas, encuestas, observación, formulación del problema |
-| 2 | [Diseño del sistema](02-diseño/) | Mayo – Junio | Diagramas ER, flujo, prototipos, modelo de base de datos |
-| 3 | [Desarrollo y programación](03-desarrollo/) | Julio – Octubre | Ionic + Vue/React, SQL, Git y GitHub |
-| 4 | [Validación y entrega](04-validacion-entrega/) | Noviembre – Diciembre | Tests, documentación, manual de usuario, defensa |
-
----
-
-## ¿Cómo usar este repositorio?
-
-- Cada unidad tiene su carpeta con **teoría**, **ejemplos** y **actividades**.
-- Si encontrás un error o algo confuso, abrí un *issue* o avisame en clase.
-- Las entregas se hacen en **tu propio repositorio** de proyecto, no acá.
+Cada clase nueva agrega una carpeta `clase_N/` con su teoría y TP.
 
 ---
 
 ## Stack del año
 
-- **Lenguajes:** HTML, CSS, JavaScript
-- **Framework:** Laravel
-- **Base de datos:** SQL
+- **Lenguajes:** HTML, CSS, PHP, JavaScript
 - **Control de versiones:** Git + GitHub
-- **Documentación:** Markdown
+- **Base de datos:** SQL (a partir de Etapa 2)
 
 ---
 
-## Enlaces útiles
+## Material docente
 
-- [Programa](programa-2026.html)
-- [Clase 1 — Teoría y TP](clase_1/)
+El plan de clase detallado, grillas de observación, ejemplos resueltos y consignas fuente viven en el repositorio **docente** (privado).
