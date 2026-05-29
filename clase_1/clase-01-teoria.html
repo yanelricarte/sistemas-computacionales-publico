@@ -410,7 +410,7 @@ $_POST['nombre']</code></pre>
   <h3>Probá si entendiste</h3>
   <p style="color: var(--ink-soft); font-size: .92em; margin-top: -.3em;">Hacé click en la opción que te parezca correcta. Te marca al instante si acertaste.</p>
 
-  <div class="quiz-q" data-correct="b">
+  <div class="quiz-q" data-correct="b" data-explanation="El método del form determina dónde llegan los datos. method='POST' → $_POST.">
     <p><strong>1.</strong> Si un formulario tiene <code>method="POST"</code>, ¿dónde llegan los datos en PHP?</p>
     <button class="quiz-opt" data-opt="a">a) En <code>$_GET</code></button>
     <button class="quiz-opt" data-opt="b">b) En <code>$_POST</code></button>
@@ -434,7 +434,7 @@ $_POST['nombre']</code></pre>
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="a">
+  <div class="quiz-q" data-correct="a" data-explanation="PHP es del lado del servidor (back-end). JavaScript es del lado del cliente (front-end).">
     <p><strong>4.</strong> ¿Qué diferencia hay entre PHP y JavaScript en este contexto?</p>
     <button class="quiz-opt" data-opt="a">a) PHP corre en el servidor, JS en el navegador</button>
     <button class="quiz-opt" data-opt="b">b) PHP corre en el navegador, JS en el servidor</button>
@@ -477,6 +477,51 @@ $_POST['nombre']</code></pre>
 </div>
 
 <script>
+  // === Recorte en iframe ===
+  // Cuando esta página se carga DENTRO de un iframe con un #hash,
+  // ocultamos todo lo que no corresponde a la sección apuntada.
+  (function () {
+    if (window.self === window.top) return;
+    const hash = window.location.hash.substring(1);
+    if (!hash) return;
+    const start = document.getElementById(hash);
+    if (!start) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const toId = params.get('to');
+
+    const visible = new Set();
+    let current = start;
+    let endReached = false;
+    while (current && !endReached) {
+      visible.add(current);
+      const next = current.nextElementSibling;
+      if (next && next.tagName === 'H2') {
+        if (!toId) {
+          endReached = true;
+        } else {
+          if (current.id === toId) {
+            endReached = true;
+          }
+        }
+      }
+      current = next;
+    }
+
+    document.querySelectorAll('.theme-controls, .scroll-top, #progress, .hero, nav.toc, .footer-nav, .nav')
+      .forEach(el => el.style.display = 'none');
+
+    Array.from(document.body.children).forEach(el => {
+      if (el.tagName === 'SCRIPT') return;
+      if (visible.has(el)) return;
+      el.style.display = 'none';
+    });
+
+    document.body.style.padding = '12px 20px 20px';
+    document.body.style.maxWidth = 'none';
+    document.body.style.margin = '0';
+  })();
+
   // === Theme controls (dark + big) ===
   (function () {
     const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
@@ -526,8 +571,6 @@ $_POST['nombre']</code></pre>
     btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   })();
 
-
-
   const progress = document.getElementById('progress');
   window.addEventListener('scroll', () => {
     const h = document.documentElement;
@@ -548,66 +591,64 @@ $_POST['nombre']</code></pre>
     wrap.appendChild(btn);
   });
 
-  const explanations = {
-    1: "El método del <form> determina dónde llegan los datos. method='POST' → $_POST.",
-    2: "El ?? actúa como valor por defecto: si la clave no existe, usa el segundo.",
-    3: "Es la regla DRY: si lo escribís dos veces, te vas a olvidar de cambiar uno.",
-    4: "PHP es del lado del servidor (back-end). JavaScript es del lado del cliente (front-end).",
-    5: "POST envía los datos en el cuerpo de la petición, no en la URL. Más seguro."
-  };
-  let answered = 0, correct = 0;
-  document.querySelectorAll('.quiz-q').forEach((q, idx) => {
+  // === Quiz questions (con data-explanation inline) ===
+  const finalQuiz = document.getElementById('quiz-final');
+  const finalScore = document.getElementById('quiz-score');
+
+  function updateFinalScore() {
+    if (!finalQuiz || !finalScore) return;
+    const finalQs = finalQuiz.querySelectorAll('.quiz-q');
+    const answered = finalQuiz.querySelectorAll('.quiz-q[data-answered="1"]').length;
+    const correctCount = finalQuiz.querySelectorAll('.quiz-q[data-result="ok"]').length;
+    if (answered === finalQs.length) {
+      let msg = 'Resultado: ' + correctCount + ' de ' + answered + '. ';
+      if (correctCount === answered) msg += '¡Todo perfecto!';
+      else if (correctCount >= 3) msg += 'Bien. Repasá lo que no salió.';
+      else msg += 'Releé las secciones marcadas en las explicaciones.';
+      finalScore.textContent = msg;
+    } else if (answered > 0) {
+      finalScore.textContent = 'Respondidas: ' + answered + ' / ' + finalQs.length;
+    }
+  }
+
+  document.querySelectorAll('.quiz-q').forEach(q => {
     const correctOpt = q.dataset.correct;
     const feedback = q.querySelector('.quiz-feedback');
+    const explanation = q.dataset.explanation || '';
     q.querySelectorAll('.quiz-opt').forEach(opt => {
       opt.addEventListener('click', () => {
         if (q.dataset.answered) return;
-        q.dataset.answered = '1'; answered++;
+        q.dataset.answered = '1';
         if (opt.dataset.opt === correctOpt) {
+          q.dataset.result = 'ok';
           opt.classList.add('correct');
-          feedback.textContent = '✓ ¡Correcto! ' + explanations[idx + 1];
+          feedback.textContent = '✓ ¡Correcto! ' + explanation;
           feedback.style.color = 'var(--ok)';
-          correct++;
         } else {
+          q.dataset.result = 'wrong';
           opt.classList.add('wrong');
           q.querySelector('[data-opt="' + correctOpt + '"]').classList.add('correct');
-          feedback.textContent = '✗ La correcta era la ' + correctOpt + '. ' + explanations[idx + 1];
+          feedback.textContent = '✗ La correcta era la ' + correctOpt + '. ' + explanation;
           feedback.style.color = 'var(--warm)';
         }
-        const score = document.getElementById('quiz-score');
-        if (answered === document.querySelectorAll('.quiz-q').length) {
-          let msg = `Resultado: ${correct} de ${answered}. `;
-          if (correct === answered) msg += '¡Todo perfecto!';
-          else if (correct >= 3) msg += 'Bien. Repasá lo que no salió.';
-          else msg += 'Releé las secciones marcadas en las explicaciones.';
-          score.textContent = msg;
-        } else {
-          score.textContent = `Respondidas: ${answered} / ${document.querySelectorAll('.quiz-q').length}`;
-        }
+        if (finalQuiz && finalQuiz.contains(q)) updateFinalScore();
       });
     });
   });
 
-
   // === Reset del quiz ===
   (function () {
     const resetBtn = document.getElementById('quiz-reset');
-    const score = document.getElementById('quiz-score');
-    if (!resetBtn) return;
-    const questions = document.querySelectorAll('.quiz-q');
-    const total = questions.length;
+    if (!resetBtn || !finalQuiz) return;
+    const total = finalQuiz.querySelectorAll('.quiz-q').length;
 
-    // Mostrar el botón cuando se complete el quiz
     function checkComplete() {
-      const answeredCount = document.querySelectorAll('.quiz-q[data-answered="1"]').length;
+      const answeredCount = finalQuiz.querySelectorAll('.quiz-q[data-answered="1"]').length;
       resetBtn.style.display = (answeredCount === total) ? 'inline-block' : 'none';
     }
-    // Polling rápido cuando se interactúa (solución simple sin reescribir el loop principal)
-    document.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => setTimeout(checkComplete, 10)));
+    finalQuiz.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => setTimeout(checkComplete, 10)));
 
     resetBtn.addEventListener('click', () => {
-      // Recargamos la página manteniendo el hash al quiz: la forma más simple
-      // y robusta de resetear todo el estado del quiz sin tocar el script principal.
       window.location.hash = '#quiz';
       window.location.reload();
     });
