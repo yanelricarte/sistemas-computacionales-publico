@@ -287,7 +287,7 @@
 &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;body&gt;
-  &lt;h1&gt;Hola &lt;?= $nombre ?&gt;, tu inscripción fue registrada&lt;/h1&gt;
+  &lt;h1&gt;Hola &lt;?= htmlspecialchars($nombre) ?&gt;, tu inscripción fue registrada&lt;/h1&gt;
 &lt;/body&gt;
 &lt;/html&gt;</code></pre>
 </div>
@@ -316,10 +316,10 @@
 </details>
 
 <details>
-  <summary><code>&lt;?= $nombre ?&gt;</code></summary>
+  <summary><code>&lt;?= htmlspecialchars($nombre) ?&gt;</code></summary>
   <ul>
-    <li>Es la <strong>forma corta</strong> de <code>&lt;?php echo $nombre; ?&gt;</code>.</li>
-    <li>Se usa para imprimir una variable dentro del HTML.</li>
+    <li><code>&lt;?= ... ?&gt;</code> es la <strong>forma corta</strong> de <code>&lt;?php echo ... ?&gt;</code>: imprime un valor dentro del HTML.</li>
+    <li><code>htmlspecialchars()</code> hace que lo que escribió el usuario se muestre como <strong>texto</strong> y no se ejecute como HTML. Buena costumbre desde el principio: <strong>escapá siempre lo que viene del usuario</strong>.</li>
   </ul>
 </details>
 

@@ -145,7 +145,7 @@
 &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;body&gt;
-  &lt;h1&gt;Hola &lt;?= $nombre ?&gt;, tu inscripcion fue registrada&lt;/h1&gt;
+  &lt;h1&gt;Hola &lt;?= htmlspecialchars($nombre) ?&gt;, tu inscripcion fue registrada&lt;/h1&gt;
 &lt;/body&gt;
 &lt;/html&gt;</code></pre>
 </div>
@@ -164,72 +164,7 @@
   <a href="../clase_2/clase-02-tp-mini-sistema.html" style="margin-left: 1em;">Siguiente: TP Clase 2 →</a>
 </div>
 
-<script>
-  // === Theme controls (dark + big) ===
-  (function () {
-    const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
-    const body = document.body;
-    const dark = document.getElementById('toggleDark');
-    const big  = document.getElementById('toggleBig');
-
-    if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
-    if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
-
-    function syncDark() {
-      const on = body.classList.contains('dark');
-      dark.textContent = on ? '☀️' : '🌙';
-      dark.setAttribute('aria-pressed', on);
-    }
-    function syncBig() {
-      const on = body.classList.contains('big');
-      big.textContent = on ? 'A−' : 'A+';
-      big.setAttribute('aria-pressed', on);
-    }
-    syncDark(); syncBig();
-
-    dark.addEventListener('click', () => {
-      body.classList.toggle('dark');
-      localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
-      syncDark();
-    });
-    big.addEventListener('click', () => {
-      body.classList.toggle('big');
-      localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
-      syncBig();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
-      if (e.key === 'd' || e.key === 'D') dark.click();
-      if (e.key === '+' || e.key === '=') big.click();
-    });
-  })();
-
-  // === Volver arriba ===
-  (function () {
-    const btn = document.getElementById('scrollTop');
-    if (!btn) return;
-    const toggle = () => btn.classList.toggle('visible', window.scrollY > 400);
-    window.addEventListener('scroll', toggle, { passive: true });
-    toggle();
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  })();
-
-
-
-  document.querySelectorAll('.code-wrap').forEach(wrap => {
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.textContent = 'Copiar';
-    btn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(wrap.querySelector('pre').textContent);
-        btn.textContent = '✓ Copiado'; btn.classList.add('ok');
-        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('ok'); }, 1500);
-      } catch (e) { btn.textContent = 'Error'; }
-    });
-    wrap.appendChild(btn);
-  });
-</script>
+<script src="../js/estudiantes.js"></script>
 
 </body>
 </html>
