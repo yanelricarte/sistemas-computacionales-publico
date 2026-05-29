@@ -17,9 +17,14 @@ clase_2/
 ├── clase-02-teoria.html       → Teoría: CSS aparte, redirecciones, sesiones, GET
 └── clase-02-tp-mini-sistema.html → TP: mini-sistema web con login
 
+clase_3/
+├── clase-03-teoria.html          → Teoría: switch, datos/vista, CSS dinámico, Git
+└── clase-03-tp-navegacion.html   → TP: navegación visual con switch
+
 index.html                     → Página principal con índice de materiales
 programa-2026.html             → Programa completo de la materia
 css/                           → Estilos compartidos
+js/                            → JavaScript compartido (estudiantes.js)
 favicon.svg                    → Icono del sitio
 ```
 
