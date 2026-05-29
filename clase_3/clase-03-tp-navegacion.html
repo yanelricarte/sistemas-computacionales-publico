@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TP Clase 3 — Navegación visual con switch y Git</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 3</div>
+  <h1>Navegación visual con switch y Git</h1>
+  <p class="sub">Refactorizar <code>info.php</code> a switch con contenido en variables, imágenes, CSS dinámico por sección, y subir todo a GitHub.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Tiempo de trabajo en clase:</strong> 30 minutos (Actividad 1) + 60 minutos (Git)
+</div>
+
+<h2>Objetivo</h2>
+
+<p>Transformar el <code>info.php</code> que ya tenés (con <code>if/elseif</code>) en una versión con <code>switch</code>, variables separadas, imágenes y CSS que cambia según la sección. Además, subir el proyecto completo a GitHub.</p>
+
+<h2>Consigna</h2>
+
+<h3>Parte 1 — Refactorizar info.php a switch</h3>
+
+<ol>
+  <li>Abrí tu <code>info.php</code> de la clase anterior.</li>
+  <li>Reemplazá los <code>if/elseif</code> por un <code>switch</code>.</li>
+  <li>Cada <code>case</code> debe asignar variables (<code>$titulo</code>, <code>$texto</code>, <code>$clase</code>) en lugar de escribir HTML.</li>
+  <li>El HTML (con <code>&lt;?= $variable ?&gt;</code>) va abajo del switch, una sola vez.</li>
+  <li>Mantené al menos <strong>tres secciones</strong>: inicio, ayuda, contacto + una más inventada por vos.</li>
+</ol>
+
+<h3>Parte 2 — Imágenes</h3>
+
+<ol>
+  <li>Agregá una variable <code>$imagen</code> a cada case del switch.</li>
+  <li>Mostrá la imagen en el HTML con <code>&lt;img src="&lt;?= $imagen ?&gt;"&gt;</code>.</li>
+  <li>Usá <a href="https://picsum.photos" target="_blank" rel="noopener noreferrer">picsum.photos</a> para las imágenes placeholder:
+    <pre><code>https://picsum.photos/seed/ayuda/600/300</code></pre>
+    Cambiá <code>seed/ayuda</code> por <code>seed/inicio</code>, <code>seed/contacto</code>, etc. así cada sección tiene su imagen.
+  </li>
+</ol>
+
+<h3>Parte 3 — CSS dinámico</h3>
+
+<ol>
+  <li>En el <code>&lt;body&gt;</code>, usá <code>class="&lt;?= $clase ?&gt;"</code>.</li>
+  <li>En tu <code>css/estilos.css</code>, agregá reglas para cada sección:
+    <pre><code>.sec-inicio   { --accent: #4a90d9; }
+.sec-ayuda    { --accent: #e67e22; }
+.sec-contacto { --accent: #27ae60; }
+body { background: var(--accent); transition: background .3s; }</code></pre>
+  </li>
+  <li>Dale a cada sección un color distinto (fondo, acento, lo que se te ocurra).</li>
+  <li>Opcional: agregá una transición suave al cambiar de sección.</li>
+</ol>
+
+<h3>Parte 4 — Subir a GitHub</h3>
+
+<ol>
+  <li>Abrí la terminal en tu carpeta del proyecto.</li>
+  <li>Configurá Git (si no lo hiciste antes):
+    <pre><code>git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"</code></pre>
+  </li>
+  <li>Inicializá el repositorio:
+    <pre><code>git init</code></pre>
+  </li>
+  <li>Agregá todos los archivos y hacé el primer commit:
+    <pre><code>git add .
+git commit -m "Primer commit: sistema con login, switch y navegacion"</code></pre>
+  </li>
+  <li>Entrá a <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a>, creá un repo nuevo (nombre: <code>clase02</code> o el que quieras).</li>
+  <li>Conectá y subí:
+    <pre><code>git remote add origin https://github.com/tuusuario/clase02.git
+git branch -M main
+git push -u origin main</code></pre>
+  </li>
+  <li>Verificá que los archivos estén en GitHub entrando a la URL de tu repo.</li>
+</ol>
+
+<h3>Parte 5 — Segundo commit</h3>
+
+<ol>
+  <li>Agregá UNA sección más a tu <code>info.php</code> (inventá un tema: "galería", "blog", "faq", etc.).</li>
+  <li>Guardá los cambios y subilos:
+    <pre><code>git add .
+git commit -m "Agrego seccion galeria a info.php"
+git push</code></pre>
+  </li>
+</ol>
+
+<div class="highlight">
+  <strong>Opcional — techo:</strong> si terminás todo y querés más, agregá un navbar con CSS que marque la sección activa con un color distinto. Pista: usá la misma variable <code>$clase</code> para poner una clase en el link activo.
+</div>
+
+<h2>Errores comunes</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td>La página muestra todo junto sin formato</td><td>¿Cerraron bien el <code>?&gt;</code> antes del HTML?</td></tr>
+  <tr><td>El color de fondo no cambia</td><td>¿Está <code>class="&lt;?= $clase ?&gt;"</code> en el <code>&lt;body&gt;</code>? ¿Las reglas CSS están bien escritas?</td></tr>
+  <tr><td>GitHub no acepta la contraseña</td><td>Usá un token de acceso personal (GitHub Settings → Developer settings → Personal access tokens) o instalá <a href="https://cli.github.com" target="_blank" rel="noopener noreferrer">GitHub CLI</a> y ejecutá <code>gh auth login</code></td></tr>
+  <tr><td>Git dice "nothing to commit"</td><td>¿Guardaste el archivo antes de hacer <code>git add</code>?</td></tr>
+  <tr><td>No encuentro las imágenes</td><td>Con picsum.photos no necesitás descargar nada, están online.</td></tr>
+</table>
+
+<script>
+(function () {
+  // === Theme controls ===
+  const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
+  const body = document.body;
+  if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
+  if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
+  const dark = document.getElementById('toggleDark');
+  const big  = document.getElementById('toggleBig');
+  dark.textContent = body.classList.contains('dark') ? '☀' : '🌙';
+  big.textContent  = body.classList.contains('big')  ? 'A–' : 'A+';
+  dark.addEventListener('click', () => {
+    body.classList.toggle('dark');
+    localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
+    dark.textContent = body.classList.contains('dark') ? '☀' : '🌙';
+  });
+  big.addEventListener('click', () => {
+    body.classList.toggle('big');
+    localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
+    big.textContent = body.classList.contains('big') ? 'A–' : 'A+';
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    if (e.key === 'd' || e.key === 'D') dark.click();
+    if (e.key === '+' || e.key === '=') big.click();
+  });
+
+  // === Scroll top ===
+  document.getElementById('scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 3 — Navegación con switch, contenido dinámico y Git</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<style>
+  .code-switch { margin: 1em 0; }
+  .code-switch pre { margin: 0; border-radius: 0; }
+  .code-switch .old { background: #fff5f5; border: 1px solid #fcc; }
+  .code-switch .new { background: #f5fff5; border: 1px solid #cfc; }
+
+  .img-demo {
+    display: block; max-width: 100%; border-radius: 8px;
+    margin: 1em 0; box-shadow: 0 2px 8px rgba(0,0,0,.1);
+  }
+
+  .git-flow {
+    display: flex; gap: 8px; align-items: center;
+    justify-content: center; flex-wrap: wrap;
+    margin: 1.5em 0; font-size: .92em;
+  }
+  .git-flow .step {
+    background: var(--bg-soft, #f4f6fa);
+    border: 1px solid var(--border, #dde);
+    border-radius: 6px; padding: 10px 16px;
+    text-align: center; min-width: 80px;
+  }
+  .git-flow .step strong { display: block; color: var(--accent); }
+  .git-flow .arrow { font-size: 1.3em; color: var(--fg-soft, #888); }
+
+  body.dark .code-switch .old { background: #2a1a1a; border-color: #633; }
+  body.dark .code-switch .new { background: #1a2a1a; border-color: #363; }
+  body.dark .git-flow .step { background: #22252d; border-color: #3a3f48; }
+</style>
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 3 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Navegación con switch, contenido dinámico y Git</h1>
+  <p class="sub">Switch en PHP, separar datos de la vista, CSS que cambia según la sección, imágenes dinámicas y los primeros pasos con Git. Material para consultar mientras armás el TP de la clase.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s1">De if/elseif a switch</a></li>
+    <li><a href="#s2">Separando datos de la vista</a></li>
+    <li><a href="#s3">CSS dinámico por sección</a></li>
+    <li><a href="#s4">Mostrando imágenes</a></li>
+    <li><a href="#s5">Git: primeros pasos</a></li>
+    <li><a href="#s6">Errores frecuentes</a></li>
+    <li><a href="#s7">Glosario</a></li>
+    <li><a href="#s8">Buenas prácticas</a></li>
+    <li><a href="#quiz">Mini-quiz</a></li>
+    <li><a href="#s10">Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<h2 id="s1">
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  1. De if/elseif a switch
+</h2>
+
+<p>En la clase anterior armaste <code>info.php</code> con <code>if</code> y <code>elseif</code> para mostrar distinto contenido según el valor de <code>$_GET['seccion']</code>. Ese enfoque funciona, pero cuando tenés muchas secciones el código se vuelve difícil de leer.</p>
+
+<p>Acá viene <code>switch</code>. Compará:</p>
+
+<div class="code-switch">
+<pre class="old"><code>// Con if/elseif
+$s = $_GET['seccion'] ?? 'inicio';
+
+if ($s == 'inicio') {
+    echo '&lt;h2&gt;Inicio&lt;/h2&gt;';
+} elseif ($s == 'ayuda') {
+    echo '&lt;h2&gt;Ayuda&lt;/h2&gt;';
+} elseif ($s == 'contacto') {
+    echo '&lt;h2&gt;Contacto&lt;/h2&gt;';
+} else {
+    echo '&lt;h2&gt;404&lt;/h2&gt;';
+}</code></pre>
+
+<pre class="new"><code>// Con switch
+$s = $_GET['seccion'] ?? 'inicio';
+
+switch ($s) {
+    case 'inicio':
+        echo '&lt;h2&gt;Inicio&lt;/h2&gt;';
+        break;
+    case 'ayuda':
+        echo '&lt;h2&gt;Ayuda&lt;/h2&gt;';
+        break;
+    case 'contacto':
+        echo '&lt;h2&gt;Contacto&lt;/h2&gt;';
+        break;
+    default:
+        echo '&lt;h2&gt;404&lt;/h2&gt;';
+}</code></pre>
+</div>
+
+<h3>Cómo funciona</h3>
+
+<ul>
+  <li><code>switch</code> evalúa la variable una sola vez y salta al <code>case</code> que coincide.</li>
+  <li>Cuando encuentra el case correcto, ejecuta el código hasta el <code>break</code>.</li>
+  <li><code>break</code> sale del switch. Sin break, sigue ejecutando el siguiente case (se llama <strong>fall-through</strong>).</li>
+  <li><code>default</code> es el "else" del switch: se ejecuta si ningún case coincide.</li>
+</ul>
+
+<h3>Fall-through: ¿para qué sirve?</h3>
+
+<p>A veces querés que dos valores compartan el mismo código:</p>
+
+<pre><code>switch ($rol) {
+    case 'admin':
+    case 'supervisor':
+        echo 'Acceso completo';
+        break;
+    case 'editor':
+        echo 'Puede editar contenidos';
+        break;
+    default:
+        echo 'Acceso limitado';
+}</code></pre>
+
+<p>Acá <code>admin</code> y <code>supervisor</code> hacen lo mismo porque el primer <code>case</code> no tiene <code>break</code>.</p>
+
+<div class="highlight">
+  <strong>Cuidado:</strong> olvidar un <code>break</code> sin querer es el error más común con switch. Siempre revisá que cada case tenga su break (a menos que quieras fall-through a propósito).
+</div>
+
+<h2 id="s2">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+  2. Separando datos de la vista
+</h2>
+
+<p>Si escribís HTML adentro de cada <code>case</code> del switch, estás mezclando la lógica con la presentación. Para un par de secciones funciona, pero cuando el proyecto crezca se vuelve un desastre.</p>
+
+<p>La idea es simple: el <strong>switch solo asigna valores a variables</strong>, y el <strong>HTML se escribe una sola vez</strong> abajo.</p>
+
+<pre><code>&lt;?php
+$seccion = $_GET['seccion'] ?? 'inicio';
+
+// Valores por defecto
+$titulo = 'Inicio';
+$texto  = 'Bienvenido al sistema.';
+$clase  = 'sec-inicio';
+
+switch ($seccion) {
+    case 'ayuda':
+        $titulo = 'Ayuda';
+        $texto  = 'Encontrá instrucciones y respuestas.';
+        $clase  = 'sec-ayuda';
+        break;
+    case 'contacto':
+        $titulo = 'Contacto';
+        $texto  = 'Escribinos por cualquier consulta.';
+        $clase  = 'sec-contacto';
+        break;
+}
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body class="&lt;?= $clase ?&gt;"&gt;
+  &lt;h1&gt;&lt;?= $titulo ?&gt;&lt;/h1&gt;
+  &lt;p&gt;&lt;?= $texto ?&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<h3>¿Qué ganamos?</h3>
+
+<ul>
+  <li><strong>Legibilidad:</strong> el switch tiene solo asignaciones, es fácil de leer.</li>
+  <li><strong>Mantenibilidad:</strong> si querés cambiar cómo se ve la página, tocás el HTML de abajo, no el switch.</li>
+  <li><strong>Escalabilidad:</strong> agregar una sección nueva es copiar un <code>case</code> con sus variables. No tocar nada del HTML.</li>
+</ul>
+
+<div class="highlight">
+  <strong>Recordá:</strong> <code>&lt;?= $variable ?&gt;</code> es la abreviatura de <code>&lt;?php echo $variable; ?&gt;</code>. Pinta el valor directamente.
+</div>
+
+<h2 id="s3">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  3. CSS dinámico por sección
+</h3>
+
+<p>Si cada sección tiene una clase distinta en el <code>&lt;body&gt;</code>, podés darle su propio estilo con CSS:</p>
+
+<pre><code>&lt;!-- PHP elige la clase --&gt;
+&lt;body class="&lt;?= $clase ?&gt;"&gt;</code></pre>
+
+<p>Y en el CSS:</p>
+
+<pre><code>/* Cada sección define su color de acento */
+.sec-inicio   { --accent: #4a90d9; }  /* azul */
+.sec-ayuda    { --accent: #e67e22; }  /* naranja */
+.sec-contacto { --accent: #27ae60; }  /* verde */
+
+/* El body usa ese color */
+body { background: var(--accent); transition: background .3s; }
+
+/* Los paneles pueden heredar el color */
+.panel { border-left: 4px solid var(--accent); }</code></pre>
+
+<h3>¿Qué podés cambiar por sección?</h3>
+
+<ul>
+  <li><strong>Color de fondo</strong> (como el ejemplo de arriba).</li>
+  <li><strong>Imagen de fondo</strong> — <code>background-image</code> distinta por sección.</li>
+  <li><strong>Borde</strong> del panel activo en el menú.</li>
+  <li><strong>Color del navbar</strong> o del botón de la sección activa.</li>
+  <li><strong>Transiciones</strong> entre secciones.</li>
+</ul>
+
+<div class="highlight">
+  <strong>Tip:</strong> usá <code>transition</code> en el body para que el cambio de color sea suave. Con <code>background: var(--accent); transition: background .3s;</code> alcanza.
+</div>
+
+<h2 id="s4">
+  <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+  4. Mostrando imágenes
+</h2>
+
+<p>El mismo patrón de variables sirve para imágenes. Agregá <code>$imagen</code> al switch y mostrala en el HTML:</p>
+
+<pre><code>// Adentro del switch
+case 'ayuda':
+    $titulo = 'Ayuda';
+    $texto  = 'Instrucciones de uso del sistema.';
+    $imagen = 'img/ayuda.jpg';
+    $clase  = 'sec-ayuda';
+    break;
+
+// En el HTML
+&lt;img src="&lt;?= $imagen ?&gt;" alt="&lt;?= $titulo ?&gt;"&gt;</code></pre>
+
+<h3>Imágenes placeholder para desarrollo</h3>
+
+<p>Si no tenés las imágenes todavía, usá <a href="https://picsum.photos" target="_blank" rel="noopener noreferrer">picsum.photos</a> para generar placeholders:</p>
+
+<pre><code>$imagen = 'https://picsum.photos/seed/ayuda/600/300';
+//         ──────────────┬─────────┬────┬───┬───
+//                      seed      tema ancho alto
+//         misma seed → misma imagen siempre</code></pre>
+
+<p>El parámetro <code>seed</code> hace que la imagen sea siempre la misma para esa sección. Después las reemplazás por imágenes reales.</p>
+
+<div class="highlight">
+  <strong>Importante:</strong> las imágenes de placeholder son para desarrollo. Cuando el proyecto esté listo, las imágenes deberían ser propias o libres de derechos.
+</div>
+
+<h2 id="s5">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+  5. Git: primeros pasos
+</h3>
+
+<p>Git es un sistema de <strong>control de versiones</strong>. Guarda el historial de cambios de tu proyecto y te permite volver atrás si algo sale mal.</p>
+
+<h3>El flujo básico</h3>
+
+<div class="git-flow">
+  <div class="step"><strong>Editar</strong>cambiás archivos</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git add</strong>preparás los archivos</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git commit</strong>sacás la foto</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git push</strong>subís la foto a GitHub</div>
+</div>
+
+<h3>Paso a paso</h3>
+
+<p><strong>1. Configurar Git</strong> (la primera vez):</p>
+
+<pre><code>git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"</code></pre>
+
+<p><strong>2. Ir a la carpeta de tu proyecto y activar Git:</strong></p>
+
+<pre><code>cd C:/xampp/htdocs/clase02/
+git init</code></pre>
+
+<p><code>git init</code> crea un repositorio vacío en esa carpeta. Se hace una sola vez por proyecto.</p>
+
+<p><strong>3. Agregar archivos y hacer el primer commit:</strong></p>
+
+<pre><code>git add .
+git commit -m "Primer commit: sistema con login y switch"</code></pre>
+
+<ul>
+  <li><code>git add .</code> agrega todos los archivos de la carpeta al "escritorio" (staging).</li>
+  <li><code>git commit -m "mensaje"</code> saca la foto. El mensaje describe qué cambió.</li>
+</ul>
+
+<p><strong>4. Crear un repositorio en GitHub y subir:</strong></p>
+<ol>
+  <li>Entrá a <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a> e iniciá sesión.</li>
+  <li>Botón verde "New repository" (arriba a la derecha).</li>
+  <li>Nombre: <code>clase02</code> (o el que quieras). Dejá todo lo demás como está.</li>
+  <li>Copiá estas líneas y ejecutalas en tu terminal:</li>
+</ol>
+
+<pre><code>git remote add origin https://github.com/tuusuario/clase02.git
+git branch -M main
+git push -u origin main</code></pre>
+
+<p><strong>5. Verificá:</strong> entrá a <code>github.com/tuusuario/clase02</code> — tenés que ver todos tus archivos.</p>
+
+<h3>Segundo commit (y siguientes)</h3>
+
+<p>Hacé un cambio, guardalo, y repetí:</p>
+
+<pre><code>git add .
+git commit -m "Agrego seccion de ayuda a info.php"
+git push</code></pre>
+
+<p>Cada commit es un punto de guardado. Si después algo se rompe, podés volver a cualquier commit anterior.</p>
+
+<h2 id="s6">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  6. Errores frecuentes
+</h2>
+
+<h3>Switch</h3>
+
+<table>
+  <tr>
+    <th>Error</th>
+    <th>Por qué pasa</th>
+    <th>Solución</th>
+  </tr>
+  <tr>
+    <td>Se ejecutan dos cases</td>
+    <td>Falta <code>break</code> en el primer case</td>
+    <td>Agregar <code>break;</code> al final de cada case</td>
+  </tr>
+  <tr>
+    <td>Sale todo en blanco</td>
+    <td>El <code>?&gt;</code> del switch no cierra o hay un error de sintaxis</td>
+    <td>Revisar que todos los <code>case</code> terminen en <code>:</code></td>
+  </tr>
+  <tr>
+    <td>No encuentra la sección</td>
+    <td>El valor de <code>$_GET</code> no coincide exactamente</td>
+    <td>Usar <code>default</code> para atrapar valores inesperados</td>
+  </tr>
+</table>
+
+<h3>Git</h3>
+
+<table>
+  <tr>
+    <th>Error</th>
+    <th>Por qué pasa</th>
+    <th>Solución</th>
+  </tr>
+  <tr>
+    <td><code>fatal: not a git repository</code></td>
+    <td>No ejecutaste <code>git init</code> en esa carpeta</td>
+    <td><code>git init</code></td>
+  </tr>
+  <tr>
+    <td>GitHub pide usuario y contraseña y no acepta</td>
+    <td>GitHub ya no acepta contraseñas; necesita token o GitHub CLI</td>
+    <td>Usar <code>gh auth login</code> o generar token en Settings → Developer settings → Personal access tokens</td>
+  </tr>
+  <tr>
+    <td><code>failed to push</code> porque hay commits remotos</td>
+    <td>Alguien (o vos desde otra máquina) subió commits que no tenés</td>
+    <td><code>git pull --rebase</code> y después <code>git push</code></td>
+  </tr>
+  <tr>
+    <td>Subí una carpeta equivocada</td>
+    <td>Hiciste <code>git init</code> en el lugar incorrecto</td>
+    <td>Borrar la carpeta <code>.git</code> y empezar de nuevo</td>
+  </tr>
+</table>
+
+<h2 id="s7">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  7. Glosario
+</h2>
+
+<table>
+  <tr><th>Término</th><th>Significado</th></tr>
+  <tr><td><code>switch</code></td><td>Estructura de control que evalúa una variable y ejecuta el case que coincide.</td></tr>
+  <tr><td><code>break</code></td><td>Instrucción que sale del switch. Sin break, el código sigue al próximo case.</td></tr>
+  <tr><td><code>default</code></td><td>Caso opcional del switch que se ejecuta si ningún case coincide.</td></tr>
+  <tr><td>Fall-through</td><td>Comportamiento de switch cuando un case no tiene break: sigue ejecutando el siguiente.</td></tr>
+  <tr><td><code>var(--variable)</code></td><td>Variable CSS. Permite definir un valor y reusarlo en varias reglas.</td></tr>
+  <tr><td>Repositorio</td><td>Carpeta de proyecto con Git activado. Guarda todo el historial.</td></tr>
+  <tr><td>Commit</td><td>"Foto" del estado actual de los archivos en un momento dado.</td></tr>
+  <tr><td>Staging</td><td>Área donde preparás los archivos antes del commit (<code>git add</code>).</td></tr>
+  <tr><td><code>git init</code></td><td>Comando que activa Git en una carpeta (crea el repositorio).</td></tr>
+  <tr><td><code>git add</code></td><td>Agrega archivos al staging para el próximo commit.</td></tr>
+  <tr><td><code>git commit</code></td><td>Guarda un commit con los archivos que están en staging.</td></tr>
+  <tr><td><code>git push</code></td><td>Sube los commits locales a GitHub.</td></tr>
+  <tr><td>GitHub</td><td>Servicio en la nube que almacena repositorios Git. Como un "drive" para tu código.</td></tr>
+</table>
+
+<h2 id="s8">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  8. Buenas prácticas
+</h2>
+
+<ul>
+  <li><strong>Siempre <code>break</code></strong> al final de cada case, salvo que quieras fall-through a propósito.</li>
+  <li><strong><code>default</code> siempre</strong> por si alguien escribe una URL inválida.</li>
+  <li><strong>Switch solo asigna variables.</strong> El HTML se escribe abajo, separado.</li>
+  <li><strong>Mensajes de commit descriptivos</strong> — "arreglo bug" no sirve. "Corrijo redirección después del login" es mejor.</li>
+  <li><strong>Commit chicos, commit seguido.</strong> Un commit por cambio lógico. No esperes a tener todo el proyecto listo.</li>
+  <li><strong>Editar → add → commit → push</strong> en ese orden. Nunca saltees pasos.</li>
+  <li><strong>Mirá siempre <code>git status</code></strong> antes de commitear para saber qué vas a incluir.</li>
+</ul>
+
+<h2 id="quiz">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Mini-quiz
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p style="color: var(--ink-soft); font-size: .92em; margin-top: -.3em;">Hacé click en la opción que te parezca correcta. Te marca al instante si acertaste.</p>
+
+  <div class="quiz-q" data-correct="c" data-explanation="switch evalúa la variable UNA sola vez y salta al case correcto. if/elseif la evalúa de nuevo en cada condición.">
+    <p><strong>1.</strong> ¿Qué diferencia principal tiene <code>switch</code> respecto de <code>if/elseif</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) switch es más rápido siempre</button>
+    <button class="quiz-opt" data-opt="b">b) switch permite usar strings, if no</button>
+    <button class="quiz-opt" data-opt="c">c) switch evalúa la variable una sola vez</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="Sin break, el switch sigue ejecutando el próximo case (fall-through). A veces se usa a propósito, pero olvidarlo es un error común.">
+    <p><strong>2.</strong> ¿Qué pasa si un <code>case</code> no tiene <code>break</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) El switch tira error</button>
+    <button class="quiz-opt" data-opt="b">b) Sigue ejecutando el siguiente case</button>
+    <button class="quiz-opt" data-opt="c">c) Vuelve al principio del switch</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="Separar lógica de presentación hace que el código sea más fácil de leer, mantener y escalar. Cada cosa en su lugar.">
+    <p><strong>3.</strong> ¿Por qué conviene que el switch solo asigne variables y el HTML esté aparte?</p>
+    <button class="quiz-opt" data-opt="a">a) Porque separa lógica de presentación</button>
+    <button class="quiz-opt" data-opt="b">b) Porque PHP no puede tener HTML adentro de un switch</button>
+    <button class="quiz-opt" data-opt="c">c) Porque las variables se ven mejor</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="git add prepara los archivos (staging), git commit saca la foto. Los dos pasos son necesarios.">
+    <p><strong>4.</strong> ¿Cuál es la diferencia entre <code>git add</code> y <code>git commit</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Son lo mismo, hacen falta los dos por las dudas</button>
+    <button class="quiz-opt" data-opt="b">b) add prepara los archivos, commit guarda la foto</button>
+    <button class="quiz-opt" data-opt="c">c) add guarda la foto, commit la sube a GitHub</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="git push sube los commits locales a GitHub. Sin push, los commits solo existen en tu máquina.">
+    <p><strong>5.</strong> ¿Qué hace <code>git push</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Borra el commit anterior</button>
+    <button class="quiz-opt" data-opt="b">b) Crea un repo nuevo en GitHub</button>
+    <button class="quiz-opt" data-opt="c">c) Sube los commits locales a GitHub</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score" style="margin-top: 1.5em; font-size: 1.05em; font-weight: 700; color: var(--accent);"></p>
+  <button type="button" id="quiz-reset" class="btn" style="display:none; margin-top: 0.5em; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">↻ Volver a hacer el quiz</button>
+</div>
+
+<h2 id="s10">
+  <svg class="icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  Próximos pasos
+</h2>
+
+<p>Con switch, variables separadas y Git ya tenés las herramientas para organizar mejor tu proyecto. Lo que viene:</p>
+
+<ul>
+  <li><strong>Clase 4:</strong> Arrays asociativos en PHP + pasar los datos a un archivo aparte. Organizar el código como se hace en proyectos reales.</li>
+  <li><strong>Más adelante:</strong> MySQL para reemplazar los datos hardcodeados por una base de datos real.</li>
+</ul>
+
+<p><strong>Documentación oficial</strong> para tener a mano:</p>
+<ul>
+  <li>Switch en PHP — <a href="https://www.php.net/manual/es/control-structures.switch.php" target="_blank" rel="noopener noreferrer">php.net (manual en español)</a></li>
+  <li>Git — <a href="https://git-scm.com/book/es/v2" target="_blank" rel="noopener noreferrer">Pro Git (libro en español)</a></li>
+  <li>Variables CSS — <a href="https://developer.mozilla.org/es/docs/Web/CSS/Using_CSS_custom_properties" target="_blank" rel="noopener noreferrer">MDN Web Docs</a></li>
+</ul>
+
+<p>Material de esta clase y las anteriores:</p>
+<p style="font-size: 1.05em;">
+  <a href="clase-03-tp-navegacion.html"><strong>→ TP de Clase 3</strong></a> ·
+  <a href="../clase_2/clase-02-teoria.html"><strong>Teoría de Clase 2</strong></a> ·
+  <a href="../clase_2/clase-02-tp-mini-sistema.html"><strong>TP de Clase 2</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script>
+  // === Recorte en iframe ===
+  (function () {
+    if (window.self === window.top) return;
+    const hash = window.location.hash.substring(1);
+    if (!hash) return;
+    const start = document.getElementById(hash);
+    if (!start) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const toId = params.get('to');
+
+    const visible = new Set();
+    let current = start;
+    let endReached = false;
+    while (current && !endReached) {
+      visible.add(current);
+      const next = current.nextElementSibling;
+      if (next && next.tagName === 'H2') {
+        if (!toId) {
+          endReached = true;
+        } else {
+          if (current.id === toId) {
+            endReached = true;
+          }
+        }
+      }
+      current = next;
+    }
+
+    document.querySelectorAll('.theme-controls, .scroll-top, #progress, .hero, nav.toc, .nav')
+      .forEach(el => el.style.display = 'none');
+
+    Array.from(document.body.children).forEach(el => {
+      if (el.tagName === 'SCRIPT') return;
+      if (visible.has(el)) return;
+      el.style.display = 'none';
+    });
+
+    document.body.style.padding = '12px 20px 20px';
+    document.body.style.maxWidth = 'none';
+    document.body.style.margin = '0';
+  })();
+
+  // === Theme controls ===
+  (function () {
+    const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
+    const body = document.body;
+
+    if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
+    if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
+
+    const dark = document.getElementById('toggleDark');
+    const big  = document.getElementById('toggleBig');
+    dark.textContent = body.classList.contains('dark') ? '☀' : '🌙';
+    big.textContent  = body.classList.contains('big')  ? 'A–' : 'A+';
+
+    dark.addEventListener('click', () => {
+      body.classList.toggle('dark');
+      localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
+      dark.textContent = body.classList.contains('dark') ? '☀' : '🌙';
+    });
+    big.addEventListener('click', () => {
+      body.classList.toggle('big');
+      localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
+      big.textContent = body.classList.contains('big') ? 'A–' : 'A+';
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'd' || e.key === 'D') dark.click();
+      if (e.key === '+' || e.key === '=') big.click();
+    });
+  })();
+
+  // === Scroll top ===
+  (function () {
+    const btn = document.getElementById('scrollTop');
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  })();
+
+  // === Progress bar ===
+  const progress = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    progress.style.width = Math.min(pct, 100) + '%';
+  });
+
+  // === Quiz (same pattern as clase 2) ===
+  const finalQuiz = document.getElementById('quiz-final');
+  const finalScore = document.getElementById('quiz-score');
+
+  function updateFinalScore() {
+    if (!finalQuiz || !finalScore) return;
+    const finalQs = finalQuiz.querySelectorAll('.quiz-q');
+    const answered = finalQuiz.querySelectorAll('.quiz-q[data-answered="1"]').length;
+    const correctCount = finalQuiz.querySelectorAll('.quiz-q[data-result="ok"]').length;
+    if (answered === finalQs.length) {
+      let msg = 'Resultado: ' + correctCount + ' de ' + answered + '. ';
+      if (correctCount === answered) msg += '¡Todo perfecto!';
+      else if (correctCount >= 3) msg += 'Bien. Repasá lo que no salió.';
+      else msg += 'Releé las secciones marcadas en las explicaciones.';
+      finalScore.textContent = msg;
+    } else if (answered > 0) {
+      finalScore.textContent = 'Respondidas: ' + answered + ' / ' + finalQs.length;
+    }
+  }
+
+  document.querySelectorAll('.quiz-q').forEach(q => {
+    const correctOpt = q.dataset.correct;
+    const feedback = q.querySelector('.quiz-feedback');
+    const explanation = q.dataset.explanation || '';
+    q.querySelectorAll('.quiz-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (q.dataset.answered) return;
+        q.dataset.answered = '1';
+        if (opt.dataset.opt === correctOpt) {
+          q.dataset.result = 'ok';
+          opt.classList.add('correct');
+          feedback.textContent = '✓ ¡Correcto! ' + explanation;
+          feedback.style.color = 'var(--ok)';
+        } else {
+          q.dataset.result = 'wrong';
+          opt.classList.add('wrong');
+          q.querySelector('[data-opt="' + correctOpt + '"]').classList.add('correct');
+          feedback.textContent = '✗ La correcta era la ' + correctOpt + '. ' + explanation;
+          feedback.style.color = 'var(--warm)';
+        }
+        if (finalQuiz && finalQuiz.contains(q)) updateFinalScore();
+      });
+    });
+  });
+
+  // === Quiz reset ===
+  (function () {
+    const resetBtn = document.getElementById('quiz-reset');
+    if (!resetBtn || !finalQuiz) return;
+    const total = finalQuiz.querySelectorAll('.quiz-q').length;
+
+    function checkComplete() {
+      const answeredCount = finalQuiz.querySelectorAll('.quiz-q[data-answered="1"]').length;
+      resetBtn.style.display = (answeredCount === total) ? 'inline-block' : 'none';
+    }
+    finalQuiz.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => setTimeout(checkComplete, 10)));
+
+    resetBtn.addEventListener('click', () => {
+      window.location.hash = '#quiz';
+      window.location.reload();
+    });
+  })();
+</script>
+
+</body>
+</html>
