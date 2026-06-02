@@ -40,7 +40,7 @@
   <li>Reemplazá los <code>if/elseif</code> por un <code>switch</code>.</li>
   <li>Cada <code>case</code> debe asignar variables (<code>$titulo</code>, <code>$texto</code>, <code>$clase</code>) en lugar de escribir HTML.</li>
   <li>El HTML (con <code>&lt;?= $variable ?&gt;</code>) va abajo del switch, una sola vez.</li>
-  <li>Mantené al menos <strong>tres secciones</strong>: inicio, ayuda, contacto + una más inventada por vos.</li>
+  <li>Mantené al menos <strong>cuatro secciones</strong>: inicio, ayuda, contacto + una más inventada por vos.</li>
 </ol>
 
 <h3>Parte 2 — Imágenes</h3>
@@ -118,37 +118,7 @@ git push</code></pre>
   <tr><td>No encuentro las imágenes</td><td>Con picsum.photos no necesitás descargar nada, están online.</td></tr>
 </table>
 
-<script>
-(function () {
-  // === Theme controls ===
-  const STORAGE = { dark: 'estudiantes-dark', big: 'estudiantes-big' };
-  const body = document.body;
-  if (localStorage.getItem(STORAGE.dark) === '1') body.classList.add('dark');
-  if (localStorage.getItem(STORAGE.big)  === '1') body.classList.add('big');
-  const dark = document.getElementById('toggleDark');
-  const big  = document.getElementById('toggleBig');
-  dark.textContent = body.classList.contains('dark') ? '☀' : '🌙';
-  big.textContent  = body.classList.contains('big')  ? 'A–' : 'A+';
-  dark.addEventListener('click', () => {
-    body.classList.toggle('dark');
-    localStorage.setItem(STORAGE.dark, body.classList.contains('dark') ? '1' : '0');
-    dark.textContent = body.classList.contains('dark') ? '☀' : '🌙';
-  });
-  big.addEventListener('click', () => {
-    body.classList.toggle('big');
-    localStorage.setItem(STORAGE.big, body.classList.contains('big') ? '1' : '0');
-    big.textContent = body.classList.contains('big') ? 'A–' : 'A+';
-  });
-  document.addEventListener('keydown', e => {
-    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
-    if (e.key === 'd' || e.key === 'D') dark.click();
-    if (e.key === '+' || e.key === '=') big.click();
-  });
-
-  // === Scroll top ===
-  document.getElementById('scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-})();
-</script>
+<script src="../js/estudiantes.js"></script>
 
 </body>
 </html>
