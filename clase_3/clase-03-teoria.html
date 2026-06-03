@@ -3,38 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clase 3 — Navegación con switch, contenido dinámico y Git</title>
+<title>Clase 3 — Git, navegación con switch y contenido dinámico</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/estilos.css">
-<style>
-  .code-switch { margin: 1em 0; }
-  .code-switch pre { margin: 0; border-radius: 0; }
-  .code-switch .old { background: #fff5f5; border: 1px solid #fcc; }
-  .code-switch .new { background: #f5fff5; border: 1px solid #cfc; }
-
-  .img-demo {
-    display: block; max-width: 100%; border-radius: 8px;
-    margin: 1em 0; box-shadow: 0 2px 8px rgba(0,0,0,.1);
-  }
-
-  .git-flow {
-    display: flex; gap: 8px; align-items: center;
-    justify-content: center; flex-wrap: wrap;
-    margin: 1.5em 0; font-size: .92em;
-  }
-  .git-flow .step {
-    background: var(--bg-soft, #f4f6fa);
-    border: 1px solid var(--border, #dde);
-    border-radius: 6px; padding: 10px 16px;
-    text-align: center; min-width: 80px;
-  }
-  .git-flow .step strong { display: block; color: var(--accent); }
-  .git-flow .arrow { font-size: 1.3em; color: var(--fg-soft, #888); }
-
-  body.dark .code-switch .old { background: #2a1a1a; border-color: #633; }
-  body.dark .code-switch .new { background: #1a2a1a; border-color: #363; }
-  body.dark .git-flow .step { background: #22252d; border-color: #3a3f48; }
-</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 </head>
 <body>
 
@@ -49,18 +21,18 @@
 
 <div class="hero">
   <div class="eyebrow">Clase 3 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
-  <h1>Navegación con switch, contenido dinámico y Git</h1>
-  <p class="sub">Switch en PHP, separar datos de la vista, CSS que cambia según la sección, imágenes dinámicas y los primeros pasos con Git. Material para consultar mientras armás el TP de la clase.</p>
+  <h1>Git, navegación con switch y contenido dinámico</h1>
+  <p class="sub">Primero subimos tu proyecto a GitHub con Git; después mejorás <code>info.php</code> con switch, datos separados de la vista, CSS por sección e imágenes. Material para consultar mientras armás el TP de la clase.</p>
 </div>
 
 <nav class="toc">
   <h3>En esta página</h3>
   <ol>
-    <li><a href="#s1">De if/elseif a switch</a></li>
-    <li><a href="#s2">Separando datos de la vista</a></li>
-    <li><a href="#s3">CSS dinámico por sección</a></li>
-    <li><a href="#s4">Mostrando imágenes</a></li>
-    <li><a href="#s5">Git: primeros pasos</a></li>
+    <li><a href="#s1">Git: primeros pasos</a></li>
+    <li><a href="#s2">De if/elseif a switch</a></li>
+    <li><a href="#s3">Separando datos de la vista</a></li>
+    <li><a href="#s4">CSS dinámico por sección</a></li>
+    <li><a href="#s5">Mostrando imágenes</a></li>
     <li><a href="#s6">Errores frecuentes</a></li>
     <li><a href="#s7">Glosario</a></li>
     <li><a href="#s8">Buenas prácticas</a></li>
@@ -70,9 +42,117 @@
 </nav>
 
 <h2 id="s1">
-  <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-  1. De if/elseif a switch
+  <svg class="icon" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+  1. Git: primeros pasos
 </h2>
+
+<p>Git es un sistema de <strong>control de versiones</strong>. Guarda el historial de cambios de tu proyecto y te permite volver atrás si algo sale mal. Hoy lo primero que hacemos es <strong>subir a GitHub el proyecto que ya tenés de Clase 2</strong> — para no perder nada y aprender a versionar — y más tarde subimos las mejoras como un nuevo commit.</p>
+
+<h3>El flujo básico</h3>
+
+<div class="git-flow">
+  <div class="step"><strong>Editar</strong>cambiás archivos</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git add</strong>preparás los archivos</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git commit</strong>sacás la foto</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git push</strong>subís la foto a GitHub</div>
+</div>
+
+<h3>Paso a paso</h3>
+
+<p><strong>1. Configurar Git</strong> (la primera vez):</p>
+
+<pre><code>git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"</code></pre>
+
+<p><strong>2. Ir a la carpeta de tu proyecto y activar Git:</strong></p>
+
+<pre><code>cd C:/xampp/htdocs/clase02/
+git init</code></pre>
+
+<p><code>git init</code> crea un repositorio vacío en esa carpeta. Se hace una sola vez por proyecto.</p>
+
+<p><strong>3. Agregar archivos y hacer el primer commit</strong> (el proyecto tal como está, todavía con <code>if/elseif</code>):</p>
+
+<pre><code>git add .
+git commit -m "Primer commit: mini-sistema con login (Clase 2)"</code></pre>
+
+<ul>
+  <li><code>git add .</code> agrega todos los archivos de la carpeta al "escritorio" (staging).</li>
+  <li><code>git commit -m "mensaje"</code> saca la foto. El mensaje describe qué cambió.</li>
+</ul>
+
+<p><strong>4. Crear un repositorio en GitHub y subir:</strong></p>
+<ol>
+  <li>Entrá a <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a> e iniciá sesión.</li>
+  <li>Botón verde "New repository" (arriba a la derecha).</li>
+  <li>Nombre: <code>clase02</code> (o el que quieras). Dejá todo lo demás como está.</li>
+  <li>Copiá estas líneas y ejecutalas en tu terminal:</li>
+</ol>
+
+<pre><code>git remote add origin https://github.com/tuusuario/clase02.git
+git branch -M main
+git push -u origin main</code></pre>
+
+<p><strong>5. Verificá:</strong> entrá a <code>github.com/tuusuario/clase02</code> — tenés que ver todos tus archivos.</p>
+
+<h3>El token: cómo autenticarte en el push</h3>
+
+<p>Cuando hacés <code>git push</code>, GitHub te pide usuario y contraseña. <strong>La "contraseña" NO es la de tu cuenta:</strong> GitHub ya no la acepta desde la terminal. Necesitás un <strong>token de acceso personal</strong>, una clave larga que generás una sola vez:</p>
+
+<ol>
+  <li>En GitHub: tu foto (arriba a la derecha) → <strong>Settings</strong>.</li>
+  <li>Abajo de todo en el menú izquierdo: <strong>Developer settings</strong>.</li>
+  <li><strong>Personal access tokens → Tokens (classic) → Generate new token (classic)</strong>.</li>
+  <li>Nombre (ej. <code>clase02</code>), una expiración, y marcá el permiso <strong><code>repo</code></strong>.</li>
+  <li><strong>Generate token</strong> y <strong>copialo en el momento</strong> (se muestra una sola vez).</li>
+  <li>Cuando el <code>push</code> pida contraseña, <strong>pegá el token</strong>. No se ve mientras lo pegás: es normal, dale Enter igual.</li>
+</ol>
+
+<div class="highlight">
+  <strong>Más fácil:</strong> si tenés <a href="https://cli.github.com" target="_blank" rel="noopener noreferrer">GitHub CLI</a>, corré <code>gh auth login</code> una vez y te autenticás desde el navegador, sin pegar el token a mano. Y si la máquina no te deja instalar nada, podés subir los archivos por la web (<strong>Add file → Upload files</strong>), que no pide token.
+</div>
+
+<h3>Segundo commit (después de mejorar el código)</h3>
+
+<p>Una vez que refactorices <code>info.php</code> (lo que viene en las próximas secciones), guardás y repetís el ciclo para subir esa mejora:</p>
+
+<pre><code>git add .
+git commit -m "Refactor: info.php con switch, imagenes y CSS dinamico"
+git push</code></pre>
+
+<p>Cada commit es un punto de guardado. Si después algo se rompe, podés volver a cualquier commit anterior.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Checkpoint</p>
+  <div class="quiz-q" data-correct="b" data-explanation="GitHub ya no acepta la contraseña de la cuenta en el push: va el token de acceso personal (o GitHub CLI).">
+    <p>Hacés <code>git push</code> y te pide contraseña. ¿Qué ponés?</p>
+    <button class="quiz-opt" data-opt="a">a) La contraseña de tu cuenta de GitHub</button>
+    <button class="quiz-opt" data-opt="b">b) El token de acceso personal</button>
+    <button class="quiz-opt" data-opt="c">c) El nombre del repositorio</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<h2 id="s2">
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  2. De if/elseif a switch
+</h2>
+
+<details>
+  <summary>Repaso rápido: variables y estructuras de control en PHP</summary>
+  <p>Lo básico que ya viste y vas a usar acá:</p>
+  <ul>
+    <li><strong>Variables:</strong> empiezan con <code>$</code> → <code>$nombre = 'Ana';</code></li>
+    <li><strong>Mostrar un valor:</strong> <code>echo $nombre;</code> o el atajo <code>&lt;?= $nombre ?&gt;</code></li>
+    <li><strong>Comparar:</strong> <code>==</code> (igual), <code>!=</code> (distinto). Los textos van entre comillas.</li>
+    <li><strong>Condicional:</strong> <code>if (...) { } elseif (...) { } else { }</code></li>
+    <li><strong>Valor por defecto:</strong> <code>$s = $_GET['seccion'] ?? 'inicio';</code> → si no viene nada, usa <code>'inicio'</code>.</li>
+  </ul>
+  <p>El <code>switch</code> que viene es otra <strong>estructura de control</strong>: una forma más ordenada de elegir entre muchos valores posibles.</p>
+</details>
 
 <p>En la clase anterior armaste <code>info.php</code> con <code>if</code> y <code>elseif</code> para mostrar distinto contenido según el valor de <code>$_GET['seccion']</code>. Ese enfoque funciona, pero cuando tenés muchas secciones el código se vuelve difícil de leer.</p>
 
@@ -141,9 +221,20 @@ switch ($s) {
   <strong>Cuidado:</strong> olvidar un <code>break</code> sin querer es el error más común con switch. Siempre revisá que cada case tenga su break (a menos que quieras fall-through a propósito).
 </div>
 
-<h2 id="s2">
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Checkpoint</p>
+  <div class="quiz-q" data-correct="b" data-explanation="Sin break, el switch sigue ejecutando el siguiente case (fall-through). Por eso casi siempre se pone break.">
+    <p>Si un <code>case</code> no tiene <code>break</code>, ¿qué pasa?</p>
+    <button class="quiz-opt" data-opt="a">a) El switch tira un error</button>
+    <button class="quiz-opt" data-opt="b">b) Sigue ejecutando el siguiente case</button>
+    <button class="quiz-opt" data-opt="c">c) Vuelve al principio del switch</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<h2 id="s3">
   <svg class="icon" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-  2. Separando datos de la vista
+  3. Separando datos de la vista
 </h2>
 
 <p>Si escribís HTML adentro de cada <code>case</code> del switch, estás mezclando la lógica con la presentación. Para un par de secciones funciona, pero cuando el proyecto crezca se vuelve un desastre.</p>
@@ -191,9 +282,13 @@ switch ($seccion) {
   <strong>Recordá:</strong> <code>&lt;?= $variable ?&gt;</code> es la abreviatura de <code>&lt;?php echo $variable; ?&gt;</code>. Pinta el valor directamente.
 </div>
 
-<h2 id="s3">
+<div class="highlight">
+  <strong>En tu proyecto:</strong> el ejemplo de arriba muestra el <code>&lt;html&gt;</code> completo para que se entienda la idea, pero en tu <code>info.php</code> el <code>&lt;head&gt;</code> y el navbar ya viven en <code>cabecera.php</code> (lo armaste en Clase 2). No los dupliques: dejá el <code>switch</code> arriba, hacé <code>include 'includes/cabecera.php'</code> y escribí solo el contenido de la sección. El <code>&lt;body class="&lt;?= $clase ?&gt;"&gt;</code> va en <code>cabecera.php</code>. Mantené también el <code>session_start()</code> y la protección de la página.
+</div>
+
+<h2 id="s4">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-  3. CSS dinámico por sección
+  4. CSS dinámico por sección
 </h2>
 
 <p>Si cada sección tiene una clase distinta en el <code>&lt;body&gt;</code>, podés darle su propio estilo con CSS:</p>
@@ -228,9 +323,9 @@ body { background: var(--accent); transition: background .3s; }
   <strong>Tip:</strong> usá <code>transition</code> en el body para que el cambio de color sea suave. Con <code>background: var(--accent); transition: background .3s;</code> alcanza.
 </div>
 
-<h2 id="s4">
+<h2 id="s5">
   <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-  4. Mostrando imágenes
+  5. Mostrando imágenes
 </h2>
 
 <p>El mismo patrón de variables sirve para imágenes. Agregá <code>$imagen</code> al switch y mostrala en el HTML:</p>
@@ -261,102 +356,10 @@ case 'ayuda':
   <strong>Importante:</strong> las imágenes de placeholder son para desarrollo. Cuando el proyecto esté listo, las imágenes deberían ser propias o libres de derechos.
 </div>
 
-<h2 id="s5">
-  <svg class="icon" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-  5. Git: primeros pasos
-</h2>
-
-<p>Git es un sistema de <strong>control de versiones</strong>. Guarda el historial de cambios de tu proyecto y te permite volver atrás si algo sale mal.</p>
-
-<h3>El flujo básico</h3>
-
-<div class="git-flow">
-  <div class="step"><strong>Editar</strong>cambiás archivos</div>
-  <span class="arrow">→</span>
-  <div class="step"><strong>git add</strong>preparás los archivos</div>
-  <span class="arrow">→</span>
-  <div class="step"><strong>git commit</strong>sacás la foto</div>
-  <span class="arrow">→</span>
-  <div class="step"><strong>git push</strong>subís la foto a GitHub</div>
-</div>
-
-<h3>Paso a paso</h3>
-
-<p><strong>1. Configurar Git</strong> (la primera vez):</p>
-
-<pre><code>git config --global user.name "Tu Nombre"
-git config --global user.email "tu@email.com"</code></pre>
-
-<p><strong>2. Ir a la carpeta de tu proyecto y activar Git:</strong></p>
-
-<pre><code>cd C:/xampp/htdocs/clase02/
-git init</code></pre>
-
-<p><code>git init</code> crea un repositorio vacío en esa carpeta. Se hace una sola vez por proyecto.</p>
-
-<p><strong>3. Agregar archivos y hacer el primer commit:</strong></p>
-
-<pre><code>git add .
-git commit -m "Primer commit: sistema con login y switch"</code></pre>
-
-<ul>
-  <li><code>git add .</code> agrega todos los archivos de la carpeta al "escritorio" (staging).</li>
-  <li><code>git commit -m "mensaje"</code> saca la foto. El mensaje describe qué cambió.</li>
-</ul>
-
-<p><strong>4. Crear un repositorio en GitHub y subir:</strong></p>
-<ol>
-  <li>Entrá a <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a> e iniciá sesión.</li>
-  <li>Botón verde "New repository" (arriba a la derecha).</li>
-  <li>Nombre: <code>clase02</code> (o el que quieras). Dejá todo lo demás como está.</li>
-  <li>Copiá estas líneas y ejecutalas en tu terminal:</li>
-</ol>
-
-<pre><code>git remote add origin https://github.com/tuusuario/clase02.git
-git branch -M main
-git push -u origin main</code></pre>
-
-<p><strong>5. Verificá:</strong> entrá a <code>github.com/tuusuario/clase02</code> — tenés que ver todos tus archivos.</p>
-
-<h3>Segundo commit (y siguientes)</h3>
-
-<p>Hacé un cambio, guardalo, y repetí:</p>
-
-<pre><code>git add .
-git commit -m "Agrego seccion de ayuda a info.php"
-git push</code></pre>
-
-<p>Cada commit es un punto de guardado. Si después algo se rompe, podés volver a cualquier commit anterior.</p>
-
 <h2 id="s6">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
   6. Errores frecuentes
 </h2>
-
-<h3>Switch</h3>
-
-<table>
-  <tr>
-    <th>Error</th>
-    <th>Por qué pasa</th>
-    <th>Solución</th>
-  </tr>
-  <tr>
-    <td>Se ejecutan dos cases</td>
-    <td>Falta <code>break</code> en el primer case</td>
-    <td>Agregar <code>break;</code> al final de cada case</td>
-  </tr>
-  <tr>
-    <td>Sale todo en blanco</td>
-    <td>El <code>?&gt;</code> del switch no cierra o hay un error de sintaxis</td>
-    <td>Revisar que todos los <code>case</code> terminen en <code>:</code></td>
-  </tr>
-  <tr>
-    <td>No encuentra la sección</td>
-    <td>El valor de <code>$_GET</code> no coincide exactamente</td>
-    <td>Usar <code>default</code> para atrapar valores inesperados</td>
-  </tr>
-</table>
 
 <h3>Git</h3>
 
@@ -388,6 +391,31 @@ git push</code></pre>
   </tr>
 </table>
 
+<h3>Switch</h3>
+
+<table>
+  <tr>
+    <th>Error</th>
+    <th>Por qué pasa</th>
+    <th>Solución</th>
+  </tr>
+  <tr>
+    <td>Se ejecutan dos cases</td>
+    <td>Falta <code>break</code> en el primer case</td>
+    <td>Agregar <code>break;</code> al final de cada case</td>
+  </tr>
+  <tr>
+    <td>Sale todo en blanco</td>
+    <td>El <code>?&gt;</code> del switch no cierra o hay un error de sintaxis</td>
+    <td>Revisar que todos los <code>case</code> terminen en <code>:</code></td>
+  </tr>
+  <tr>
+    <td>No encuentra la sección</td>
+    <td>El valor de <code>$_GET</code> no coincide exactamente</td>
+    <td>Usar <code>default</code> para atrapar valores inesperados</td>
+  </tr>
+</table>
+
 <h2 id="s7">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
   7. Glosario
@@ -395,19 +423,20 @@ git push</code></pre>
 
 <table>
   <tr><th>Término</th><th>Significado</th></tr>
-  <tr><td><code>switch</code></td><td>Estructura de control que evalúa una variable y ejecuta el case que coincide.</td></tr>
-  <tr><td><code>break</code></td><td>Instrucción que sale del switch. Sin break, el código sigue al próximo case.</td></tr>
-  <tr><td><code>default</code></td><td>Caso opcional del switch que se ejecuta si ningún case coincide.</td></tr>
-  <tr><td>Fall-through</td><td>Comportamiento de switch cuando un case no tiene break: sigue ejecutando el siguiente.</td></tr>
-  <tr><td><code>var(--variable)</code></td><td>Variable CSS. Permite definir un valor y reusarlo en varias reglas.</td></tr>
   <tr><td>Repositorio</td><td>Carpeta de proyecto con Git activado. Guarda todo el historial.</td></tr>
   <tr><td>Commit</td><td>"Foto" del estado actual de los archivos en un momento dado.</td></tr>
   <tr><td>Staging</td><td>Área donde preparás los archivos antes del commit (<code>git add</code>).</td></tr>
+  <tr><td>Token</td><td>Clave personal de GitHub que reemplaza a la contraseña al hacer <code>push</code> desde la terminal.</td></tr>
   <tr><td><code>git init</code></td><td>Comando que activa Git en una carpeta (crea el repositorio).</td></tr>
   <tr><td><code>git add</code></td><td>Agrega archivos al staging para el próximo commit.</td></tr>
   <tr><td><code>git commit</code></td><td>Guarda un commit con los archivos que están en staging.</td></tr>
   <tr><td><code>git push</code></td><td>Sube los commits locales a GitHub.</td></tr>
   <tr><td>GitHub</td><td>Servicio en la nube que almacena repositorios Git. Como un "drive" para tu código.</td></tr>
+  <tr><td><code>switch</code></td><td>Estructura de control que evalúa una variable y ejecuta el case que coincide.</td></tr>
+  <tr><td><code>break</code></td><td>Instrucción que sale del switch. Sin break, el código sigue al próximo case.</td></tr>
+  <tr><td><code>default</code></td><td>Caso opcional del switch que se ejecuta si ningún case coincide.</td></tr>
+  <tr><td>Fall-through</td><td>Comportamiento de switch cuando un case no tiene break: sigue ejecutando el siguiente.</td></tr>
+  <tr><td><code>var(--variable)</code></td><td>Variable CSS. Permite definir un valor y reusarlo en varias reglas.</td></tr>
 </table>
 
 <h2 id="s8">
@@ -416,13 +445,13 @@ git push</code></pre>
 </h2>
 
 <ul>
+  <li><strong>Editar → add → commit → push</strong> en ese orden. Nunca saltees pasos.</li>
+  <li><strong>Mensajes de commit descriptivos</strong> — "arreglo bug" no sirve. "Corrijo redirección después del login" es mejor.</li>
+  <li><strong>Commit chicos, commit seguido.</strong> Un commit por cambio lógico. No esperes a tener todo el proyecto listo.</li>
+  <li><strong>Mirá siempre <code>git status</code></strong> antes de commitear para saber qué vas a incluir.</li>
   <li><strong>Siempre <code>break</code></strong> al final de cada case, salvo que quieras fall-through a propósito.</li>
   <li><strong><code>default</code> siempre</strong> por si alguien escribe una URL inválida.</li>
   <li><strong>Switch solo asigna variables.</strong> El HTML se escribe abajo, separado.</li>
-  <li><strong>Mensajes de commit descriptivos</strong> — "arreglo bug" no sirve. "Corrijo redirección después del login" es mejor.</li>
-  <li><strong>Commit chicos, commit seguido.</strong> Un commit por cambio lógico. No esperes a tener todo el proyecto listo.</li>
-  <li><strong>Editar → add → commit → push</strong> en ese orden. Nunca saltees pasos.</li>
-  <li><strong>Mirá siempre <code>git status</code></strong> antes de commitear para saber qué vas a incluir.</li>
 </ul>
 
 <h2 id="quiz">
@@ -431,50 +460,50 @@ git push</code></pre>
 </h2>
 
 <div id="quiz-final" class="quiz-wrap">
-  <p style="color: var(--ink-soft); font-size: .92em; margin-top: -.3em;">Hacé click en la opción que te parezca correcta. Te marca al instante si acertaste.</p>
-
-  <div class="quiz-q" data-correct="c" data-explanation="switch evalúa la variable UNA sola vez y salta al case correcto. if/elseif la evalúa de nuevo en cada condición.">
-    <p><strong>1.</strong> ¿Qué diferencia principal tiene <code>switch</code> respecto de <code>if/elseif</code>?</p>
-    <button class="quiz-opt" data-opt="a">a) switch es más rápido siempre</button>
-    <button class="quiz-opt" data-opt="b">b) switch permite usar strings, if no</button>
-    <button class="quiz-opt" data-opt="c">c) switch evalúa la variable una sola vez</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-  <div class="quiz-q" data-correct="b" data-explanation="Sin break, el switch sigue ejecutando el próximo case (fall-through). A veces se usa a propósito, pero olvidarlo es un error común.">
-    <p><strong>2.</strong> ¿Qué pasa si un <code>case</code> no tiene <code>break</code>?</p>
-    <button class="quiz-opt" data-opt="a">a) El switch tira error</button>
-    <button class="quiz-opt" data-opt="b">b) Sigue ejecutando el siguiente case</button>
-    <button class="quiz-opt" data-opt="c">c) Vuelve al principio del switch</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-  <div class="quiz-q" data-correct="a" data-explanation="Separar lógica de presentación hace que el código sea más fácil de leer, mantener y escalar. Cada cosa en su lugar.">
-    <p><strong>3.</strong> ¿Por qué conviene que el switch solo asigne variables y el HTML esté aparte?</p>
-    <button class="quiz-opt" data-opt="a">a) Porque separa lógica de presentación</button>
-    <button class="quiz-opt" data-opt="b">b) Porque PHP no puede tener HTML adentro de un switch</button>
-    <button class="quiz-opt" data-opt="c">c) Porque las variables se ven mejor</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-  <div class="quiz-q" data-correct="b" data-explanation="git add prepara los archivos (staging), git commit saca la foto. Los dos pasos son necesarios.">
-    <p><strong>4.</strong> ¿Cuál es la diferencia entre <code>git add</code> y <code>git commit</code>?</p>
-    <button class="quiz-opt" data-opt="a">a) Son lo mismo, hacen falta los dos por las dudas</button>
-    <button class="quiz-opt" data-opt="b">b) add prepara los archivos, commit guarda la foto</button>
-    <button class="quiz-opt" data-opt="c">c) add guarda la foto, commit la sube a GitHub</button>
-    <div class="quiz-feedback"></div>
-  </div>
+  <p class="quiz-intro">Hacé click en la opción que te parezca correcta. Te marca al instante si acertaste.</p>
 
   <div class="quiz-q" data-correct="c" data-explanation="git push sube los commits locales a GitHub. Sin push, los commits solo existen en tu máquina.">
-    <p><strong>5.</strong> ¿Qué hace <code>git push</code>?</p>
+    <p><strong>1.</strong> ¿Qué hace <code>git push</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Borra el commit anterior</button>
     <button class="quiz-opt" data-opt="b">b) Crea un repo nuevo en GitHub</button>
     <button class="quiz-opt" data-opt="c">c) Sube los commits locales a GitHub</button>
     <div class="quiz-feedback"></div>
   </div>
 
-  <p id="quiz-score" style="margin-top: 1.5em; font-size: 1.05em; font-weight: 700; color: var(--accent);"></p>
-  <button type="button" id="quiz-reset" class="btn" style="display:none; margin-top: 0.5em; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">↻ Volver a hacer el quiz</button>
+  <div class="quiz-q" data-correct="b" data-explanation="git add prepara los archivos (staging), git commit saca la foto. Los dos pasos son necesarios.">
+    <p><strong>2.</strong> ¿Cuál es la diferencia entre <code>git add</code> y <code>git commit</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Son lo mismo, hacen falta los dos por las dudas</button>
+    <button class="quiz-opt" data-opt="b">b) add prepara los archivos, commit guarda la foto</button>
+    <button class="quiz-opt" data-opt="c">c) add guarda la foto, commit la sube a GitHub</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="GitHub ya no acepta la contraseña de la cuenta en el push: va el token (o GitHub CLI).">
+    <p><strong>3.</strong> Al hacer <code>git push</code>, ¿qué ponés cuando pide contraseña?</p>
+    <button class="quiz-opt" data-opt="a">a) La contraseña de mi cuenta de GitHub</button>
+    <button class="quiz-opt" data-opt="b">b) El token de acceso personal</button>
+    <button class="quiz-opt" data-opt="c">c) El nombre del repositorio</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="switch evalúa la variable UNA sola vez y salta al case correcto. if/elseif la evalúa de nuevo en cada condición.">
+    <p><strong>4.</strong> ¿Qué diferencia principal tiene <code>switch</code> respecto de <code>if/elseif</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) switch es más rápido siempre</button>
+    <button class="quiz-opt" data-opt="b">b) switch permite usar strings, if no</button>
+    <button class="quiz-opt" data-opt="c">c) switch evalúa la variable una sola vez</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="Separar lógica de presentación hace que el código sea más fácil de leer, mantener y escalar. Cada cosa en su lugar.">
+    <p><strong>5.</strong> ¿Por qué conviene que el switch solo asigne variables y el HTML esté aparte?</p>
+    <button class="quiz-opt" data-opt="a">a) Porque separa lógica de presentación</button>
+    <button class="quiz-opt" data-opt="b">b) Porque PHP no puede tener HTML adentro de un switch</button>
+    <button class="quiz-opt" data-opt="c">c) Porque las variables se ven mejor</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score"></p>
+  <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
 </div>
 
 <h2 id="s10">
@@ -482,7 +511,7 @@ git push</code></pre>
   Próximos pasos
 </h2>
 
-<p>Con switch, variables separadas y Git ya tenés las herramientas para organizar mejor tu proyecto. Lo que viene:</p>
+<p>Con Git, switch y variables separadas ya tenés las herramientas para versionar y organizar mejor tu proyecto. Lo que viene:</p>
 
 <ul>
   <li><strong>Clase 4:</strong> Arrays asociativos en PHP + pasar los datos a un archivo aparte. Organizar el código como se hace en proyectos reales.</li>
@@ -491,13 +520,13 @@ git push</code></pre>
 
 <p><strong>Documentación oficial</strong> para tener a mano:</p>
 <ul>
-  <li>Switch en PHP — <a href="https://www.php.net/manual/es/control-structures.switch.php" target="_blank" rel="noopener noreferrer">php.net (manual en español)</a></li>
   <li>Git — <a href="https://git-scm.com/book/es/v2" target="_blank" rel="noopener noreferrer">Pro Git (libro en español)</a></li>
+  <li>Switch en PHP — <a href="https://www.php.net/manual/es/control-structures.switch.php" target="_blank" rel="noopener noreferrer">php.net (manual en español)</a></li>
   <li>Variables CSS — <a href="https://developer.mozilla.org/es/docs/Web/CSS/Using_CSS_custom_properties" target="_blank" rel="noopener noreferrer">MDN Web Docs</a></li>
 </ul>
 
 <p>Material de esta clase y las anteriores:</p>
-<p style="font-size: 1.05em;">
+<p class="mat-links">
   <a href="clase-03-tp-navegacion.html"><strong>→ TP de Clase 3</strong></a> ·
   <a href="../clase_2/clase-02-teoria.html"><strong>Teoría de Clase 2</strong></a> ·
   <a href="../clase_2/clase-02-tp-mini-sistema.html"><strong>TP de Clase 2</strong></a>
@@ -507,6 +536,7 @@ git push</code></pre>
   <a href="../">← Volver al inicio</a>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../js/estudiantes.js"></script>
 
 </body>

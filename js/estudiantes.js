@@ -1,6 +1,11 @@
 (function () {
   'use strict';
 
+  // === Syntax highlighting (si highlight.js está cargado vía CDN) ===
+  if (window.hljs) {
+    try { window.hljs.highlightAll(); } catch (e) { /* sin resaltado: el código igual se ve oscuro y legible */ }
+  }
+
   // === Recorte en iframe ===
   if (window.self !== window.top) {
     const hash = window.location.hash.substring(1);
@@ -100,22 +105,64 @@
   })();
 
   // === Botones "Copiar" en bloques de código ===
-  document.querySelectorAll('.code-wrap').forEach(function (wrap) {
-    var btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.textContent = 'Copiar';
-    btn.addEventListener('click', function () {
-      var code = wrap.querySelector('pre');
-      if (!code) return;
-      try {
-        navigator.clipboard.writeText(code.textContent).then(function () {
-          btn.textContent = '✓ Copiado'; btn.classList.add('ok');
-          setTimeout(function () { btn.textContent = 'Copiar'; btn.classList.remove('ok'); }, 1500);
-        }, function () { btn.textContent = 'Error'; });
-      } catch (e) { btn.textContent = 'Error'; }
+  (function () {
+    function addCopy(wrap) {
+      if (wrap.querySelector(':scope > .copy-btn')) return; // idempotente
+      var btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.type = 'button';
+      btn.textContent = 'Copiar';
+      btn.setAttribute('aria-label', 'Copiar código');
+      btn.addEventListener('click', function () {
+        var code = wrap.querySelector('pre');
+        if (!code) return;
+        try {
+          navigator.clipboard.writeText(code.textContent).then(function () {
+            btn.textContent = '✓ Copiado'; btn.classList.add('ok');
+            setTimeout(function () { btn.textContent = 'Copiar'; btn.classList.remove('ok'); }, 1500);
+          }, function () { btn.textContent = 'Error'; });
+        } catch (e) { btn.textContent = 'Error'; }
+      });
+      wrap.appendChild(btn);
+    }
+    // Bloques ya envueltos en .code-wrap
+    document.querySelectorAll('.code-wrap').forEach(addCopy);
+    // <pre> sueltos: los envolvemos para que también tengan botón "Copiar"
+    document.querySelectorAll('pre').forEach(function (pre) {
+      if (pre.closest('.code-wrap')) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'code-wrap';
+      pre.parentNode.insertBefore(wrap, pre);
+      wrap.appendChild(pre);
+      addCopy(wrap);
     });
-    wrap.appendChild(btn);
-  });
+  })();
+
+  // === Checklist de autoverificación (recuerda lo tildado en el navegador) ===
+  (function () {
+    document.querySelectorAll('.selfcheck').forEach(function (list) {
+      var key = 'estudiantes-check-' + (list.dataset.key || location.pathname);
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) {}
+      var boxes = list.querySelectorAll('input[type="checkbox"]');
+      var counter = list.querySelector('.selfcheck-count');
+      function update() {
+        var done = list.querySelectorAll('input[type="checkbox"]:checked').length;
+        if (counter) counter.textContent = done + ' / ' + boxes.length;
+        list.classList.toggle('all-done', boxes.length > 0 && done === boxes.length);
+      }
+      boxes.forEach(function (box, i) {
+        if (!box.id) box.id = (list.dataset.key || 'chk') + '-' + i;
+        if (saved[box.id]) box.checked = true;
+        box.addEventListener('change', function () {
+          saved[box.id] = box.checked;
+          try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) {}
+          update();
+        });
+      });
+      update();
+    });
+  })();
 
   // === Quiz handler ===
   (function () {

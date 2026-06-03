@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TP Clase 3 — Navegación visual con switch y Git</title>
+<title>TP Clase 3 — Git + navegación visual con switch</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 </head>
 <body>
 
@@ -18,32 +19,91 @@
 
 <div class="hero">
   <div class="eyebrow">Trabajo práctico · Clase 3</div>
-  <h1>Navegación visual con switch y Git</h1>
-  <p class="sub">Refactorizar <code>info.php</code> a switch con contenido en variables, imágenes, CSS dinámico por sección, y subir todo a GitHub.</p>
+  <h1>Git + navegación visual con switch</h1>
+  <p class="sub">Primero subís a GitHub el proyecto que ya tenés (tu primer commit). Después mejorás <code>info.php</code> con <code>switch</code>, variables, imágenes y CSS por sección, y subís ese avance como segundo commit.</p>
 </div>
 
 <div class="meta">
   <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
-  <strong>Tiempo de trabajo en clase:</strong> 30 minutos (Actividad 1) + 60 minutos (Git)
+  <strong>Tiempo de trabajo en clase:</strong> 60 minutos (Git) + 60 minutos (refactor)
 </div>
 
 <h2>Objetivo</h2>
 
-<p>Transformar el <code>info.php</code> que ya tenés (con <code>if/elseif</code>) en una versión con <code>switch</code>, variables separadas, imágenes y CSS que cambia según la sección. Además, subir el proyecto completo a GitHub.</p>
+<p>Aprender a versionar tu proyecto con Git: subir a GitHub el <code>info.php</code> que ya tenés (con <code>if/elseif</code>) como primer commit, después transformarlo en una versión con <code>switch</code>, variables separadas, imágenes y CSS dinámico, y subir esa mejora como segundo commit.</p>
 
 <h2>Consigna</h2>
 
-<h3>Parte 1 — Refactorizar info.php a switch</h3>
+<h3>Parte 1 — Subir tu proyecto a GitHub (primer commit)</h3>
+
+<p>Todavía <strong>no toques el código</strong>: primero versionamos el proyecto tal como está.</p>
 
 <ol>
-  <li>Abrí tu <code>info.php</code> de la clase anterior.</li>
+  <li>Abrí la terminal en tu carpeta del proyecto.</li>
+  <li>Configurá Git (si no lo hiciste antes):
+    <pre><code>git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"</code></pre>
+  </li>
+  <li>Inicializá el repositorio y hacé el primer commit:
+    <pre><code>git init
+git add .
+git commit -m "Primer commit: mini-sistema con login (Clase 2)"</code></pre>
+  </li>
+  <li>Entrá a <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a>, creá un repo nuevo (nombre: <code>clase02</code> o el que quieras) y conectalo:
+    <pre><code>git remote add origin https://github.com/tuusuario/clase02.git
+git branch -M main
+git push -u origin main</code></pre>
+  </li>
+  <li>Verificá que los archivos estén en GitHub entrando a la URL de tu repo.</li>
+</ol>
+
+<h3>El token de GitHub (importante)</h3>
+
+<p>Cuando hagas <code>git push</code>, GitHub te va a pedir usuario y contraseña. <strong>La "contraseña" NO es la de tu cuenta:</strong> GitHub ya no la acepta desde la terminal. Necesitás un <strong>token de acceso personal</strong> (una clave larga que generás una vez):</p>
+
+<ol>
+  <li>En GitHub, arriba a la derecha: tu foto → <strong>Settings</strong>.</li>
+  <li>Abajo de todo en el menú izquierdo: <strong>Developer settings</strong>.</li>
+  <li><strong>Personal access tokens → Tokens (classic) → Generate new token (classic)</strong>.</li>
+  <li>Ponele un nombre (ej. <code>clase02</code>), una expiración, y marcá el permiso <strong><code>repo</code></strong>.</li>
+  <li><strong>Generate token</strong> y <strong>copialo ahora</strong> (se muestra una sola vez).</li>
+  <li>Cuando el <code>push</code> pida contraseña, <strong>pegá el token</strong> (no se ve mientras lo pegás, es normal).</li>
+</ol>
+
+<div class="highlight">
+  <strong>Más fácil:</strong> si está instalado <a href="https://cli.github.com" target="_blank" rel="noopener noreferrer">GitHub CLI</a>, corré <code>gh auth login</code> una vez y te autentica desde el navegador, sin pegar el token a mano.
+</div>
+
+<div class="highlight">
+  <strong>¿No te anda Git en la compu (no instala, pide token y no podés)?</strong> Subí por la web, sin instalar nada y sin token:
+  <ol>
+    <li>En github.com creá el repo y entrá a <strong>Add file → Upload files</strong>.</li>
+    <li><strong>Arrastrá los archivos</strong> del proyecto (<code>info.php</code>, <code>includes/</code>, <code>css/</code>…). <strong>No subas un <code>.zip</code>:</strong> GitHub no lo descomprime, lo guarda como un archivo suelto.</li>
+    <li>Escribí el mensaje abajo (ese es el commit) y dale <strong>Commit changes</strong>.</li>
+    <li>El segundo commit (después del refactor) lo subís igual: abrí el archivo en GitHub, tocá el lápiz ✏️ y <strong>Commit changes</strong>, o volvé a subir los archivos.</li>
+  </ol>
+</div>
+
+<div class="highlight">
+  <strong>✓ Checkpoint Parte 1:</strong> entrá a la URL de tu repo en GitHub. ¿Ves todos los archivos y aparece tu <em>primer commit</em>? Si el <code>push</code> te pidió contraseña y no la aceptó, era el <strong>token</strong> (no la clave de la cuenta). No sigas hasta tener esto.
+</div>
+
+<h3>Parte 2 — Refactorizar info.php a switch</h3>
+
+<ol>
+  <li>Abrí tu <code>info.php</code> (el que ya subiste).</li>
   <li>Reemplazá los <code>if/elseif</code> por un <code>switch</code>.</li>
   <li>Cada <code>case</code> debe asignar variables (<code>$titulo</code>, <code>$texto</code>, <code>$clase</code>) en lugar de escribir HTML.</li>
   <li>El HTML (con <code>&lt;?= $variable ?&gt;</code>) va abajo del switch, una sola vez.</li>
   <li>Mantené al menos <strong>cuatro secciones</strong>: inicio, ayuda, contacto + una más inventada por vos.</li>
+  <li><strong>No borres</strong> el <code>session_start()</code> ni el <code>include 'includes/cabecera.php'</code>/<code>pie.php</code> de Clase 2: el switch reemplaza solo el <code>if/elseif</code>, el resto queda igual.</li>
 </ol>
 
-<h3>Parte 2 — Imágenes</h3>
+<div class="highlight">
+  <strong>✓ Checkpoint Parte 2:</strong> abrí <code>info.php?seccion=ayuda</code> y <code>?seccion=contacto</code> — ¿cambia el contenido? ¿Tu switch tiene <code>default</code> para una sección que no existe? ¿Seguís teniendo el <code>session_start()</code> y el <code>include</code> de <code>cabecera.php</code>?
+</div>
+
+<h3>Parte 3 — Imágenes</h3>
 
 <ol>
   <li>Agregá una variable <code>$imagen</code> a cada case del switch.</li>
@@ -54,10 +114,10 @@
   </li>
 </ol>
 
-<h3>Parte 3 — CSS dinámico</h3>
+<h3>Parte 4 — CSS dinámico</h3>
 
 <ol>
-  <li>En el <code>&lt;body&gt;</code>, usá <code>class="&lt;?= $clase ?&gt;"</code>.</li>
+  <li>En el <code>&lt;body&gt;</code> (que está en <code>cabecera.php</code>), usá <code>class="&lt;?= $clase ?&gt;"</code>.</li>
   <li>En tu <code>css/estilos.css</code>, agregá reglas para cada sección:
     <pre><code>.sec-inicio   { --accent: #4a90d9; }
 .sec-ayuda    { --accent: #e67e22; }
@@ -68,39 +128,22 @@ body { background: var(--accent); transition: background .3s; }</code></pre>
   <li>Opcional: agregá una transición suave al cambiar de sección.</li>
 </ol>
 
-<h3>Parte 4 — Subir a GitHub</h3>
+<div class="highlight">
+  <strong>✓ Checkpoint Partes 3 y 4:</strong> recorré tus secciones — ¿cada una muestra su imagen y <em>cambia de color</em>? Si el color no cambia, revisá que el <code>&lt;body&gt;</code> tenga <code>class="&lt;?= $clase ?&gt;"</code> (en <code>cabecera.php</code>) y que existan las reglas <code>.sec-*</code> en tu CSS.
+</div>
+
+<h3>Parte 5 — Segundo commit (subí el refactor)</h3>
+
+<p>Ya tenés el repo creado en la Parte 1. Ahora subís la mejora como un nuevo commit:</p>
 
 <ol>
-  <li>Abrí la terminal en tu carpeta del proyecto.</li>
-  <li>Configurá Git (si no lo hiciste antes):
-    <pre><code>git config --global user.name "Tu Nombre"
-git config --global user.email "tu@email.com"</code></pre>
-  </li>
-  <li>Inicializá el repositorio:
-    <pre><code>git init</code></pre>
-  </li>
-  <li>Agregá todos los archivos y hacé el primer commit:
+  <li>Guardá todos los cambios.</li>
+  <li>En la terminal:
     <pre><code>git add .
-git commit -m "Primer commit: sistema con login, switch y navegacion"</code></pre>
-  </li>
-  <li>Entrá a <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a>, creá un repo nuevo (nombre: <code>clase02</code> o el que quieras).</li>
-  <li>Conectá y subí:
-    <pre><code>git remote add origin https://github.com/tuusuario/clase02.git
-git branch -M main
-git push -u origin main</code></pre>
-  </li>
-  <li>Verificá que los archivos estén en GitHub entrando a la URL de tu repo.</li>
-</ol>
-
-<h3>Parte 5 — Segundo commit</h3>
-
-<ol>
-  <li>Agregá UNA sección más a tu <code>info.php</code> (inventá un tema: "galería", "blog", "faq", etc.).</li>
-  <li>Guardá los cambios y subilos:
-    <pre><code>git add .
-git commit -m "Agrego seccion galeria a info.php"
+git commit -m "Refactor: info.php con switch, imagenes y CSS dinamico"
 git push</code></pre>
   </li>
+  <li>Entrá a tu repo en GitHub: ahora tenés que ver <strong>dos commits</strong>. Podés comparar el antes y el después.</li>
 </ol>
 
 <div class="highlight">
@@ -111,13 +154,40 @@ git push</code></pre>
 
 <table>
   <tr><th>Error</th><th>Qué revisar</th></tr>
-  <tr><td>La página muestra todo junto sin formato</td><td>¿Cerraron bien el <code>?&gt;</code> antes del HTML?</td></tr>
-  <tr><td>El color de fondo no cambia</td><td>¿Está <code>class="&lt;?= $clase ?&gt;"</code> en el <code>&lt;body&gt;</code>? ¿Las reglas CSS están bien escritas?</td></tr>
-  <tr><td>GitHub no acepta la contraseña</td><td>Usá un token de acceso personal (GitHub Settings → Developer settings → Personal access tokens) o instalá <a href="https://cli.github.com" target="_blank" rel="noopener noreferrer">GitHub CLI</a> y ejecutá <code>gh auth login</code></td></tr>
+  <tr><td>GitHub no acepta la contraseña</td><td>No va la clave de tu cuenta: va el <strong>token</strong> (Parte 1) o <code>gh auth login</code> con GitHub CLI.</td></tr>
   <tr><td>Git dice "nothing to commit"</td><td>¿Guardaste el archivo antes de hacer <code>git add</code>?</td></tr>
+  <tr><td><code>fatal: not a git repository</code></td><td>Faltó <code>git init</code> en la carpeta del proyecto.</td></tr>
+  <tr><td>La página muestra todo junto sin formato</td><td>¿Cerraron bien el <code>?&gt;</code> antes del HTML?</td></tr>
+  <tr><td>El color de fondo no cambia</td><td>¿Está <code>class="&lt;?= $clase ?&gt;"</code> en el <code>&lt;body&gt;</code> (en <code>cabecera.php</code>)? ¿Las reglas CSS están bien escritas?</td></tr>
   <tr><td>No encuentro las imágenes</td><td>Con picsum.photos no necesitás descargar nada, están online.</td></tr>
 </table>
 
+<h2>¿Terminaste? Verificá lo que tenés</h2>
+
+<p>Tildá lo que ya tengas hecho. Se guarda solo en este navegador, así podés volver a chequearlo.</p>
+
+<div class="selfcheck" data-key="tp-clase3">
+  <div class="selfcheck-head">
+    <span>Checklist del TP de Clase 3</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="tpc3-1"><label for="tpc3-1">Subí mi proyecto de Clase 2 a GitHub (primer commit).</label></li>
+    <li><input type="checkbox" id="tpc3-2"><label for="tpc3-2">Pude autenticarme con el <strong>token</strong> (o con GitHub CLI / la web).</label></li>
+    <li><input type="checkbox" id="tpc3-3"><label for="tpc3-3">Mi <code>info.php</code> usa <code>switch</code> en lugar de <code>if/elseif</code>.</label></li>
+    <li><input type="checkbox" id="tpc3-4"><label for="tpc3-4">Cada <code>case</code> carga variables (<code>$titulo</code>, <code>$texto</code>, <code>$imagen</code>, <code>$clase</code>), no HTML.</label></li>
+    <li><input type="checkbox" id="tpc3-5"><label for="tpc3-5">Tengo al menos 4 secciones (inicio, ayuda, contacto + una propia) y un <code>default</code>.</label></li>
+    <li><input type="checkbox" id="tpc3-6"><label for="tpc3-6">Cada sección muestra una imagen distinta y cambia de color (CSS dinámico).</label></li>
+    <li><input type="checkbox" id="tpc3-7"><label for="tpc3-7">Mantuve <code>session_start()</code> y el <code>include</code> de <code>cabecera.php</code>/<code>pie.php</code>.</label></li>
+    <li><input type="checkbox" id="tpc3-8"><label for="tpc3-8">Subí el refactor como segundo commit (tengo 2 commits en GitHub).</label></li>
+  </ul>
+</div>
+
+<div class="nav">
+  <a href="clase-03-teoria.html">← Volver a la teoría de Clase 3</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../js/estudiantes.js"></script>
 
 </body>

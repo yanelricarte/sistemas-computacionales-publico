@@ -18,8 +18,8 @@ clase_2/
 └── clase-02-tp-mini-sistema.html → TP: mini-sistema web con login
 
 clase_3/
-├── clase-03-teoria.html          → Teoría: switch, datos/vista, CSS dinámico, Git
-└── clase-03-tp-navegacion.html   → TP: navegación visual con switch
+├── clase-03-teoria.html          → Teoría: Git + token, switch, datos/vista, CSS dinámico, imágenes
+└── clase-03-tp-navegacion.html   → TP: Git (1er commit) + refactor a switch (2º commit)
 
 index.html                     → Página principal con índice de materiales
 programa-2026.html             → Programa completo de la materia

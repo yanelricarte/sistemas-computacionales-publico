@@ -1,5 +1,5 @@
 :root {
-  --bg: #fafafa;
+  --bg: #edf0f4;
   --surface: #ffffff;
   --ink: #111827;
   --ink-soft: #4b5563;
@@ -241,7 +241,9 @@ table {
 th, td { border-bottom: 1px solid var(--border-soft); padding: 11px 15px; text-align: left; vertical-align: top; }
 th { background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; }
 tr:last-child td { border-bottom: 0; }
-tr:hover td { background: #fafbff; }
+tr:nth-child(even) td { background: var(--border-soft); }
+tr:hover td { background: var(--accent-soft); }
+td code, th code { white-space: normal; word-break: break-word; }
 
 /* ─── Code blocks ─── */
 code {
@@ -267,6 +269,20 @@ pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
 }
 .copy-btn:hover { background: rgba(255,255,255,.2); }
 .copy-btn.ok { background: var(--ok); border-color: var(--ok); color: white; }
+
+/* ─── Syntax highlighting (highlight.js) ───
+   Mantenemos NUESTRO fondo oscuro del <pre>; highlight.js solo colorea los tokens. */
+pre code.hljs { background: transparent; padding: 0; color: #e0e7ff; }
+/* Paleta sobria sobre fondo índigo (#1e1b4b) */
+.hljs-comment, .hljs-quote { color: #aab1e0; font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name { color: #c4b5fd; }
+.hljs-string, .hljs-attr, .hljs-template-tag { color: #9ae6b4; }
+.hljs-variable, .hljs-template-variable, .hljs-attribute { color: #fca5a5; }
+.hljs-number, .hljs-literal { color: #fbbf72; }
+.hljs-title, .hljs-section, .hljs-function .hljs-title { color: #7cc4ff; }
+.hljs-meta { color: #f0a6e0; }   /* <?php ?> */
+.hljs-tag { color: #8b93c4; }
+.hljs-comment { opacity: .9; }
 
 /* ─── Blockquotes ─── */
 blockquote {
@@ -324,6 +340,10 @@ details[open] summary::before { transform: rotate(90deg); }
 .quiz-opt.correct { background: var(--ok-soft); border-color: var(--ok); color: #065f46; font-weight: 700; }
 .quiz-opt.wrong { background: #fee2e2; border-color: #dc2626; color: #991b1b; }
 .quiz-feedback { margin-top: .6em; font-size: .9em; color: var(--ink-soft); min-height: 1.4em; }
+.quiz-intro { color: var(--ink-soft); font-size: .92em; margin-top: -.3em; }
+#quiz-score { margin-top: 1.5em; font-size: 1.05em; font-weight: 700; color: var(--accent); }
+.quiz-reset { display: none; margin-top: .5em; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.mat-links { font-size: 1.05em; }
 
 /* ─── Checkpoint inline (en el transcurso de la teoría) ─── */
 .checkpoint {
@@ -436,12 +456,83 @@ details[open] summary::before { transform: rotate(90deg); }
   text-align: center;
 }
 
+/* ─── Comparación de código antes/después (teoría) ───
+   El <pre> mantiene el fondo oscuro de siempre (buen contraste);
+   antes/después se distinguen con un borde de color, no con fondo claro. */
+.code-switch { margin: 1em 0; display: grid; gap: .8em; }
+.code-switch .code-wrap { margin: 0; }
+.code-switch pre { margin: 0; }
+.code-switch .old { border-left: 4px solid #fb7185; }   /* rojo: el "antes" */
+.code-switch .new { border-left: 4px solid #4ade80; }   /* verde: el "después" */
+
+/* ─── Imagen demo (teoría) ─── */
+.img-demo {
+  display: block; max-width: 100%; border-radius: var(--radius);
+  margin: 1em 0; box-shadow: var(--shadow);
+}
+
+/* ─── Flujo de Git (teoría) ─── */
+.git-flow {
+  display: flex; gap: 8px; align-items: center;
+  justify-content: center; flex-wrap: wrap;
+  margin: 1.5em 0; font-size: .92em;
+}
+.git-flow .step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 16px;
+  text-align: center; min-width: 80px; color: var(--ink);
+}
+.git-flow .step strong { display: block; color: var(--accent); }
+.git-flow .arrow { font-size: 1.3em; color: var(--ink-light); }
+
+/* ─── Checklist de autoverificación (TP) ─── */
+.selfcheck {
+  list-style: none; padding: 1.2em 1.4em; margin: 1.5em 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--ok); border-radius: var(--radius);
+  box-shadow: var(--shadow); transition: background .2s, border-color .2s;
+}
+.selfcheck.all-done { background: var(--ok-soft); }
+.selfcheck-head {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: .8em; margin-bottom: .6em; font-weight: 700; color: var(--ink);
+}
+.selfcheck-count {
+  font-size: .82em; color: var(--ok); font-weight: 700;
+  background: var(--ok-soft); padding: 2px 11px; border-radius: 999px;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.selfcheck ul { list-style: none; padding: 0; margin: 0; }
+.selfcheck li {
+  display: flex; align-items: flex-start; gap: .65em;
+  margin: 0; padding: .6em 0; border-bottom: 1px solid var(--border-soft);
+}
+.selfcheck li:last-child { border-bottom: 0; }
+.selfcheck input[type="checkbox"] {
+  margin-top: .25em; width: 18px; height: 18px;
+  accent-color: var(--ok); flex-shrink: 0; cursor: pointer;
+}
+.selfcheck label { cursor: pointer; line-height: 1.5; }
+.selfcheck input:checked + label { color: var(--ink-light); text-decoration: line-through; }
+
 /* ─── Responsive ─── */
 @media (max-width: 600px) {
   body { padding: 0 1.1em 4em; }
   .toc ol { columns: 1; }
   .hero { padding: 2em 1.4em; }
   .hero h1 { font-size: 1.5em; }
+
+  /* Tablas: que entren en el ancho sin scroll horizontal (achicar, no cortar) */
+  table { font-size: .9em; }
+  th, td { padding: 8px 10px; }
+
+  /* Código: que el botón Copiar no tape el contenido */
+  pre { padding: 1em 1em; font-size: .82em; }
+  .copy-btn { top: .35em; right: .35em; padding: 3px 8px; font-size: .72em; }
+
+  .selfcheck { padding: 1em 1.1em; }
+  .git-flow .arrow { transform: rotate(90deg); }
 }
 
 @media (max-width: 760px) {
