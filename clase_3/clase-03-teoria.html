@@ -298,16 +298,16 @@ switch ($seccion) {
 
 <p>Y en el CSS:</p>
 
-<pre><code>/* Cada sección define su color de acento */
-.sec-inicio   { --accent: #4a90d9; }  /* azul */
-.sec-ayuda    { --accent: #e67e22; }  /* naranja */
-.sec-contacto { --accent: #27ae60; }  /* verde */
+<pre><code>/* Cada sección define su acento + un fondo suave del mismo tono */
+.sec-inicio   { --accent: #4a90d9; background: #f0f4ff; }  /* azul */
+.sec-ayuda    { --accent: #e67e22; background: #fff8f0; }  /* naranja */
+.sec-contacto { --accent: #27ae60; background: #f0fff4; }  /* verde */
 
-/* El body usa ese color */
-body { background: var(--accent); transition: background .3s; }
-
-/* Los paneles pueden heredar el color */
-.panel { border-left: 4px solid var(--accent); }</code></pre>
+/* El fondo cambia con la sección; el acento pinta navbar, títulos y bordes */
+body    { transition: background .3s; }
+.navbar { background: var(--accent); }
+h1      { color: var(--accent); }
+.panel  { border-left: 4px solid var(--accent); }</code></pre>
 
 <h3>¿Qué podés cambiar por sección?</h3>
 
@@ -320,7 +320,7 @@ body { background: var(--accent); transition: background .3s; }
 </ul>
 
 <div class="highlight">
-  <strong>Tip:</strong> usá <code>transition</code> en el body para que el cambio de color sea suave. Con <code>background: var(--accent); transition: background .3s;</code> alcanza.
+  <strong>Tip:</strong> el <code>--accent</code> conviene reservarlo para detalles (navbar, títulos, bordes) y dejar el fondo en un tono suave: un body pintado entero del color fuerte cansa la vista. Con <code>transition: background .3s</code> en el body, el cambio de sección se ve gradual.
 </div>
 
 <h2 id="s5">

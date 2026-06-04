@@ -119,10 +119,11 @@ git push -u origin main</code></pre>
 <ol>
   <li>En el <code>&lt;body&gt;</code> (que está en <code>cabecera.php</code>), usá <code>class="&lt;?= $clase ?&gt;"</code>.</li>
   <li>En tu <code>css/estilos.css</code>, agregá reglas para cada sección:
-    <pre><code>.sec-inicio   { --accent: #4a90d9; }
-.sec-ayuda    { --accent: #e67e22; }
-.sec-contacto { --accent: #27ae60; }
-body { background: var(--accent); transition: background .3s; }</code></pre>
+    <pre><code>.sec-inicio   { --accent: #4a90d9; background: #f0f4ff; }
+.sec-ayuda    { --accent: #e67e22; background: #fff8f0; }
+.sec-contacto { --accent: #27ae60; background: #f0fff4; }
+body    { transition: background .3s; }
+.navbar { background: var(--accent); }   /* el navbar toma el color de la sección */</code></pre>
   </li>
   <li>Dale a cada sección un color distinto (fondo, acento, lo que se te ocurra).</li>
   <li>Opcional: agregá una transición suave al cambiar de sección.</li>
