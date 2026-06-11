@@ -677,7 +677,7 @@ h1      { color: var(--accent); }
 <p>Antes del mini-quiz, resolvé estos. Mezclan <strong>repaso conceptual</strong> y <strong>lectura de código</strong>: seguí con el dedo qué hace cada línea antes de elegir.</p>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">🔍 Análisis 1 — seguí el switch</p>
+  <p class="checkpoint-title">Análisis 1 — seguí el switch</p>
   <pre><code>$rol = 'editor';
 switch ($rol) {
     case 'admin':
@@ -699,7 +699,7 @@ switch ($rol) {
 </div>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">🔍 Análisis 2 — el break olvidado</p>
+  <p class="checkpoint-title">Análisis 2 — el break olvidado</p>
   <pre><code>$s = $_GET['seccion'] ?? 'inicio';
 switch ($s) {
     case 'inicio':
@@ -719,7 +719,7 @@ echo $titulo;</code></pre>
 </div>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">🔍 Análisis 3 — una URL inesperada</p>
+  <p class="checkpoint-title">Análisis 3 — una URL inesperada</p>
   <pre><code>$seccion = $_GET['seccion'] ?? 'inicio';
 switch ($seccion) {
     case 'ayuda':    $titulo = 'Ayuda';    break;
@@ -737,7 +737,7 @@ echo $titulo;</code></pre>
 </div>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">🔍 Análisis 4 — separar datos de la vista</p>
+  <p class="checkpoint-title">Análisis 4 — separar datos de la vista</p>
   <pre><code>switch ($seccion) {
     case 'ayuda':
         $titulo = 'Ayuda';
@@ -755,7 +755,7 @@ echo $titulo;</code></pre>
 </div>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">💡 Concepto — el valor por defecto</p>
+  <p class="checkpoint-title">Concepto — el valor por defecto</p>
   <div class="quiz-q" data-correct="b" data-explanation="?? mira si $_GET['seccion'] llegó: si no vino nada en la URL, usa 'inicio'. Evita el error de leer un dato que no existe.">
     <p>¿Qué hace <code>$_GET['seccion'] ?? 'inicio'</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Siempre vale 'inicio'</button>
@@ -766,7 +766,7 @@ echo $titulo;</code></pre>
 </div>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">💡 Concepto — variables de CSS</p>
+  <p class="checkpoint-title">Concepto — variables de CSS</p>
   <div class="quiz-q" data-correct="b" data-explanation="var(--accent) lee el color guardado en la variable --accent (el que definió la sección activa). No crea ni borra nada.">
     <p>En el CSS, ¿qué hace <code>color: var(--accent);</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Crea una variable nueva llamada accent</button>
