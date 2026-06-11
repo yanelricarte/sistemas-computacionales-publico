@@ -75,6 +75,95 @@
 <h2 id="s1">
   <svg class="icon" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
   1. Git: primeros pasos
+  <svg class="icon" viewBox="0 0 24 24"><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+  1. Git: primeros pasos
+
+<h2 id="s1">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+  1. Git: primeros pasos
+</h2>
+
+<p>Git es un sistema de <strong>control de versiones</strong>. Guarda el historial de cambios de tu proyecto y te permite volver atrás si algo sale mal.</p>
+
+<h3>El flujo básico</h3>
+
+<div class="git-flow">
+  <div class="step"><strong>Editar</strong>cambiás archivos</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git add</strong>preparás los archivos</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git commit</strong>sacás la foto</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>git push</strong>subís la foto a GitHub</div>
+</div>
+
+<h3>Paso a paso</h3>
+
+<p><strong>Antes de empezar — abrir la terminal integrada en VS Code:</strong> Visual Studio Code tiene una terminal integrada que evitá tener que cambiar de ventana. Para abrirla:</p>
+<ul>
+  <li><strong>Atajo de teclado:</strong> <kbd>Ctrl</kbd> + <kbd>ñ</kbd> (la tecla <kbd>ñ</kbd> está a la izquierda de <kbd>+</kbd>).</li>
+  <li><strong>Menú:</strong> Terminal → New Terminal.</li>
+</ul>
+<p>Se va a abrir un panel en la parte inferior. Al lado del <code>+</code> hay un desplegable donde podés elegir el tipo de terminal. Si ves <code>powershell</code> o <code>cmd</code>, hacé clic ahí y seleccioná <strong>Git Bash</strong>.</p>
+<p><strong>Si Git Bash no aparece en la lista:</strong> descargalo de <a href="https://git-scm.com/download/win" target="_blank" rel="noopener noreferrer">git-scm.com/download/win</a> (sitio oficial, valores por defecto), instalá Git, reiniciá VS Code y volvé a intentar. Verificá que esté instalado con <code>git --version</code>.</p>
+<p><strong>Para que Git Bash sea la terminal por defecto:</strong> <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> → escribí "Terminal: Select Default Profile" → elegí <strong>Git Bash</strong>.</p>
+
+<p><strong>1. Configurar Git</strong> (la primera vez):</p>
+
+<pre><code>git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"</code></pre>
+
+<p>Para verificar que se guardaron bien:</p>
+
+<pre><code>git config --global user.name
+git config --global user.email</code></pre>
+
+<p>Te debería mostrar el nombre y el email que ingresaste.</p>
+
+<p><strong>2. Ir a la carpeta de tu proyecto y activar Git:</strong></p>
+
+<pre><code>cd C:/xampp/htdocs/clase02/
+git init</code></pre>
+
+<p><code>git init</code> crea un repositorio vacío en esa carpeta. Se hace una sola vez por proyecto.</p>
+
+<p><strong>3. Agregar archivos y hacer el primer commit:</strong></p>
+
+<pre><code>git add .
+git commit -m "Primer commit: sistema con login y switch"</code></pre>
+
+<ul>
+  <li><code>git add .</code> agrega todos los archivos de la carpeta al "escritorio" (staging).</li>
+  <li><code>git commit -m "mensaje"</code> saca la foto. El mensaje describe qué cambió.</li>
+</ul>
+
+<p><strong>4. Crear un repositorio en GitHub y subir:</strong></p>
+<ol>
+  <li>Entrá a <a href="https://github.com" target="_blank" rel="noopener noreferrer">github.com</a> e iniciá sesión.</li>
+  <li>Botón verde "New repository" (arriba a la derecha).</li>
+  <li>Nombre: <code>clase02</code> (o el que quieras). Dejá todo lo demás como está.</li>
+  <li>Copiá estas líneas y ejecutalas en tu terminal:</li>
+</ol>
+
+<pre><code>git remote add origin https://github.com/tuusuario/clase02.git
+git branch -M main
+git push -u origin main</code></pre>
+
+<p><strong>5. Verificá:</strong> entrá a <code>github.com/tuusuario/clase02</code> — tenés que ver todos tus archivos.</p>
+
+<h3>Segundo commit (y siguientes)</h3>
+
+<p>Hacé un cambio, guardalo, y repetí:</p>
+
+<pre><code>git add .
+git commit -m "Agrego seccion de ayuda a info.php"
+git push</code></pre>
+
+<p>Cada commit es un punto de guardado. Si después algo se rompe, podés volver a cualquier commit anterior.</p>
+
+<h2 id="s2">
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  2. De if/elseif a switch (con repaso)
 </h2>
 
 <p>Git es un sistema de <strong>control de versiones</strong>. Guarda el historial de cambios de tu proyecto y te permite volver atrás si algo sale mal. Hoy lo primero que hacemos es <strong>subir a GitHub el proyecto que ya tenés de Clase 2</strong> — para no perder nada y aprender a versionar — y más tarde subimos las mejoras como un nuevo commit.</p>
@@ -319,7 +408,6 @@ switch ($s) {
     <div class="quiz-feedback"></div>
   </div>
 </div>
-
 <h2 id="s3">
   <svg class="icon" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
   3. Separando datos de la vista
@@ -418,6 +506,7 @@ case 'ayuda':
 <div class="highlight">
   <strong>Importante:</strong> las imágenes de placeholder son para desarrollo. Cuando el proyecto esté listo, las imágenes deberían ser propias o libres de derechos.
 </div>
+
 
 <h2 id="s5">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -567,7 +656,7 @@ h1      { color: var(--accent); }
 
 <h2 id="s8">
   <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-  8. Buenas prácticas
+  8. Practicá: conceptos y código
 </h2>
 
 <ul>

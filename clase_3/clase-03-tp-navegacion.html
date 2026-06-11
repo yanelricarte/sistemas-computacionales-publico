@@ -137,9 +137,25 @@ body    { transition: background .3s; }
 
 <p>Ya tenés el repo creado en la Parte 1. Ahora subís la mejora como un nuevo commit:</p>
 
+<p><strong>Preparación:</strong> abrí la terminal en VS Code (<kbd>Ctrl</kbd> + <kbd>ñ</kbd>) y seleccioná <strong>Git Bash</strong> en el desplegable al lado del <code>+</code>. Si no instalaste Git todavía, descargalo de <a href="https://git-scm.com/download/win" target="_blank" rel="noopener noreferrer">git-scm.com/download/win</a> (sitio oficial, valores por defecto), reiniciá VS Code y verificá con <code>git --version</code>.</p>
+
 <ol>
   <li>Guardá todos los cambios.</li>
   <li>En la terminal:
+  <li>Abrí la terminal en tu carpeta del proyecto (con <code>cd</code>).</li>
+  <li>Configurá Git (si no lo hiciste antes):
+    <pre><code>git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"</code></pre>
+  </li>
+  <li>Verificá que los datos se guardaron:
+    <pre><code>git config --global user.name
+git config --global user.email</code></pre>
+    Te debería mostrar el nombre y el email que ingresaste.
+  </li>
+  <li>Inicializá el repositorio:
+    <pre><code>git init</code></pre>
+  </li>
+  <li>Agregá todos los archivos y hacé el primer commit:
     <pre><code>git add .
 git commit -m "Refactor: info.php con switch, imagenes y CSS dinamico"
 git push</code></pre>
