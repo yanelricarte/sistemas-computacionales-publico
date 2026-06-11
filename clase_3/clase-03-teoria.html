@@ -31,6 +31,8 @@
 .drag-chip:focus-visible, .drop-zone:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
 .drag-activity.has-selection .drop-zone { cursor:pointer; }
 .drag-check { margin-top:14px; }
+.drag-reset { margin:14px 0 0 10px; background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:.9em; font-family:inherit; }
+.drag-reset:hover { color:var(--accent-dark); }
 .drag-feedback { margin-top:10px; font-weight:600; font-size:.92em; }
 .drag-feedback.all-ok { color:var(--ok); }
 .drag-feedback.partial { color:#c77700; }
@@ -204,12 +206,12 @@ git push</code></pre>
 
 <p class="drag-help">Dos formas de usarla: <strong>arrastrá</strong> la tarjeta a una zona, o <strong>seleccionala</strong> (clic / Enter) y después tocá la zona (o Enter).</p>
 
-<div class="drag-activity">
+<div class="drag-activity" data-key="clase3-selectivas">
   <div class="drag-pool" aria-label="Tarjetas para clasificar">
-    <div class="drag-chip" data-target="switch" data-why="Comparás una variable (la sección) contra valores fijos: inicio, ayuda, contacto." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
-    <div class="drag-chip" data-target="if" data-why="Son rangos con comparaciones (≥ 9, ≥ 6): eso se resuelve con if/elseif." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
-    <div class="drag-chip" data-target="switch" data-why="Una variable (el día) contra valores fijos: lunes, martes, … domingo." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Elegir el saludo según el día: lunes, martes, … domingo</div>
-    <div class="drag-chip" data-target="if" data-why="Es una comparación con un límite (≥ 18), no valores fijos: va con if." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
+    <div class="drag-chip" data-id="c1" data-target="switch" data-why="Comparás una variable (la sección) contra valores fijos: inicio, ayuda, contacto." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
+    <div class="drag-chip" data-id="c2" data-target="if" data-why="Son rangos con comparaciones (≥ 9, ≥ 6): eso se resuelve con if/elseif." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
+    <div class="drag-chip" data-id="c3" data-target="switch" data-why="Una variable (el día) contra valores fijos: lunes, martes, … domingo." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Elegir el saludo según el día: lunes, martes, … domingo</div>
+    <div class="drag-chip" data-id="c4" data-target="if" data-why="Es una comparación con un límite (≥ 18), no valores fijos: va con if." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
   </div>
   <div class="drag-zones">
     <div class="drop-zone" data-zone="if" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en if / elseif">
@@ -224,6 +226,7 @@ git push</code></pre>
     </div>
   </div>
   <button type="button" class="btn drag-check">Verificar</button>
+  <button type="button" class="drag-reset">Reiniciar</button>
   <div class="drag-feedback" role="status" aria-live="polite"></div>
 </div>
 
@@ -403,12 +406,14 @@ case 'ayuda':
 
 <p>Si no tenés las imágenes todavía, usá <a href="https://picsum.photos" target="_blank" rel="noopener noreferrer">picsum.photos</a> para generar placeholders:</p>
 
-<pre><code>$imagen = 'https://picsum.photos/seed/ayuda/600/300';
-//         ──────────────┬─────────┬────┬───┬───
-//                      seed      tema ancho alto
-//         misma seed → misma imagen siempre</code></pre>
+<pre><code>$imagen = 'https://picsum.photos/seed/ayuda/600/300';</code></pre>
 
-<p>El parámetro <code>seed</code> hace que la imagen sea siempre la misma para esa sección. Después las reemplazás por imágenes reales.</p>
+<ul>
+  <li><code>seed/ayuda</code> → la <strong>semilla</strong>: con la misma seed siempre sale la misma imagen. Cambiala por sección (<code>seed/inicio</code>, <code>seed/contacto</code>…).</li>
+  <li><code>600/300</code> → <strong>ancho × alto</strong> de la imagen, en píxeles.</li>
+</ul>
+
+<p>Más adelante reemplazás los placeholders por imágenes propias.</p>
 
 <div class="highlight">
   <strong>Importante:</strong> las imágenes de placeholder son para desarrollo. Cuando el proyecto esté listo, las imágenes deberían ser propias o libres de derechos.
@@ -777,6 +782,26 @@ echo $titulo;</code></pre>
   var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
   var selected = null, dragging = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
   var THRESH = 6;
+  var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
+
+  function save() {
+    try {
+      var st = {};
+      chips.forEach(function (c) { var z = c.closest('.drop-zone'); st[c.getAttribute('data-id')] = z ? z.getAttribute('data-zone') : 'pool'; });
+      localStorage.setItem(KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+  function restore() {
+    try {
+      var st = JSON.parse(localStorage.getItem(KEY) || '{}');
+      chips.forEach(function (c) {
+        var zoneName = st[c.getAttribute('data-id')];
+        if (!zoneName || zoneName === 'pool') return;
+        var z = zones.filter(function (zz) { return zz.getAttribute('data-zone') === zoneName; })[0];
+        if (z) z.querySelector('.zone-items').appendChild(c);
+      });
+    } catch (e) {}
+  }
 
   function place(chip, zone) {
     var dest = (zone && zone !== pool) ? zone.querySelector('.zone-items') : pool;
@@ -784,6 +809,7 @@ echo $titulo;</code></pre>
     chip.classList.remove('ok', 'bad');
     var m = chip.querySelector('.dz-mark'); if (m) m.textContent = '';
     var w = chip.querySelector('.dz-why'); if (w) w.remove();
+    save();
   }
   function clearSel() { if (selected) selected.classList.remove('selected'); selected = null; act.classList.remove('has-selection'); }
   function selectChip(chip) {
@@ -865,6 +891,21 @@ echo $titulo;</code></pre>
       : ok + '/' + chips.length + ' bien. Revisá las marcadas con ✗ y volvé a moverlas.';
     fb.className = 'drag-feedback ' + (all ? 'all-ok' : 'partial');
   });
+
+  var resetBtn = act.querySelector('.drag-reset');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    clearSel();
+    chips.forEach(function (c) {
+      pool.appendChild(c);
+      c.classList.remove('ok', 'bad', 'selected');
+      var m = c.querySelector('.dz-mark'); if (m) m.textContent = '';
+      var w = c.querySelector('.dz-why'); if (w) w.remove();
+    });
+    fb.textContent = ''; fb.className = 'drag-feedback';
+    try { localStorage.removeItem(KEY); } catch (e) {}
+  });
+
+  restore();
 })();
 </script>
 
