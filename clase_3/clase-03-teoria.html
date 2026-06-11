@@ -7,6 +7,25 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/estilos.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+/* Actividad de arrastre (Recuperación de contenido) — funciona en mouse y touch */
+.drag-activity { margin: 1.2em 0; }
+.drag-pool { display:flex; flex-wrap:wrap; gap:8px; padding:12px; border:1px dashed var(--border); border-radius:10px; min-height:52px; background:var(--surface); }
+.drag-zones { display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; }
+.drop-zone { flex:1 1 220px; border:2px dashed var(--border); border-radius:10px; padding:12px; background:var(--bg); transition:border-color .15s, background .15s; }
+.drop-zone h4 { margin:0 0 2px; color:var(--accent); font-size:1em; }
+.drop-zone .hint { margin:0 0 8px; font-size:.8em; color:var(--ink-light); }
+.drop-zone.over { border-color:var(--accent); background:var(--accent-soft); }
+.drop-zone .zone-items { display:flex; flex-direction:column; gap:8px; min-height:42px; }
+.drag-chip { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:.85em; line-height:1.3; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; box-shadow:var(--shadow); }
+.drag-chip.dragging { opacity:.92; cursor:grabbing; box-shadow:var(--shadow-lg); }
+.drag-chip.ok { border-color:var(--ok); border-width:2px; }
+.drag-chip.bad { border-color:#e74c3c; border-width:2px; }
+.drag-check { margin-top:14px; }
+.drag-feedback { margin-top:10px; font-weight:600; font-size:.92em; }
+.drag-feedback.all-ok { color:var(--ok); }
+.drag-feedback.partial { color:#c77700; }
+</style>
 </head>
 <body>
 
@@ -48,6 +67,20 @@
 </h2>
 
 <p>Git es un sistema de <strong>control de versiones</strong>. Guarda el historial de cambios de tu proyecto y te permite volver atrás si algo sale mal. Hoy lo primero que hacemos es <strong>subir a GitHub el proyecto que ya tenés de Clase 2</strong> — para no perder nada y aprender a versionar — y más tarde subimos las mejoras como un nuevo commit.</p>
+
+<h3>Git ≠ GitHub</h3>
+
+<p>Se confunden todo el tiempo, pero son cosas distintas:</p>
+
+<table>
+  <tr><th></th><th>Git</th><th>GitHub</th></tr>
+  <tr><td><strong>Qué es</strong></td><td>Un <strong>programa</strong> que instalás en tu compu.</td><td>Un <strong>sitio web</strong> (en la nube).</td></tr>
+  <tr><td><strong>Para qué</strong></td><td>Llevar el historial de versiones de tu proyecto.</td><td>Guardar ese proyecto online y compartirlo.</td></tr>
+  <tr><td><strong>Dónde vive</strong></td><td>En tu máquina, sin internet.</td><td>En los servidores de GitHub, necesita internet.</td></tr>
+  <tr><td><strong>Ejemplo</strong></td><td><code>git commit</code> (guardás una versión)</td><td><code>git push</code> sube esas versiones a tu cuenta</td></tr>
+</table>
+
+<p>Analogía: <strong>Git</strong> es sacar fotos de tu proyecto en tu celular; <strong>GitHub</strong> es subirlas a la nube para tenerlas a salvo y mostrarlas. Podés usar Git sin GitHub (todo local), pero GitHub sin Git no tiene sentido. Y ojo: GitHub <strong>no</strong> es el único — también existen GitLab y Bitbucket, que hacen lo mismo.</p>
 
 <h3>El flujo básico</h3>
 
@@ -156,53 +189,31 @@ git push</code></pre>
   </ul>
 </details>
 
-<h3>Repaso interactivo: estructuras selectivas</h3>
+<h3>Recuperación de contenido</h3>
 
-<p>Recordá cómo decide un <code>if/elseif</code>: se evalúa <strong>de arriba hacia abajo</strong> y gana la <strong>primera</strong> condición verdadera.</p>
+<p>Antes de avanzar, recuperá lo que ya sabés. <strong>Arrastrá</strong> cada situación a la estructura que mejor le queda y tocá <em>Verificar</em>. Pista: <code>if/elseif</code> sirve para <strong>rangos o condiciones distintas</strong>; <code>switch</code>, para comparar <strong>una misma variable contra valores fijos</strong>.</p>
 
-<pre><code>$nota = 7;
-
-if ($nota &gt;= 9) {
-    echo 'Excelente';
-} elseif ($nota &gt;= 6) {
-    echo 'Aprobado';
-} else {
-    echo 'Desaprobado';
-}</code></pre>
-
-<p>Para comparar usás <code>==</code> (igual) y <code>!=</code> (distinto); un solo <code>=</code> <em>asigna</em>, no compara.</p>
-
-<div class="checkpoint">
-  <p class="checkpoint-title">✓ Repaso 1 — if/elseif</p>
-  <div class="quiz-q" data-correct="b" data-explanation="Con $nota = 7: la primera condición (>= 9) es falsa; la segunda (>= 6) es verdadera, así que imprime 'Aprobado' y saltea el resto.">
-    <p>Con <code>$nota = 7</code>, ¿qué imprime el código de arriba?</p>
-    <button class="quiz-opt" data-opt="a">a) Excelente</button>
-    <button class="quiz-opt" data-opt="b">b) Aprobado</button>
-    <button class="quiz-opt" data-opt="c">c) Desaprobado</button>
-    <div class="quiz-feedback"></div>
+<div class="drag-activity">
+  <div class="drag-pool" aria-label="Situaciones para clasificar">
+    <div class="drag-chip" data-target="switch">Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
+    <div class="drag-chip" data-target="if">Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
+    <div class="drag-chip" data-target="switch">Elegir el saludo según el día: lunes, martes, … domingo</div>
+    <div class="drag-chip" data-target="if">Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
   </div>
-</div>
-
-<div class="checkpoint">
-  <p class="checkpoint-title">✓ Repaso 2 — comparar</p>
-  <div class="quiz-q" data-correct="b" data-explanation="Un solo = asigna un valor; == compara si dos valores son iguales; != compara si son distintos.">
-    <p>¿Qué operador usás para comparar si dos valores son <strong>iguales</strong>?</p>
-    <button class="quiz-opt" data-opt="a">a) <code>=</code></button>
-    <button class="quiz-opt" data-opt="b">b) <code>==</code></button>
-    <button class="quiz-opt" data-opt="c">c) <code>!=</code></button>
-    <div class="quiz-feedback"></div>
+  <div class="drag-zones">
+    <div class="drop-zone" data-zone="if">
+      <h4>if / elseif</h4>
+      <p class="hint">rangos o condiciones distintas</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="switch">
+      <h4>switch</h4>
+      <p class="hint">una misma variable contra valores fijos</p>
+      <div class="zone-items"></div>
+    </div>
   </div>
-</div>
-
-<div class="checkpoint">
-  <p class="checkpoint-title">✓ Repaso 3 — ¿cuándo conviene switch?</p>
-  <div class="quiz-q" data-correct="b" data-explanation="Cuando comparás UNA misma variable contra varios valores fijos (inicio, ayuda, contacto…), el switch queda más ordenado que muchos elseif. Si son rangos o condiciones distintas, if/elseif sigue siendo mejor.">
-    <p>¿En qué caso conviene más un <code>switch</code> que varios <code>elseif</code>?</p>
-    <button class="quiz-opt" data-opt="a">a) Cuando hay una sola condición</button>
-    <button class="quiz-opt" data-opt="b">b) Cuando comparás una misma variable contra varios valores fijos</button>
-    <button class="quiz-opt" data-opt="c">c) Cuando querés repetir algo muchas veces</button>
-    <div class="quiz-feedback"></div>
-  </div>
+  <button type="button" class="btn drag-check">Verificar</button>
+  <div class="drag-feedback" role="status"></div>
 </div>
 
 <p>En la clase anterior armaste <code>info.php</code> con <code>if</code> y <code>elseif</code> para mostrar distinto contenido según el valor de <code>$_GET['seccion']</code>. Ese enfoque funciona, pero cuando tenés muchas secciones el código se vuelve difícil de leer.</p>
@@ -262,9 +273,9 @@ switch ($s) {
   <div class="step"><strong>default</strong>si ningún case coincide</div>
 </div>
 
-<h3>Fall-through: ¿para qué sirve?</h3>
+<h3>Fall-through: ¿qué es y para qué sirve?</h3>
 
-<p>A veces querés que dos valores compartan el mismo código:</p>
+<p><strong>Fall-through</strong> (en inglés, "caer a través") es lo que pasa cuando un <code>case</code> <strong>no tiene <code>break</code></strong>: en vez de salir del switch, sigue ejecutando el <code>case</code> de abajo, y el siguiente, hasta que encuentra un <code>break</code> o termina el switch. La mayoría de las veces es un <strong>error</strong> (te olvidaste el break)… pero a veces se usa <strong>a propósito</strong>: cuando querés que dos valores compartan el mismo código.</p>
 
 <pre><code>switch ($rol) {
     case 'admin':
@@ -364,7 +375,11 @@ switch ($seccion) {
   4. CSS dinámico por sección
 </h2>
 
-<p>Si cada sección tiene una clase distinta en el <code>&lt;body&gt;</code>, podés darle su propio estilo con CSS:</p>
+<p>"<strong>CSS dinámico</strong>" no significa que el CSS cambie solo: el CSS es siempre el mismo. Lo que cambia es <strong>qué reglas se aplican</strong>, porque <strong>PHP le pone una clase distinta al <code>&lt;body&gt;</code> según la sección</strong>. Así, con un único archivo de estilos, cada sección se ve distinta (otro color, otro fondo) sin escribir páginas separadas.</p>
+
+<p>La idea en dos partes: <strong>PHP decide la clase</strong> (ya la cargás en <code>$clase</code> dentro del switch) y <strong>el CSS reacciona a esa clase</strong>.</p>
+
+<p>Primero, PHP pone la clase en el <code>&lt;body&gt;</code>:</p>
 
 <pre><code>&lt;!-- PHP elige la clase --&gt;
 &lt;body class="&lt;?= $clase ?&gt;"&gt;</code></pre>
@@ -722,6 +737,79 @@ echo $titulo;</code></pre>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../js/estudiantes.js"></script>
+
+<script>
+/* Arrastre con pointer events: anda en mouse y en touch (mobile) */
+(function () {
+  var act = document.querySelector('.drag-activity');
+  if (!act) return;
+  var pool  = act.querySelector('.drag-pool');
+  var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
+  var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
+  var dragging = null, ox = 0, oy = 0;
+
+  function zoneUnder(x, y) {
+    if (dragging) dragging.style.visibility = 'hidden';
+    var el = document.elementFromPoint(x, y);
+    if (dragging) dragging.style.visibility = '';
+    return el ? el.closest('.drop-zone') : null;
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('pointerdown', function (e) {
+      dragging = chip;
+      var r = chip.getBoundingClientRect();
+      ox = e.clientX - r.left; oy = e.clientY - r.top;
+      chip.style.width = r.width + 'px';
+      chip.style.position = 'fixed';
+      chip.style.left = (e.clientX - ox) + 'px';
+      chip.style.top  = (e.clientY - oy) + 'px';
+      chip.style.zIndex = '9999';
+      chip.classList.add('dragging');
+      chip.classList.remove('ok', 'bad');
+      chip.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    chip.addEventListener('pointermove', function (e) {
+      if (dragging !== chip) return;
+      chip.style.left = (e.clientX - ox) + 'px';
+      chip.style.top  = (e.clientY - oy) + 'px';
+      var z = zoneUnder(e.clientX, e.clientY);
+      zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+    });
+    function drop(e) {
+      if (dragging !== chip) return;
+      var z = zoneUnder(e.clientX, e.clientY);
+      chip.classList.remove('dragging');
+      chip.style.position = ''; chip.style.left = ''; chip.style.top = '';
+      chip.style.zIndex = ''; chip.style.width = '';
+      zones.forEach(function (zz) { zz.classList.remove('over'); });
+      (z ? z.querySelector('.zone-items') : pool).appendChild(chip);
+      dragging = null;
+    }
+    chip.addEventListener('pointerup', drop);
+    chip.addEventListener('pointercancel', drop);
+  });
+
+  var btn = act.querySelector('.drag-check');
+  var fb  = act.querySelector('.drag-feedback');
+  btn.addEventListener('click', function () {
+    var ok = 0;
+    chips.forEach(function (chip) {
+      var z = chip.closest('.drop-zone');
+      var good = z && z.getAttribute('data-zone') === chip.getAttribute('data-target');
+      chip.classList.toggle('ok', !!good);
+      chip.classList.toggle('bad', !good);
+      if (good) ok++;
+    });
+    var all = ok === chips.length;
+    fb.textContent = all
+      ? '¡Perfecto! ' + ok + '/' + chips.length + ' bien ubicadas.'
+      : ok + '/' + chips.length + ' bien. Revisá las marcadas en rojo y volvé a arrastrarlas.';
+    fb.className = 'drag-feedback ' + (all ? 'all-ok' : 'partial');
+  });
+})();
+</script>
 
 </body>
 </html>
