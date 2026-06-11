@@ -26,6 +26,8 @@
 .dz-mark { font-weight:700; }
 .drag-chip.ok .dz-mark { color:var(--ok); }
 .drag-chip.bad .dz-mark { color:#e74c3c; }
+.dz-why { display:block; margin-top:6px; font-size:.92em; font-weight:400; line-height:1.35; color:var(--ink-soft); }
+.drag-chip.bad .dz-why { color:#b3261e; }
 .drag-chip:focus-visible, .drop-zone:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
 .drag-activity.has-selection .drop-zone { cursor:pointer; }
 .drag-check { margin-top:14px; }
@@ -204,10 +206,10 @@ git push</code></pre>
 
 <div class="drag-activity">
   <div class="drag-pool" aria-label="Tarjetas para clasificar">
-    <div class="drag-chip" data-target="switch" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
-    <div class="drag-chip" data-target="if" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
-    <div class="drag-chip" data-target="switch" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Elegir el saludo según el día: lunes, martes, … domingo</div>
-    <div class="drag-chip" data-target="if" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
+    <div class="drag-chip" data-target="switch" data-why="Comparás una variable (la sección) contra valores fijos: inicio, ayuda, contacto." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
+    <div class="drag-chip" data-target="if" data-why="Son rangos con comparaciones (≥ 9, ≥ 6): eso se resuelve con if/elseif." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
+    <div class="drag-chip" data-target="switch" data-why="Una variable (el día) contra valores fijos: lunes, martes, … domingo." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Elegir el saludo según el día: lunes, martes, … domingo</div>
+    <div class="drag-chip" data-target="if" data-why="Es una comparación con un límite (≥ 18), no valores fijos: va con if." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
   </div>
   <div class="drag-zones">
     <div class="drop-zone" data-zone="if" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en if / elseif">
@@ -781,6 +783,7 @@ echo $titulo;</code></pre>
     dest.appendChild(chip);
     chip.classList.remove('ok', 'bad');
     var m = chip.querySelector('.dz-mark'); if (m) m.textContent = '';
+    var w = chip.querySelector('.dz-why'); if (w) w.remove();
   }
   function clearSel() { if (selected) selected.classList.remove('selected'); selected = null; act.classList.remove('has-selection'); }
   function selectChip(chip) {
@@ -850,6 +853,10 @@ echo $titulo;</code></pre>
       chip.classList.toggle('ok', !!good);
       chip.classList.toggle('bad', !good);
       var m = chip.querySelector('.dz-mark'); if (m) m.textContent = good ? '✓ ' : '✗ ';
+      var zoneName = chip.getAttribute('data-target') === 'if' ? 'if / elseif' : 'switch';
+      var why = chip.querySelector('.dz-why');
+      if (!why) { why = document.createElement('span'); why.className = 'dz-why'; chip.appendChild(why); }
+      why.textContent = good ? chip.getAttribute('data-why') : 'Va en ' + zoneName + '. ' + chip.getAttribute('data-why');
       if (good) ok++;
     });
     var all = ok === chips.length;
