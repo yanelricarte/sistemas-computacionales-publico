@@ -29,6 +29,7 @@
   <h3>En esta página</h3>
   <ol>
     <li><a href="#s1">Git: primeros pasos</a></li>
+    <li><a href="#repaso">Repaso: estructuras selectivas</a></li>
     <li><a href="#s2">De if/elseif a switch</a></li>
     <li><a href="#s3">Separando datos de la vista</a></li>
     <li><a href="#s4">CSS dinámico por sección</a></li>
@@ -135,6 +136,49 @@ git push</code></pre>
     <div class="quiz-feedback"></div>
   </div>
 </div>
+
+<h2 id="repaso">
+  <svg class="icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  Repaso: estructuras selectivas
+</h2>
+
+<p>Antes de pasar a <code>switch</code>, repasemos las <strong>estructuras selectivas</strong> que ya usaste: <code>if</code>, <code>elseif</code> y <code>else</code>. Son las que dejan que el programa <strong>tome decisiones</strong> según un valor.</p>
+
+<pre><code>$nota = 7;
+
+if ($nota &gt;= 9) {
+    echo 'Excelente';
+} elseif ($nota &gt;= 6) {
+    echo 'Aprobado';
+} else {
+    echo 'Desaprobado';
+}</code></pre>
+
+<p>El programa evalúa las condiciones <strong>de arriba hacia abajo</strong> y ejecuta el <strong>primer</strong> bloque cuya condición es verdadera; los demás los saltea. Para comparar usás <code>==</code> (igual) y <code>!=</code> (distinto) — ojo, un solo <code>=</code> <em>asigna</em>, no compara.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Repaso 1</p>
+  <div class="quiz-q" data-correct="b" data-explanation="Con $nota = 7: la primera condición (>= 9) es falsa; la segunda (>= 6) es verdadera, así que imprime 'Aprobado' y saltea el resto.">
+    <p>Con <code>$nota = 7</code>, ¿qué imprime el código de arriba?</p>
+    <button class="quiz-opt" data-opt="a">a) Excelente</button>
+    <button class="quiz-opt" data-opt="b">b) Aprobado</button>
+    <button class="quiz-opt" data-opt="c">c) Desaprobado</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Repaso 2</p>
+  <div class="quiz-q" data-correct="b" data-explanation="Un solo = asigna un valor; == compara si dos valores son iguales; != compara si son distintos.">
+    <p>¿Qué operador usás para comparar si dos valores son <strong>iguales</strong>?</p>
+    <button class="quiz-opt" data-opt="a">a) <code>=</code></button>
+    <button class="quiz-opt" data-opt="b">b) <code>==</code></button>
+    <button class="quiz-opt" data-opt="c">c) <code>!=</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<p>Ya que recordaste cómo se decide con <code>if/elseif</code>, veamos por qué cuando hay <strong>muchos valores posibles de una misma variable</strong> conviene <code>switch</code>.</p>
 
 <h2 id="s2">
   <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
@@ -308,6 +352,22 @@ body    { transition: background .3s; }
 .navbar { background: var(--accent); }
 h1      { color: var(--accent); }
 .panel  { border-left: 4px solid var(--accent); }</code></pre>
+
+<h3>¿Qué es <code>--accent</code>?</h3>
+
+<p><code>--accent</code> (acento, el color destacado de la sección) es una <strong>variable de CSS</strong> — se las llama <em>custom properties</em>. El nombre lo inventás vos, pero <strong>siempre empieza con dos guiones</strong> <code>--</code>. Sirve para guardar un valor (acá, un color) y reusarlo en muchos lugares sin repetirlo.</p>
+
+<p>Se usa en dos pasos:</p>
+<ul>
+  <li><strong>Definir</strong> el valor en cada sección → <code>.sec-ayuda { --accent: #e67e22; }</code></li>
+  <li><strong>Usarlo</strong> donde quieras ese color con <code>var(--accent)</code> → <code>h1 { color: var(--accent); }</code></li>
+</ul>
+
+<p>La ventaja: el color de cada sección queda definido en <strong>un solo lugar</strong>. Si mañana querés que "ayuda" sea roja, cambiás <strong>una línea</strong> (el <code>--accent</code>) y se actualizan de una el navbar, los títulos y los bordes que usan <code>var(--accent)</code>. Y como cada sección define <strong>su propio</strong> <code>--accent</code>, el mismo <code>var(--accent)</code> pinta distinto según la sección activa.</p>
+
+<div class="highlight">
+  <strong>Pensalo como una cajita con etiqueta:</strong> cada sección guarda su color en la cajita <code>--accent</code>; el resto del CSS no pregunta "¿qué color?", solo dice "usá el de la cajita" con <code>var(--accent)</code>.
+</div>
 
 <h3>¿Qué podés cambiar por sección?</h3>
 
