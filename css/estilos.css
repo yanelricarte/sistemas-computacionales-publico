@@ -3,7 +3,7 @@
   --surface: #ffffff;
   --ink: #111827;
   --ink-soft: #4b5563;
-  --ink-light: #9ca3af;
+  --ink-light: #6b7280;
   --border: #e5e7eb;
   --border-soft: #f3f4f6;
   --accent: #4f46e5;
@@ -27,7 +27,7 @@ body.dark {
   --surface: #1d1f24;
   --ink: #e6e8ec;
   --ink-soft: #b8bcc4;
-  --ink-light: #7a7f8a;
+  --ink-light: #9aa0ab;
   --border: #2c2f36;
   --border-soft: #232529;
   --accent: #8b85ff;

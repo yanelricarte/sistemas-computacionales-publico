@@ -17,10 +17,17 @@
 .drop-zone .hint { margin:0 0 8px; font-size:.8em; color:var(--ink-light); }
 .drop-zone.over { border-color:var(--accent); background:var(--accent-soft); }
 .drop-zone .zone-items { display:flex; flex-direction:column; gap:8px; min-height:42px; }
+.drag-help { font-size:.85em; color:var(--ink-soft); margin:.4em 0 1em; }
 .drag-chip { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:.85em; line-height:1.3; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; box-shadow:var(--shadow); }
 .drag-chip.dragging { opacity:.92; cursor:grabbing; box-shadow:var(--shadow-lg); }
+.drag-chip.selected { border-color:var(--accent); border-width:2px; box-shadow:0 0 0 3px var(--accent-soft); }
 .drag-chip.ok { border-color:var(--ok); border-width:2px; }
 .drag-chip.bad { border-color:#e74c3c; border-width:2px; }
+.dz-mark { font-weight:700; }
+.drag-chip.ok .dz-mark { color:var(--ok); }
+.drag-chip.bad .dz-mark { color:#e74c3c; }
+.drag-chip:focus-visible, .drop-zone:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+.drag-activity.has-selection .drop-zone { cursor:pointer; }
 .drag-check { margin-top:14px; }
 .drag-feedback { margin-top:10px; font-weight:600; font-size:.92em; }
 .drag-feedback.all-ok { color:var(--ok); }
@@ -50,8 +57,8 @@
     <li><a href="#s1">Git: primeros pasos</a></li>
     <li><a href="#s2">De if/elseif a switch (con repaso)</a></li>
     <li><a href="#s3">Separando datos de la vista</a></li>
-    <li><a href="#s4">CSS dinámico por sección</a></li>
-    <li><a href="#s5">Mostrando imágenes</a></li>
+    <li><a href="#s4">Mostrando imágenes</a></li>
+    <li><a href="#s5">CSS dinámico por sección</a></li>
     <li><a href="#s6">Errores frecuentes</a></li>
     <li><a href="#s7">Glosario</a></li>
     <li><a href="#s8">Buenas prácticas</a></li>
@@ -191,29 +198,31 @@ git push</code></pre>
 
 <h3>Recuperación de contenido</h3>
 
-<p>Antes de avanzar, recuperá lo que ya sabés. <strong>Arrastrá</strong> cada situación a la estructura que mejor le queda y tocá <em>Verificar</em>. Pista: <code>if/elseif</code> sirve para <strong>rangos o condiciones distintas</strong>; <code>switch</code>, para comparar <strong>una misma variable contra valores fijos</strong>.</p>
+<p>Antes de avanzar, recuperá lo que ya sabés: llevá cada situación a la estructura que mejor le queda y tocá <em>Verificar</em>. Pista: <code>if/elseif</code> sirve para <strong>rangos o condiciones distintas</strong>; <code>switch</code>, para comparar <strong>una misma variable contra valores fijos</strong>.</p>
+
+<p class="drag-help">Dos formas de usarla: <strong>arrastrá</strong> la tarjeta a una zona, o <strong>seleccionala</strong> (clic / Enter) y después tocá la zona (o Enter).</p>
 
 <div class="drag-activity">
-  <div class="drag-pool" aria-label="Situaciones para clasificar">
-    <div class="drag-chip" data-target="switch">Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
-    <div class="drag-chip" data-target="if">Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
-    <div class="drag-chip" data-target="switch">Elegir el saludo según el día: lunes, martes, … domingo</div>
-    <div class="drag-chip" data-target="if">Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
+  <div class="drag-pool" aria-label="Tarjetas para clasificar">
+    <div class="drag-chip" data-target="switch" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
+    <div class="drag-chip" data-target="if" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
+    <div class="drag-chip" data-target="switch" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Elegir el saludo según el día: lunes, martes, … domingo</div>
+    <div class="drag-chip" data-target="if" tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
   </div>
   <div class="drag-zones">
-    <div class="drop-zone" data-zone="if">
+    <div class="drop-zone" data-zone="if" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en if / elseif">
       <h4>if / elseif</h4>
       <p class="hint">rangos o condiciones distintas</p>
       <div class="zone-items"></div>
     </div>
-    <div class="drop-zone" data-zone="switch">
+    <div class="drop-zone" data-zone="switch" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en switch">
       <h4>switch</h4>
       <p class="hint">una misma variable contra valores fijos</p>
       <div class="zone-items"></div>
     </div>
   </div>
   <button type="button" class="btn drag-check">Verificar</button>
-  <div class="drag-feedback" role="status"></div>
+  <div class="drag-feedback" role="status" aria-live="polite"></div>
 </div>
 
 <p>En la clase anterior armaste <code>info.php</code> con <code>if</code> y <code>elseif</code> para mostrar distinto contenido según el valor de <code>$_GET['seccion']</code>. Ese enfoque funciona, pero cuando tenés muchas secciones el código se vuelve difícil de leer.</p>
@@ -371,8 +380,41 @@ switch ($seccion) {
 </div>
 
 <h2 id="s4">
+  <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+  4. Mostrando imágenes
+</h2>
+
+<p>El mismo patrón de variables sirve para imágenes. Agregá <code>$imagen</code> al switch y mostrala en el HTML:</p>
+
+<pre><code>// Adentro del switch
+case 'ayuda':
+    $titulo = 'Ayuda';
+    $texto  = 'Instrucciones de uso del sistema.';
+    $imagen = 'img/ayuda.jpg';
+    $clase  = 'sec-ayuda';
+    break;
+
+// En el HTML
+&lt;img src="&lt;?= $imagen ?&gt;" alt="&lt;?= $titulo ?&gt;"&gt;</code></pre>
+
+<h3>Imágenes placeholder para desarrollo</h3>
+
+<p>Si no tenés las imágenes todavía, usá <a href="https://picsum.photos" target="_blank" rel="noopener noreferrer">picsum.photos</a> para generar placeholders:</p>
+
+<pre><code>$imagen = 'https://picsum.photos/seed/ayuda/600/300';
+//         ──────────────┬─────────┬────┬───┬───
+//                      seed      tema ancho alto
+//         misma seed → misma imagen siempre</code></pre>
+
+<p>El parámetro <code>seed</code> hace que la imagen sea siempre la misma para esa sección. Después las reemplazás por imágenes reales.</p>
+
+<div class="highlight">
+  <strong>Importante:</strong> las imágenes de placeholder son para desarrollo. Cuando el proyecto esté listo, las imágenes deberían ser propias o libres de derechos.
+</div>
+
+<h2 id="s5">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-  4. CSS dinámico por sección
+  5. CSS dinámico por sección
 </h2>
 
 <p>"<strong>CSS dinámico</strong>" no significa que el CSS cambie solo: el CSS es siempre el mismo. Lo que cambia es <strong>qué reglas se aplican</strong>, porque <strong>PHP le pone una clase distinta al <code>&lt;body&gt;</code> según la sección</strong>. Así, con un único archivo de estilos, cada sección se ve distinta (otro color, otro fondo) sin escribir páginas separadas.</p>
@@ -431,39 +473,6 @@ h1      { color: var(--accent); }
 
 <div class="highlight">
   <strong>Tip:</strong> el <code>--accent</code> conviene reservarlo para detalles (navbar, títulos, bordes) y dejar el fondo en un tono suave: un body pintado entero del color fuerte cansa la vista. Con <code>transition: background .3s</code> en el body, el cambio de sección se ve gradual.
-</div>
-
-<h2 id="s5">
-  <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-  5. Mostrando imágenes
-</h2>
-
-<p>El mismo patrón de variables sirve para imágenes. Agregá <code>$imagen</code> al switch y mostrala en el HTML:</p>
-
-<pre><code>// Adentro del switch
-case 'ayuda':
-    $titulo = 'Ayuda';
-    $texto  = 'Instrucciones de uso del sistema.';
-    $imagen = 'img/ayuda.jpg';
-    $clase  = 'sec-ayuda';
-    break;
-
-// En el HTML
-&lt;img src="&lt;?= $imagen ?&gt;" alt="&lt;?= $titulo ?&gt;"&gt;</code></pre>
-
-<h3>Imágenes placeholder para desarrollo</h3>
-
-<p>Si no tenés las imágenes todavía, usá <a href="https://picsum.photos" target="_blank" rel="noopener noreferrer">picsum.photos</a> para generar placeholders:</p>
-
-<pre><code>$imagen = 'https://picsum.photos/seed/ayuda/600/300';
-//         ──────────────┬─────────┬────┬───┬───
-//                      seed      tema ancho alto
-//         misma seed → misma imagen siempre</code></pre>
-
-<p>El parámetro <code>seed</code> hace que la imagen sea siempre la misma para esa sección. Después las reemplazás por imágenes reales.</p>
-
-<div class="highlight">
-  <strong>Importante:</strong> las imágenes de placeholder son para desarrollo. Cuando el proyecto esté listo, las imágenes deberían ser propias o libres de derechos.
 </div>
 
 <h2 id="s6">
@@ -632,6 +641,24 @@ echo $titulo;</code></pre>
 </div>
 
 <div class="checkpoint">
+  <p class="checkpoint-title">🔍 Análisis 4 — separar datos de la vista</p>
+  <pre><code>switch ($seccion) {
+    case 'ayuda':
+        $titulo = 'Ayuda';
+        break;
+}
+?&gt;
+&lt;h1&gt;&lt;?= $titulo ?&gt;&lt;/h1&gt;</code></pre>
+  <div class="quiz-q" data-correct="b" data-explanation="El switch solo carga las variables; el HTML las muestra una vez. Para cambiar el texto del título tocás la variable en el case, no el HTML de abajo. Eso es separar la lógica de la presentación.">
+    <p>Querés que la sección "ayuda" muestre <strong>“Centro de ayuda”</strong> en vez de “Ayuda”. ¿Dónde lo cambiás?</p>
+    <button class="quiz-opt" data-opt="a">a) En el <code>&lt;h1&gt;</code> del HTML</button>
+    <button class="quiz-opt" data-opt="b">b) En el <code>$titulo</code> del <code>case 'ayuda'</code></button>
+    <button class="quiz-opt" data-opt="c">c) En los dos lugares</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
   <p class="checkpoint-title">💡 Concepto — el valor por defecto</p>
   <div class="quiz-q" data-correct="b" data-explanation="?? mira si $_GET['seccion'] llegó: si no vino nada en la URL, usa 'inicio'. Evita el error de leer un dato que no existe.">
     <p>¿Qué hace <code>$_GET['seccion'] ?? 'inicio'</code>?</p>
@@ -739,56 +766,78 @@ echo $titulo;</code></pre>
 <script src="../js/estudiantes.js"></script>
 
 <script>
-/* Arrastre con pointer events: anda en mouse y en touch (mobile) */
+/* Clasificar: arrastre (mouse+touch) y, además, tap/teclado para colocar. Accesible. */
 (function () {
   var act = document.querySelector('.drag-activity');
   if (!act) return;
   var pool  = act.querySelector('.drag-pool');
   var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
   var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
-  var dragging = null, ox = 0, oy = 0;
+  var selected = null, dragging = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var THRESH = 6;
 
+  function place(chip, zone) {
+    var dest = (zone && zone !== pool) ? zone.querySelector('.zone-items') : pool;
+    dest.appendChild(chip);
+    chip.classList.remove('ok', 'bad');
+    var m = chip.querySelector('.dz-mark'); if (m) m.textContent = '';
+  }
+  function clearSel() { if (selected) selected.classList.remove('selected'); selected = null; act.classList.remove('has-selection'); }
+  function selectChip(chip) {
+    if (selected === chip) { clearSel(); return; }
+    clearSel(); selected = chip; chip.classList.add('selected'); act.classList.add('has-selection');
+  }
   function zoneUnder(x, y) {
     if (dragging) dragging.style.visibility = 'hidden';
     var el = document.elementFromPoint(x, y);
     if (dragging) dragging.style.visibility = '';
-    return el ? el.closest('.drop-zone') : null;
+    if (!el) return null;
+    return el.closest('.drop-zone') || (el.closest('.drag-pool') ? pool : null);
+  }
+  function endDrag(chip) {
+    chip.classList.remove('dragging');
+    chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    zones.forEach(function (zz) { zz.classList.remove('over'); });
+    dragging = null;
   }
 
   chips.forEach(function (chip) {
     chip.addEventListener('pointerdown', function (e) {
-      dragging = chip;
-      var r = chip.getBoundingClientRect();
-      ox = e.clientX - r.left; oy = e.clientY - r.top;
-      chip.style.width = r.width + 'px';
-      chip.style.position = 'fixed';
-      chip.style.left = (e.clientX - ox) + 'px';
-      chip.style.top  = (e.clientY - oy) + 'px';
-      chip.style.zIndex = '9999';
-      chip.classList.add('dragging');
-      chip.classList.remove('ok', 'bad');
+      sx = e.clientX; sy = e.clientY; moved = false; dragging = null;
       chip.setPointerCapture(e.pointerId);
-      e.preventDefault();
     });
     chip.addEventListener('pointermove', function (e) {
-      if (dragging !== chip) return;
-      chip.style.left = (e.clientX - ox) + 'px';
-      chip.style.top  = (e.clientY - oy) + 'px';
-      var z = zoneUnder(e.clientX, e.clientY);
-      zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+      if (!moved && (Math.abs(e.clientX - sx) > THRESH || Math.abs(e.clientY - sy) > THRESH)) {
+        moved = true; dragging = chip;
+        var r = chip.getBoundingClientRect();
+        ox = sx - r.left; oy = sy - r.top;
+        chip.style.width = r.width + 'px'; chip.style.position = 'fixed'; chip.style.zIndex = '9999';
+        chip.classList.add('dragging'); clearSel();
+      }
+      if (dragging === chip) {
+        chip.style.left = (e.clientX - ox) + 'px';
+        chip.style.top  = (e.clientY - oy) + 'px';
+        var z = zoneUnder(e.clientX, e.clientY);
+        zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+      }
     });
-    function drop(e) {
-      if (dragging !== chip) return;
-      var z = zoneUnder(e.clientX, e.clientY);
-      chip.classList.remove('dragging');
-      chip.style.position = ''; chip.style.left = ''; chip.style.top = '';
-      chip.style.zIndex = ''; chip.style.width = '';
-      zones.forEach(function (zz) { zz.classList.remove('over'); });
-      (z ? z.querySelector('.zone-items') : pool).appendChild(chip);
-      dragging = null;
-    }
-    chip.addEventListener('pointerup', drop);
-    chip.addEventListener('pointercancel', drop);
+    chip.addEventListener('pointerup', function (e) {
+      if (dragging === chip) { var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
+      else if (!moved) { selectChip(chip); }
+    });
+    chip.addEventListener('pointercancel', function () { if (dragging === chip) endDrag(chip); });
+    chip.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectChip(chip); }
+    });
+  });
+
+  zones.concat([pool]).forEach(function (zone) {
+    zone.addEventListener('click', function () {
+      if (selected && !dragging) { var s = selected; place(s, zone); clearSel(); s.focus(); }
+    });
+    if (zone !== pool) zone.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && selected) { e.preventDefault(); var s = selected; place(s, zone); clearSel(); s.focus(); }
+    });
   });
 
   var btn = act.querySelector('.drag-check');
@@ -800,12 +849,13 @@ echo $titulo;</code></pre>
       var good = z && z.getAttribute('data-zone') === chip.getAttribute('data-target');
       chip.classList.toggle('ok', !!good);
       chip.classList.toggle('bad', !good);
+      var m = chip.querySelector('.dz-mark'); if (m) m.textContent = good ? '✓ ' : '✗ ';
       if (good) ok++;
     });
     var all = ok === chips.length;
     fb.textContent = all
       ? '¡Perfecto! ' + ok + '/' + chips.length + ' bien ubicadas.'
-      : ok + '/' + chips.length + ' bien. Revisá las marcadas en rojo y volvé a arrastrarlas.';
+      : ok + '/' + chips.length + ' bien. Revisá las marcadas con ✗ y volvé a moverlas.';
     fb.className = 'drag-feedback ' + (all ? 'all-ok' : 'partial');
   });
 })();
