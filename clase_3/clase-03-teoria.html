@@ -29,14 +29,14 @@
   <h3>En esta página</h3>
   <ol>
     <li><a href="#s1">Git: primeros pasos</a></li>
-    <li><a href="#repaso">Repaso: estructuras selectivas</a></li>
-    <li><a href="#s2">De if/elseif a switch</a></li>
+    <li><a href="#s2">De if/elseif a switch (con repaso)</a></li>
     <li><a href="#s3">Separando datos de la vista</a></li>
     <li><a href="#s4">CSS dinámico por sección</a></li>
     <li><a href="#s5">Mostrando imágenes</a></li>
     <li><a href="#s6">Errores frecuentes</a></li>
     <li><a href="#s7">Glosario</a></li>
     <li><a href="#s8">Buenas prácticas</a></li>
+    <li><a href="#practica">Practicá: conceptos y código</a></li>
     <li><a href="#quiz">Mini-quiz</a></li>
     <li><a href="#s10">Próximos pasos</a></li>
   </ol>
@@ -137,53 +137,12 @@ git push</code></pre>
   </div>
 </div>
 
-<h2 id="repaso">
-  <svg class="icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-  Repaso: estructuras selectivas
-</h2>
-
-<p>Antes de pasar a <code>switch</code>, repasemos las <strong>estructuras selectivas</strong> que ya usaste: <code>if</code>, <code>elseif</code> y <code>else</code>. Son las que dejan que el programa <strong>tome decisiones</strong> según un valor.</p>
-
-<pre><code>$nota = 7;
-
-if ($nota &gt;= 9) {
-    echo 'Excelente';
-} elseif ($nota &gt;= 6) {
-    echo 'Aprobado';
-} else {
-    echo 'Desaprobado';
-}</code></pre>
-
-<p>El programa evalúa las condiciones <strong>de arriba hacia abajo</strong> y ejecuta el <strong>primer</strong> bloque cuya condición es verdadera; los demás los saltea. Para comparar usás <code>==</code> (igual) y <code>!=</code> (distinto) — ojo, un solo <code>=</code> <em>asigna</em>, no compara.</p>
-
-<div class="checkpoint">
-  <p class="checkpoint-title">✓ Repaso 1</p>
-  <div class="quiz-q" data-correct="b" data-explanation="Con $nota = 7: la primera condición (>= 9) es falsa; la segunda (>= 6) es verdadera, así que imprime 'Aprobado' y saltea el resto.">
-    <p>Con <code>$nota = 7</code>, ¿qué imprime el código de arriba?</p>
-    <button class="quiz-opt" data-opt="a">a) Excelente</button>
-    <button class="quiz-opt" data-opt="b">b) Aprobado</button>
-    <button class="quiz-opt" data-opt="c">c) Desaprobado</button>
-    <div class="quiz-feedback"></div>
-  </div>
-</div>
-
-<div class="checkpoint">
-  <p class="checkpoint-title">✓ Repaso 2</p>
-  <div class="quiz-q" data-correct="b" data-explanation="Un solo = asigna un valor; == compara si dos valores son iguales; != compara si son distintos.">
-    <p>¿Qué operador usás para comparar si dos valores son <strong>iguales</strong>?</p>
-    <button class="quiz-opt" data-opt="a">a) <code>=</code></button>
-    <button class="quiz-opt" data-opt="b">b) <code>==</code></button>
-    <button class="quiz-opt" data-opt="c">c) <code>!=</code></button>
-    <div class="quiz-feedback"></div>
-  </div>
-</div>
-
-<p>Ya que recordaste cómo se decide con <code>if/elseif</code>, veamos por qué cuando hay <strong>muchos valores posibles de una misma variable</strong> conviene <code>switch</code>.</p>
-
 <h2 id="s2">
   <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
   2. De if/elseif a switch
 </h2>
+
+<p>Ya usás <code>if / elseif / else</code> para decidir. Hoy sumamos <code>switch</code>: otra <strong>estructura selectiva</strong>, más ordenada cuando comparás <strong>una misma variable contra varios valores fijos</strong>. Arranquemos con un repaso activo.</p>
 
 <details>
   <summary>Repaso rápido: variables y estructuras de control en PHP</summary>
@@ -195,8 +154,56 @@ if ($nota &gt;= 9) {
     <li><strong>Condicional:</strong> <code>if (...) { } elseif (...) { } else { }</code></li>
     <li><strong>Valor por defecto:</strong> <code>$s = $_GET['seccion'] ?? 'inicio';</code> → si no viene nada, usa <code>'inicio'</code>.</li>
   </ul>
-  <p>El <code>switch</code> que viene es otra <strong>estructura de control</strong>: una forma más ordenada de elegir entre muchos valores posibles.</p>
 </details>
+
+<h3>Repaso interactivo: estructuras selectivas</h3>
+
+<p>Recordá cómo decide un <code>if/elseif</code>: se evalúa <strong>de arriba hacia abajo</strong> y gana la <strong>primera</strong> condición verdadera.</p>
+
+<pre><code>$nota = 7;
+
+if ($nota &gt;= 9) {
+    echo 'Excelente';
+} elseif ($nota &gt;= 6) {
+    echo 'Aprobado';
+} else {
+    echo 'Desaprobado';
+}</code></pre>
+
+<p>Para comparar usás <code>==</code> (igual) y <code>!=</code> (distinto); un solo <code>=</code> <em>asigna</em>, no compara.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Repaso 1 — if/elseif</p>
+  <div class="quiz-q" data-correct="b" data-explanation="Con $nota = 7: la primera condición (>= 9) es falsa; la segunda (>= 6) es verdadera, así que imprime 'Aprobado' y saltea el resto.">
+    <p>Con <code>$nota = 7</code>, ¿qué imprime el código de arriba?</p>
+    <button class="quiz-opt" data-opt="a">a) Excelente</button>
+    <button class="quiz-opt" data-opt="b">b) Aprobado</button>
+    <button class="quiz-opt" data-opt="c">c) Desaprobado</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Repaso 2 — comparar</p>
+  <div class="quiz-q" data-correct="b" data-explanation="Un solo = asigna un valor; == compara si dos valores son iguales; != compara si son distintos.">
+    <p>¿Qué operador usás para comparar si dos valores son <strong>iguales</strong>?</p>
+    <button class="quiz-opt" data-opt="a">a) <code>=</code></button>
+    <button class="quiz-opt" data-opt="b">b) <code>==</code></button>
+    <button class="quiz-opt" data-opt="c">c) <code>!=</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">✓ Repaso 3 — ¿cuándo conviene switch?</p>
+  <div class="quiz-q" data-correct="b" data-explanation="Cuando comparás UNA misma variable contra varios valores fijos (inicio, ayuda, contacto…), el switch queda más ordenado que muchos elseif. Si son rangos o condiciones distintas, if/elseif sigue siendo mejor.">
+    <p>¿En qué caso conviene más un <code>switch</code> que varios <code>elseif</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Cuando hay una sola condición</button>
+    <button class="quiz-opt" data-opt="b">b) Cuando comparás una misma variable contra varios valores fijos</button>
+    <button class="quiz-opt" data-opt="c">c) Cuando querés repetir algo muchas veces</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
 
 <p>En la clase anterior armaste <code>info.php</code> con <code>if</code> y <code>elseif</code> para mostrar distinto contenido según el valor de <code>$_GET['seccion']</code>. Ese enfoque funciona, pero cuando tenés muchas secciones el código se vuelve difícil de leer.</p>
 
@@ -243,6 +250,18 @@ switch ($s) {
   <li><code>default</code> es el "else" del switch: se ejecuta si ningún case coincide.</li>
 </ul>
 
+<p>Visto como esquema, el <code>switch</code> procesa así:</p>
+
+<div class="git-flow">
+  <div class="step"><strong>switch ($s)</strong>evalúa la variable una vez</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>case que coincide</strong>salta directo ahí</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>ejecuta hasta break</strong>y sale del switch</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>default</strong>si ningún case coincide</div>
+</div>
+
 <h3>Fall-through: ¿para qué sirve?</h3>
 
 <p>A veces querés que dos valores compartan el mismo código:</p>
@@ -284,6 +303,16 @@ switch ($s) {
 <p>Si escribís HTML adentro de cada <code>case</code> del switch, estás mezclando la lógica con la presentación. Para un par de secciones funciona, pero cuando el proyecto crezca se vuelve un desastre.</p>
 
 <p>La idea es simple: el <strong>switch solo asigna valores a variables</strong>, y el <strong>HTML se escribe una sola vez</strong> abajo.</p>
+
+<div class="git-flow">
+  <div class="step"><strong>switch</strong>decide la sección</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>variables</strong>$titulo · $texto · $clase</div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>HTML (1 vez)</strong>&lt;?= $titulo ?&gt;</div>
+</div>
+
+<p>La <strong>lógica</strong> (qué sección es) queda en el switch; la <strong>presentación</strong> (cómo se ve), en el HTML de abajo. Cada cosa en su lugar.</p>
 
 <pre><code>&lt;?php
 $seccion = $_GET['seccion'] ?? 'inicio';
@@ -362,6 +391,12 @@ h1      { color: var(--accent); }
   <li><strong>Definir</strong> el valor en cada sección → <code>.sec-ayuda { --accent: #e67e22; }</code></li>
   <li><strong>Usarlo</strong> donde quieras ese color con <code>var(--accent)</code> → <code>h1 { color: var(--accent); }</code></li>
 </ul>
+
+<div class="git-flow">
+  <div class="step"><strong>DEFINIR (1 vez)</strong><code>.sec-ayuda { --accent: naranja }</code></div>
+  <span class="arrow">→</span>
+  <div class="step"><strong>USAR (las que quieras)</strong>navbar, títulos y bordes con <code>var(--accent)</code></div>
+</div>
 
 <p>La ventaja: el color de cada sección queda definido en <strong>un solo lugar</strong>. Si mañana querés que "ayuda" sea roja, cambiás <strong>una línea</strong> (el <code>--accent</code>) y se actualizan de una el navbar, los títulos y los bordes que usan <code>var(--accent)</code>. Y como cada sección define <strong>su propio</strong> <code>--accent</code>, el mismo <code>var(--accent)</code> pinta distinto según la sección activa.</p>
 
@@ -513,6 +548,95 @@ case 'ayuda':
   <li><strong><code>default</code> siempre</strong> por si alguien escribe una URL inválida.</li>
   <li><strong>Switch solo asigna variables.</strong> El HTML se escribe abajo, separado.</li>
 </ul>
+
+<h2 id="practica">
+  <svg class="icon" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+  Practicá: conceptos y código
+</h2>
+
+<p>Antes del mini-quiz, resolvé estos. Mezclan <strong>repaso conceptual</strong> y <strong>lectura de código</strong>: seguí con el dedo qué hace cada línea antes de elegir.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">🔍 Análisis 1 — seguí el switch</p>
+  <pre><code>$rol = 'editor';
+switch ($rol) {
+    case 'admin':
+    case 'editor':
+        echo 'Puede editar';
+    case 'lector':
+        echo ' y leer';
+        break;
+    default:
+        echo 'Sin acceso';
+}</code></pre>
+  <div class="quiz-q" data-correct="b" data-explanation="'editor' entra junto con 'admin' (comparten case) y ejecuta 'Puede editar'. Como ese case NO tiene break, cae en 'lector' (fall-through) y suma ' y leer'; ahí frena.">
+    <p>¿Qué imprime?</p>
+    <button class="quiz-opt" data-opt="a">a) Puede editar</button>
+    <button class="quiz-opt" data-opt="b">b) Puede editar y leer</button>
+    <button class="quiz-opt" data-opt="c">c) Sin acceso</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">🔍 Análisis 2 — el break olvidado</p>
+  <pre><code>$s = $_GET['seccion'] ?? 'inicio';
+switch ($s) {
+    case 'inicio':
+        $titulo = 'Inicio';
+    case 'ayuda':
+        $titulo = 'Ayuda';
+        break;
+}
+echo $titulo;</code></pre>
+  <div class="quiz-q" data-correct="b" data-explanation="Entra en 'inicio' y pone $titulo='Inicio', pero como falta el break sigue al case 'ayuda', que lo pisa con 'Ayuda'. Por eso imprime 'Ayuda'. Es el error más común del switch.">
+    <p>Abrís <code>info.php?seccion=inicio</code>. ¿Qué imprime?</p>
+    <button class="quiz-opt" data-opt="a">a) Inicio</button>
+    <button class="quiz-opt" data-opt="b">b) Ayuda</button>
+    <button class="quiz-opt" data-opt="c">c) Da error</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">🔍 Análisis 3 — una URL inesperada</p>
+  <pre><code>$seccion = $_GET['seccion'] ?? 'inicio';
+switch ($seccion) {
+    case 'ayuda':    $titulo = 'Ayuda';    break;
+    case 'contacto': $titulo = 'Contacto'; break;
+    default:         $titulo = 'Pagina no encontrada';
+}
+echo $titulo;</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="'precios' no coincide con ningún case, así que entra en default. Por eso conviene tener siempre un default: atrapa las URLs que no esperabas.">
+    <p>Entrás con <code>?seccion=precios</code>. ¿Qué imprime?</p>
+    <button class="quiz-opt" data-opt="a">a) precios</button>
+    <button class="quiz-opt" data-opt="b">b) Ayuda</button>
+    <button class="quiz-opt" data-opt="c">c) Pagina no encontrada</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">💡 Concepto — el valor por defecto</p>
+  <div class="quiz-q" data-correct="b" data-explanation="?? mira si $_GET['seccion'] llegó: si no vino nada en la URL, usa 'inicio'. Evita el error de leer un dato que no existe.">
+    <p>¿Qué hace <code>$_GET['seccion'] ?? 'inicio'</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Siempre vale 'inicio'</button>
+    <button class="quiz-opt" data-opt="b">b) Si no viene 'seccion' en la URL, usa 'inicio'</button>
+    <button class="quiz-opt" data-opt="c">c) Compara 'seccion' con 'inicio'</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">💡 Concepto — variables de CSS</p>
+  <div class="quiz-q" data-correct="b" data-explanation="var(--accent) lee el color guardado en la variable --accent (el que definió la sección activa). No crea ni borra nada.">
+    <p>En el CSS, ¿qué hace <code>color: var(--accent);</code>?</p>
+    <button class="quiz-opt" data-opt="a">a) Crea una variable nueva llamada accent</button>
+    <button class="quiz-opt" data-opt="b">b) Usa el color guardado en <code>--accent</code></button>
+    <button class="quiz-opt" data-opt="c">c) Pone el texto en cursiva</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
 
 <h2 id="quiz">
   <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
