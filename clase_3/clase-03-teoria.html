@@ -668,6 +668,15 @@ h1      { color: var(--accent); }
   <li><strong>Switch solo asigna variables.</strong> El HTML se escribe abajo, separado.</li>
 </ul>
 
+</div>
+
+<h2 id="quiz">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Práctica
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p class="quiz-intro">En los siguientes puntos encontrás ejercicios para repasar los conceptos de la clase y analizar código. Leé con atención y resolvé en base a lo abordado.</p>
 <div class="checkpoint">
   <p class="checkpoint-title">Análisis 1 — seguí el switch</p>
   <pre><code>$rol = 'editor';
@@ -682,7 +691,7 @@ switch ($rol) {
         echo 'Sin acceso';
 }</code></pre>
   <div class="quiz-q" data-correct="b" data-explanation="'editor' entra junto con 'admin' (comparten case) y ejecuta 'Puede editar'. Como ese case NO tiene break, cae en 'lector' (fall-through) y suma ' y leer'; ahí frena.">
-    <p>¿Qué imprime?</p>
+    <p><strong>1.</strong> ¿Qué imprime?</p>
     <button class="quiz-opt" data-opt="a">a) Puede editar</button>
     <button class="quiz-opt" data-opt="b">b) Puede editar y leer</button>
     <button class="quiz-opt" data-opt="c">c) Sin acceso</button>
@@ -702,7 +711,7 @@ switch ($s) {
 }
 echo $titulo;</code></pre>
   <div class="quiz-q" data-correct="b" data-explanation="Entra en 'inicio' y pone $titulo='Inicio', pero como falta el break sigue al case 'ayuda', que lo pisa con 'Ayuda'. Por eso imprime 'Ayuda'. Es el error más común del switch.">
-    <p>Abrís <code>info.php?seccion=inicio</code>. ¿Qué imprime?</p>
+    <p><strong>2.</strong> Abrís <code>info.php?seccion=inicio</code>. ¿Qué imprime?</p>
     <button class="quiz-opt" data-opt="a">a) Inicio</button>
     <button class="quiz-opt" data-opt="b">b) Ayuda</button>
     <button class="quiz-opt" data-opt="c">c) Da error</button>
@@ -720,7 +729,7 @@ switch ($seccion) {
 }
 echo $titulo;</code></pre>
   <div class="quiz-q" data-correct="c" data-explanation="'precios' no coincide con ningún case, así que entra en default. Por eso conviene tener siempre un default: atrapa las URLs que no esperabas.">
-    <p>Entrás con <code>?seccion=precios</code>. ¿Qué imprime?</p>
+    <p><strong>3.</strong> Entrás con <code>?seccion=precios</code>. ¿Qué imprime?</p>
     <button class="quiz-opt" data-opt="a">a) precios</button>
     <button class="quiz-opt" data-opt="b">b) Ayuda</button>
     <button class="quiz-opt" data-opt="c">c) Pagina no encontrada</button>
@@ -738,7 +747,7 @@ echo $titulo;</code></pre>
 ?&gt;
 &lt;h1&gt;&lt;?= $titulo ?&gt;&lt;/h1&gt;</code></pre>
   <div class="quiz-q" data-correct="b" data-explanation="El switch solo carga las variables; el HTML las muestra una vez. Para cambiar el texto del título tocás la variable en el case, no el HTML de abajo. Eso es separar la lógica de la presentación.">
-    <p>Querés que la sección "ayuda" muestre <strong>“Centro de ayuda”</strong> en vez de “Ayuda”. ¿Dónde lo cambiás?</p>
+    <p><strong>4.</strong> Querés que la sección "ayuda" muestre <strong>“Centro de ayuda”</strong> en vez de “Ayuda”. ¿Dónde lo cambiás?</p>
     <button class="quiz-opt" data-opt="a">a) En el <code>&lt;h1&gt;</code> del HTML</button>
     <button class="quiz-opt" data-opt="b">b) En el <code>$titulo</code> del <code>case 'ayuda'</code></button>
     <button class="quiz-opt" data-opt="c">c) En los dos lugares</button>
@@ -749,7 +758,7 @@ echo $titulo;</code></pre>
 <div class="checkpoint">
   <p class="checkpoint-title">Concepto — el valor por defecto</p>
   <div class="quiz-q" data-correct="b" data-explanation="?? mira si $_GET['seccion'] llegó: si no vino nada en la URL, usa 'inicio'. Evita el error de leer un dato que no existe.">
-    <p>¿Qué hace <code>$_GET['seccion'] ?? 'inicio'</code>?</p>
+    <p><strong>5.</strong> ¿Qué hace <code>$_GET['seccion'] ?? 'inicio'</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Siempre vale 'inicio'</button>
     <button class="quiz-opt" data-opt="b">b) Si no viene 'seccion' en la URL, usa 'inicio'</button>
     <button class="quiz-opt" data-opt="c">c) Compara 'seccion' con 'inicio'</button>
@@ -760,24 +769,15 @@ echo $titulo;</code></pre>
 <div class="checkpoint">
   <p class="checkpoint-title">Concepto — variables de CSS</p>
   <div class="quiz-q" data-correct="b" data-explanation="var(--accent) lee el color guardado en la variable --accent (el que definió la sección activa). No crea ni borra nada.">
-    <p>En el CSS, ¿qué hace <code>color: var(--accent);</code>?</p>
+    <p><strong>6.</strong> En el CSS, ¿qué hace <code>color: var(--accent);</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Crea una variable nueva llamada accent</button>
     <button class="quiz-opt" data-opt="b">b) Usa el color guardado en <code>--accent</code></button>
     <button class="quiz-opt" data-opt="c">c) Pone el texto en cursiva</button>
     <div class="quiz-feedback"></div>
   </div>
-</div>
-
-<h2 id="quiz">
-  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-  Práctica
-</h2>
-
-<div id="quiz-final" class="quiz-wrap">
-  <p class="quiz-intro">Hacé click en la opción que te parezca correcta. Te marca al instante si acertaste.</p>
 
   <div class="quiz-q" data-correct="c" data-explanation="git push sube los commits locales a GitHub. Sin push, los commits solo existen en tu máquina.">
-    <p><strong>1.</strong> ¿Qué hace <code>git push</code>?</p>
+    <p><strong>7.</strong> ¿Qué hace <code>git push</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Borra el commit anterior</button>
     <button class="quiz-opt" data-opt="b">b) Crea un repo nuevo en GitHub</button>
     <button class="quiz-opt" data-opt="c">c) Sube los commits locales a GitHub</button>
@@ -785,7 +785,7 @@ echo $titulo;</code></pre>
   </div>
 
   <div class="quiz-q" data-correct="b" data-explanation="git add prepara los archivos (staging), git commit saca la foto. Los dos pasos son necesarios.">
-    <p><strong>2.</strong> ¿Cuál es la diferencia entre <code>git add</code> y <code>git commit</code>?</p>
+    <p><strong>8.</strong> ¿Cuál es la diferencia entre <code>git add</code> y <code>git commit</code>?</p>
     <button class="quiz-opt" data-opt="a">a) Son lo mismo, hacen falta los dos por las dudas</button>
     <button class="quiz-opt" data-opt="b">b) add prepara los archivos, commit guarda la foto</button>
     <button class="quiz-opt" data-opt="c">c) add guarda la foto, commit la sube a GitHub</button>
@@ -793,7 +793,7 @@ echo $titulo;</code></pre>
   </div>
 
   <div class="quiz-q" data-correct="b" data-explanation="GitHub ya no acepta la contraseña de la cuenta en el push: va el token (o GitHub CLI).">
-    <p><strong>3.</strong> Al hacer <code>git push</code>, ¿qué ponés cuando pide contraseña?</p>
+    <p><strong>9.</strong> Al hacer <code>git push</code>, ¿qué ponés cuando pide contraseña?</p>
     <button class="quiz-opt" data-opt="a">a) La contraseña de mi cuenta de GitHub</button>
     <button class="quiz-opt" data-opt="b">b) El token de acceso personal</button>
     <button class="quiz-opt" data-opt="c">c) El nombre del repositorio</button>
@@ -801,7 +801,7 @@ echo $titulo;</code></pre>
   </div>
 
   <div class="quiz-q" data-correct="c" data-explanation="switch evalúa la variable UNA sola vez y salta al case correcto. if/elseif la evalúa de nuevo en cada condición.">
-    <p><strong>4.</strong> ¿Qué diferencia principal tiene <code>switch</code> respecto de <code>if/elseif</code>?</p>
+    <p><strong>10.</strong> ¿Qué diferencia principal tiene <code>switch</code> respecto de <code>if/elseif</code>?</p>
     <button class="quiz-opt" data-opt="a">a) switch es más rápido siempre</button>
     <button class="quiz-opt" data-opt="b">b) switch permite usar strings, if no</button>
     <button class="quiz-opt" data-opt="c">c) switch evalúa la variable una sola vez</button>
@@ -809,7 +809,7 @@ echo $titulo;</code></pre>
   </div>
 
   <div class="quiz-q" data-correct="a" data-explanation="Separar lógica de presentación hace que el código sea más fácil de leer, mantener y escalar. Cada cosa en su lugar.">
-    <p><strong>5.</strong> ¿Por qué conviene que el switch solo asigne variables y el HTML esté aparte?</p>
+    <p><strong>11.</strong> ¿Por qué conviene que el switch solo asigne variables y el HTML esté aparte?</p>
     <button class="quiz-opt" data-opt="a">a) Porque separa lógica de presentación</button>
     <button class="quiz-opt" data-opt="b">b) Porque PHP no puede tener HTML adentro de un switch</button>
     <button class="quiz-opt" data-opt="c">c) Porque las variables se ven mejor</button>
