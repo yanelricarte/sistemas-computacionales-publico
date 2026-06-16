@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repaso de fundamentos — PHP: variables, selectivas y repetitivas</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Material de consulta · Sistemas Computacionales · 7°</div>
+  <h1>Repaso de fundamentos de PHP</h1>
+  <p class="sub">Las bases que usamos en todas las clases: declarar variables y sintaxis, estructuras <strong>selectivas</strong> (<code>if</code> / <code>switch</code>) y <strong>repetitivas</strong> (<code>for</code> / <code>while</code> / <code>foreach</code>). Volvé acá cada vez que algo no salga.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s1">Variables y sintaxis</a></li>
+    <li><a href="#s2">Estructuras selectivas (if / switch)</a></li>
+    <li><a href="#s3">Estructuras repetitivas (for / while / foreach)</a></li>
+    <li><a href="#s4">Errores de sintaxis más comunes</a></li>
+    <li><a href="#quiz">Practicá</a></li>
+  </ol>
+</nav>
+
+<h2 id="s1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+  1. Variables y sintaxis
+</h2>
+
+<p>Una <strong>variable</strong> es una caja con nombre donde guardás un valor. En PHP el nombre <strong>siempre empieza con <code>$</code></strong> y cada instrucción <strong>termina con <code>;</code></strong>.</p>
+
+<pre><code>$nombre = "Ana";       // texto (string): va entre comillas
+$edad   = 17;          // número (int): SIN comillas
+$activo = true;        // booleano: true o false
+
+echo $nombre;          // muestra: Ana
+echo "Hola " . $nombre; // el punto (.) concatena: "Hola Ana"
+echo "Hola $nombre";    // dentro de comillas dobles, la variable se reemplaza sola</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">Comillas dobles vs simples</div>
+  En <code>"Hola $nombre"</code> (dobles) la variable se reemplaza por su valor. En <code>'Hola $nombre'</code> (simples) se muestra literal: <code>Hola $nombre</code>. Si dudás, usá dobles.
+</div>
+
+<h3>Asignar vs comparar: el error nº 1</h3>
+
+<table>
+  <tr><th>Símbolo</th><th>Qué hace</th><th>Ejemplo</th></tr>
+  <tr><td><code>=</code></td><td><strong>Asigna</strong> (guarda un valor)</td><td><code>$x = 5;</code></td></tr>
+  <tr><td><code>==</code></td><td><strong>Compara</strong> si son iguales</td><td><code>if ($x == 5)</code></td></tr>
+  <tr><td><code>===</code></td><td>Compara valor <strong>y</strong> tipo</td><td><code>'5' === 5</code> → falso</td></tr>
+  <tr><td><code>!=</code></td><td>Compara si son <strong>distintos</strong></td><td><code>if ($x != 0)</code></td></tr>
+</table>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Trampa clásica</div>
+  <code>if ($x = 5)</code> NO compara: <em>asigna</em> 5 a <code>$x</code> y siempre da verdadero. Para comparar va <code>if ($x == 5)</code>. Un solo <code>=</code> de más cambia todo.
+</div>
+
+<h3>Operadores útiles</h3>
+
+<pre><code>// Matemáticos
+$total = 10 + 5;   // suma 15
+$resto = 10 % 3;   // módulo (resto de dividir): 1
+
+// Comparación (devuelven true/false)
+$a &gt; $b    $a &lt; $b    $a &gt;= $b    $a &lt;= $b
+
+// Lógicos (combinan condiciones)
+($edad &gt;= 13 &amp;&amp; $edad &lt; 18)   // && = Y (las dos cosas)
+($dia == 'sab' || $dia == 'dom')  // || = O (una u otra)</code></pre>
+
+<h2 id="s2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/><line x1="3" y1="12" x2="15" y2="12"/></svg>
+  2. Estructuras selectivas (if / switch)
+</h2>
+
+<p>Las estructuras <strong>selectivas</strong> deciden <em>qué código corre</em> según una condición.</p>
+
+<h3>if / elseif / else — para rangos y condiciones</h3>
+
+<pre><code>$nota = 7;
+
+if ($nota &gt;= 9) {
+    echo "Excelente";
+} elseif ($nota &gt;= 6) {
+    echo "Aprobado";
+} else {
+    echo "Desaprobado";
+}</code></pre>
+
+<ul>
+  <li>Se evalúan en orden: la <strong>primera</strong> condición verdadera gana y el resto se ignora.</li>
+  <li><code>elseif</code> agrega más caminos; <code>else</code> es "en cualquier otro caso".</li>
+  <li>Ideal para <strong>rangos</strong> (<code>≥</code>, <code>≤</code>) y condiciones combinadas con <code>&amp;&amp;</code> / <code>||</code>.</li>
+</ul>
+
+<h3>switch — para una variable contra valores fijos</h3>
+
+<pre><code>$dia = 'lunes';
+
+switch ($dia) {
+    case 'sabado':
+    case 'domingo':
+        echo "Fin de semana";
+        break;
+    case 'lunes':
+        echo "Arranca la semana";
+        break;
+    default:
+        echo "Día de semana";
+}</code></pre>
+
+<ul>
+  <li><code>switch</code> evalúa la variable <strong>una sola vez</strong> y salta al <code>case</code> que coincide.</li>
+  <li><code>break</code> sale del switch. <strong>Sin <code>break</code></strong>, sigue ejecutando el siguiente case (fall-through) — útil cuando dos casos comparten código (sábado y domingo arriba), peligroso si te lo olvidás.</li>
+  <li><code>default</code> es el "else" del switch: corre si ningún case coincide.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">¿Cuál uso?</div>
+  ¿Comparás una variable contra <strong>valores fijos</strong> (día, sección, opción de menú)? → <code>switch</code>.<br>
+  ¿Tenés <strong>rangos o condiciones combinadas</strong> (≥ 18, edad entre 13 y 17)? → <code>if</code> / <code>elseif</code>.
+</div>
+
+<h2 id="s3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+  3. Estructuras repetitivas (for / while / foreach)
+</h2>
+
+<p>Las estructuras <strong>repetitivas</strong> (bucles) repiten un bloque de código varias veces.</p>
+
+<h3>for — cuando sé cuántas veces</h3>
+
+<pre><code>for ($i = 1; $i &lt;= 5; $i++) {
+    echo $i;        // 12345
+}</code></pre>
+
+<p>El <code>for</code> tiene tres partes, separadas por <code>;</code>:</p>
+<ul>
+  <li><strong>Arranque:</strong> <code>$i = 1</code> (de dónde sale el contador).</li>
+  <li><strong>Condición:</strong> <code>$i &lt;= 5</code> (mientras se cumpla, sigue).</li>
+  <li><strong>Paso:</strong> <code>$i++</code> (suma 1 en cada vuelta; <code>$i++</code> es lo mismo que <code>$i = $i + 1</code>).</li>
+</ul>
+
+<h3>while — mientras se cumpla algo</h3>
+
+<pre><code>$i = 1;
+while ($i &lt;= 5) {
+    echo $i;        // 12345
+    $i++;           // ¡importante! sin esto, no termina nunca
+}</code></pre>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Bucle infinito</div>
+  Si la condición del <code>while</code> nunca se vuelve falsa (te olvidaste de <code>$i++</code>), el programa se cuelga. Todo bucle tiene que <em>avanzar</em> hacia su final.
+</div>
+
+<h3>foreach — para recorrer un array</h3>
+
+<p>Es el bucle más cómodo para arrays: recorre <strong>cada elemento</strong> sin que tengas que llevar un contador.</p>
+
+<pre><code>$colores = ['rojo', 'verde', 'azul'];
+foreach ($colores as $color) {
+    echo $color;        // rojo verde azul
+}
+
+// En arrays asociativos, podés tomar clave Y valor:
+$persona = ['nombre' =&gt; 'Ana', 'edad' =&gt; 17];
+foreach ($persona as $clave =&gt; $valor) {
+    echo "$clave: $valor";   // nombre: Ana   edad: 17
+}</code></pre>
+
+<ul>
+  <li><code>foreach ($array as $valor)</code> → solo el valor de cada elemento.</li>
+  <li><code>foreach ($array as $clave =&gt; $valor)</code> → la clave y el valor.</li>
+  <li><code>continue</code> saltea la vuelta actual; <code>break</code> corta el bucle entero.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">¿Cuál uso?</div>
+  ¿Recorrés un <strong>array</strong>? → <code>foreach</code>.<br>
+  ¿Repetís un número <strong>conocido</strong> de veces? → <code>for</code>.<br>
+  ¿Repetís <strong>mientras</strong> pase algo (sin saber cuántas)? → <code>while</code>.
+</div>
+
+<h2 id="s4">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  4. Errores de sintaxis más comunes
+</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td><code>Parse error: syntax error, unexpected ...</code></td><td>Casi siempre falta un <code>;</code>, una llave <code>}</code> o un paréntesis sin cerrar en la línea de arriba.</td></tr>
+  <tr><td><code>Undefined variable $x</code></td><td>Usaste una variable que nunca creaste (¿typo en el nombre? ¿olvidaste el <code>$</code>?).</td></tr>
+  <tr><td>El <code>if</code> siempre da verdadero</td><td>Pusiste <code>=</code> (asignar) en vez de <code>==</code> (comparar).</td></tr>
+  <tr><td>El texto sale con <code>$nombre</code> literal</td><td>Usaste comillas simples; para interpolar la variable van comillas dobles.</td></tr>
+  <tr><td>El <code>while</code> no termina</td><td>Falta el paso que avanza el contador (<code>$i++</code>) o la condición nunca se vuelve falsa.</td></tr>
+  <tr><td>El <code>switch</code> ejecuta de más</td><td>Falta un <code>break</code> al final del case (fall-through).</td></tr>
+</table>
+
+<h2 id="quiz">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Practicá
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p class="quiz-intro">Repaso rápido. Tocá la opción que creas correcta y leé la explicación.</p>
+
+  <div class="quiz-q" data-correct="b" data-explanation="= asigna un valor; == compara si dos valores son iguales. Es el error más frecuente en los if.">
+    <p><strong>1.</strong> ¿Qué hace <code>=</code> en PHP?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Compara dos valores</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Asigna un valor a una variable</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Suma dos números</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="Son rangos con comparaciones (≥). Eso se resuelve con if/elseif, no con switch.">
+    <p><strong>2.</strong> Para clasificar una nota (≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado), ¿qué conviene?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) <code>if</code> / <code>elseif</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) <code>switch</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) <code>foreach</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="for ($i=0; $i&lt;3; $i++) arranca en 0 y corre mientras $i&lt;3: o sea 0, 1 y 2 → 3 veces.">
+    <p><strong>3.</strong> ¿Cuántas veces corre <code>for ($i = 0; $i &lt; 3; $i++)</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) 2 veces</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) 4 veces</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) 3 veces</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="foreach recorre cada elemento de un array sin contador. Es el bucle natural para arrays.">
+    <p><strong>4.</strong> ¿Qué bucle usás para recorrer un array?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) <code>for</code> siempre</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) <code>foreach</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Ninguno, no se puede</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="Sin break, el switch sigue ejecutando el siguiente case (fall-through). Por eso casi siempre se pone break.">
+    <p><strong>5.</strong> ¿Qué pasa si un <code>case</code> del <code>switch</code> no tiene <code>break</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Tira un error</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Vuelve al principio del switch</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Sigue ejecutando el siguiente case</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score"></p>
+  <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el repaso</button>
+</div>
+
+<p style="margin-top:2em;">Volver a las clases:</p>
+<p class="mat-links">
+  <a href="../"><strong>→ Inicio</strong></a> ·
+  <a href="../clase_4/clase-04-teoria.html"><strong>Teoría de Clase 4</strong></a> ·
+  <a href="../clase_4/clase-04-tp-datos.html"><strong>TP de Clase 4</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>

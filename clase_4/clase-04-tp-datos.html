@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TP Clase 4 — Arrays asociativos y datos en archivo aparte</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 4</div>
+  <h1>Arrays asociativos y datos en archivo aparte</h1>
+  <p class="sub">Guardás cada sección como un <code>array asociativo</code>, movés todos los datos a <code>datos.php</code> y hacés que el menú se arme solo con <code>foreach</code>. La página queda casi igual por fuera; cambia cómo están guardados los datos por dentro. Subís el avance como un nuevo commit.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+</div>
+
+<h2>Objetivo</h2>
+
+<p>Partir de tu <code>info.php</code> de Clase 3 (el del <code>switch</code>) y dar un paso más: cada sección pasa a ser un <strong>array asociativo</strong> (un registro), todas las secciones viven juntas en un archivo aparte (<code>datos.php</code>), <code>info.php</code> queda corto y el menú se arma solo con un <code>foreach</code>. Es el puente hacia la base de datos que vamos a usar en la Clase 5.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Antes de empezar — repaso</div>
+  Si algo de esto te cuesta, abrí el <a href="../repaso-fundamentos/">material de repaso de fundamentos</a> (variables, <code>if</code>/<code>switch</code>, <code>for</code>/<code>while</code>/<code>foreach</code>). Recordá: <code>=</code> <strong>asigna</strong>, <code>==</code> <strong>compara</strong>; <code>foreach</code> recorre <strong>cada elemento</strong> de un array.
+</div>
+
+<h2>Consigna</h2>
+
+<h3>Parte 1 — Una sección como array asociativo</h3>
+
+<ol>
+  <li>Elegí una sección (ej. <code>ayuda</code>) y, dentro de su <code>case</code>, juntá las cuatro variables en <strong>un solo array</strong>:
+    <pre><code>$seccion = [
+    'titulo' =&gt; 'Ayuda',
+    'texto'  =&gt; 'Instrucciones del sistema.',
+    'imagen' =&gt; 'https://picsum.photos/seed/ayuda/800/350',
+    'clase'  =&gt; 'sec-ayuda',
+];</code></pre>
+  </li>
+  <li>En el HTML, cambiá <code>&lt;?= $titulo ?&gt;</code> por <code>&lt;?= $seccion['titulo'] ?&gt;</code> (y lo mismo con <code>texto</code> e <code>imagen</code>).</li>
+  <li>Probá en el navegador: la sección tiene que verse <strong>igual</strong> que antes.</li>
+  <li>Cuando una ande, repetí con las demás secciones.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 1</div>
+  ¿podés leer el título con <code>$seccion['titulo']</code>? ¿La página se ve igual que en Clase 3? Cuidado con dejar un <code>&lt;?= $titulo ?&gt;</code> viejo: si quedó, sale vacío.
+</div>
+
+<h3>Parte 2 — Datos en archivo aparte (datos.php)</h3>
+
+<ol>
+  <li>Creá un archivo nuevo, <code>datos.php</code>, que <strong>devuelva</strong> (con <code>return</code>) un array de arrays con todas tus secciones. La clave de afuera es lo que va en la URL (<code>?seccion=</code>):
+    <pre><code>&lt;?php
+return [
+    'inicio' =&gt; ['titulo' =&gt; 'Inicio', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-inicio'],
+    'ayuda'  =&gt; ['titulo' =&gt; 'Ayuda',  'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-ayuda'],
+    'error'  =&gt; ['titulo' =&gt; 'No encontrada', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-error'],
+];</code></pre>
+  </li>
+  <li>En <code>info.php</code>, traé esos datos:
+    <pre><code>$secciones = require 'datos.php';</code></pre>
+  </li>
+  <li>Mínimo <strong>4 secciones</strong> + la de <code>error</code>.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 2</div>
+  ¿<code>datos.php</code> empieza con <code>&lt;?php</code> y tiene <code>return [ ... ];</code>? Si te llega vacío, casi seguro te falta el <code>return</code>.
+</div>
+
+<h3>Parte 3 — Buscar la sección (lookup) y borrar el switch</h3>
+
+<ol>
+  <li>Reemplazá el <code>switch</code> por una búsqueda por clave:
+    <pre><code>$seccion = $_GET['seccion'] ?? 'inicio';
+$datos   = $secciones[$seccion] ?? $secciones['error'];</code></pre>
+  </li>
+  <li>Antes del <code>include</code> de la cabecera, pasale los datos que esta necesita:
+    <pre><code>$titulo = $datos['titulo'];
+$clase  = $datos['clase'];</code></pre>
+  </li>
+  <li>En el HTML usá <code>&lt;?= $datos['texto'] ?&gt;</code> y <code>&lt;?= $datos['imagen'] ?&gt;</code>.</li>
+  <li>Probá <code>?seccion=ayuda</code> y una inexistente (<code>?seccion=admin</code>): tiene que <strong>caer en error</strong>, no romperse.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 3</div>
+  el <code>switch</code> ya no está. <code>?seccion=admin</code> muestra la sección de error (gracias al <code>??</code>). La cabecera no salió vacía (asignaste <code>$titulo</code> y <code>$clase</code> desde <code>$datos</code>).
+</div>
+
+<h3>Parte 4 — El menú que se arma solo (foreach)</h3>
+
+<ol>
+  <li>En <code>cabecera.php</code> (donde está el navbar), reemplazá los links escritos a mano por un <code>foreach</code> sobre <code>$secciones</code>:
+    <pre><code>&lt;?php
+  foreach ($secciones as $clave =&gt; $info) {
+      if ($clave === 'error') continue;   // la de error no va en el menú
+      echo "&lt;a href='info.php?seccion=$clave'&gt;" . $info['titulo'] . "&lt;/a&gt;";
+  }
+?&gt;</code></pre>
+  </li>
+  <li><strong>Probalo:</strong> agregá una sección nueva a <code>datos.php</code> y recargá. Tiene que <strong>aparecer sola</strong> en el menú, sin tocar <code>cabecera.php</code> ni <code>info.php</code>.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 4</div>
+  agregás una sección a <code>datos.php</code> → aparece sola en el menú. Ese es el sentido de separar los datos: <em>tocás un solo archivo</em>.
+</div>
+
+<h3>Parte 5 — Nuevo commit (subí el avance)</h3>
+
+<p>Ya tenés el repo de Clase 3. Ahora subís el avance de hoy como un nuevo commit:</p>
+
+<ol>
+  <li>Guardá todos los cambios (incluido el archivo nuevo <code>datos.php</code>).</li>
+  <li>En la terminal (Git Bash en VS Code: <kbd>Ctrl</kbd> + <kbd>ñ</kbd>):
+    <pre><code>git add .
+git commit -m "Datos en datos.php, arrays asociativos y navbar con foreach"
+git push</code></pre>
+  </li>
+  <li>Entrá a tu repo en GitHub: tiene que aparecer el archivo nuevo <code>datos.php</code> y un commit más. Es tu <strong>tercer o cuarto</strong> commit (según si hiciste el de tarea de Clase 3).</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">Opcional — techo</div>
+  en el navbar, marcá con un color distinto la sección activa. Pista: dentro del <code>foreach</code>, compará <code>$clave</code> con <code>$seccion</code> y, si coinciden, agregá una clase al link.
+</div>
+
+<h2>Mantené lo de antes (no se borra)</h2>
+
+<ul>
+  <li><code>session_start()</code> y la protección de la página (login).</li>
+  <li>Los <code>include 'includes/cabecera.php'</code> / <code>pie.php</code>.</li>
+  <li>El CSS dinámico por sección (<code>class="&lt;?= $clase ?&gt;"</code> en el <code>&lt;body&gt;</code>).</li>
+</ul>
+
+<h2>Errores comunes</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td><code>datos.php</code> llega vacío</td><td>¿Le pusiste <code>return</code> antes del array? Sin <code>return</code>, <code>require</code> no trae nada.</td></tr>
+  <tr><td>La cabecera sale vacía (sin título)</td><td>¿Asignaste <code>$titulo = $datos['titulo'];</code> y <code>$clase = $datos['clase'];</code> antes del <code>include</code>?</td></tr>
+  <tr><td>Una sección sale vacía</td><td>Quedó un <code>&lt;?= $titulo ?&gt;</code> viejo en el HTML; ahora va <code>&lt;?= $datos['titulo'] ?&gt;</code>.</td></tr>
+  <tr><td>El menú no muestra nada</td><td>¿El <code>foreach</code> recorre <code>$secciones</code>? ¿<code>$secciones</code> está cargado antes del <code>include</code> de la cabecera?</td></tr>
+  <tr><td>Una URL inexistente rompe la página</td><td>Falta el <code>?? $secciones['error']</code> en el lookup.</td></tr>
+  <tr><td>GitHub no acepta la contraseña</td><td>No va la clave de tu cuenta: va el <strong>token</strong> o <code>gh auth login</code> con GitHub CLI.</td></tr>
+</table>
+
+<h2>¿Terminaste? Verificá lo que tenés</h2>
+
+<p>Tildá lo que ya tengas hecho. Se guarda solo en este navegador, así podés volver a chequearlo.</p>
+
+<div class="selfcheck" data-key="tp-clase4">
+  <div class="selfcheck-head">
+    <span>Checklist del TP de Clase 4</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="tpc4-1"><label for="tpc4-1">Cada sección es un array asociativo con claves <code>titulo</code>, <code>texto</code>, <code>imagen</code>, <code>clase</code>.</label></li>
+    <li><input type="checkbox" id="tpc4-2"><label for="tpc4-2"><code>datos.php</code> devuelve (con <code>return</code>) el array de arrays: mínimo 4 secciones + <code>error</code>.</label></li>
+    <li><input type="checkbox" id="tpc4-3"><label for="tpc4-3"><code>info.php</code> trae los datos con <code>require</code> y busca la sección con <code>$secciones[$seccion] ?? $secciones['error']</code>.</label></li>
+    <li><input type="checkbox" id="tpc4-4"><label for="tpc4-4">El <code>switch</code> ya no está; una URL inexistente cae en la sección de error.</label></li>
+    <li><input type="checkbox" id="tpc4-5"><label for="tpc4-5">El menú se arma con <code>foreach</code>; agregar una sección a <code>datos.php</code> la hace aparecer sola.</label></li>
+    <li><input type="checkbox" id="tpc4-6"><label for="tpc4-6">Sigue funcionando el login, los <code>include</code> y el color por sección.</label></li>
+    <li><input type="checkbox" id="tpc4-7"><label for="tpc4-7">Subí el avance: en GitHub aparece <code>datos.php</code> y un commit más.</label></li>
+  </ul>
+</div>
+
+<h2>Para pensar (tarea de cierre)</h2>
+
+<p>Si cada array es una fila y las claves son las columnas, <code>datos.php</code> es casi una <strong>tabla</strong>. Para cada entidad de tu proyecto (usuarios, productos, turnos…), anotá qué <strong>campos</strong> tendría, como las claves de un array. Por ejemplo: <code>usuario → nombre, email, clave</code>. Eso lo usamos en la Clase 5 para armar la base de datos de verdad.</p>
+
+<div class="nav">
+  <a href="clase-04-teoria.html">← Volver a la teoría de Clase 4</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>

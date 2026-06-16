@@ -228,4 +228,44 @@
       });
     }
   })();
+
+  // === "Completá el código" — escribir con feedback ===
+  // Markup: <div class="code-check" data-answer="resp1|resp2" data-hint="...">
+  //           <p>consigna…</p>
+  //           <div class="code-check-row">
+  //             <input class="code-check-input"> <button class="btn code-check-btn">Comprobar</button>
+  //           </div>
+  //           <div class="code-check-feedback"></div>
+  //         </div>
+  (function () {
+    function norm(s) {
+      return (s || '')
+        .trim()
+        .replace(/\s+/g, ' ')                 // colapsa espacios
+        .replace(/[“”‘’"]/g, "'") // unifica comillas a '
+        .replace(/;+$/, '')                    // saca ; final
+        .replace(/\s*\[\s*/g, '[')             // espacios dentro de [ ]
+        .replace(/\s*\]\s*/g, ']');
+    }
+    document.querySelectorAll('.code-check').forEach(function (cc) {
+      var input = cc.querySelector('.code-check-input');
+      var btn = cc.querySelector('.code-check-btn');
+      var fb = cc.querySelector('.code-check-feedback');
+      if (!input || !btn || !fb) return;
+      var answers = (cc.getAttribute('data-answer') || '').split('|').map(norm);
+      var hint = cc.getAttribute('data-hint') || '';
+      function check() {
+        var val = norm(input.value);
+        if (!val) return;
+        var ok = answers.indexOf(val) !== -1;
+        cc.classList.toggle('ok', ok);
+        cc.classList.toggle('bad', !ok);
+        fb.textContent = ok ? '✓ ¡Bien! Lo escribiste correcto.' : ('✗ Todavía no. ' + hint);
+      }
+      btn.addEventListener('click', check);
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); check(); }
+      });
+    });
+  })();
 })();

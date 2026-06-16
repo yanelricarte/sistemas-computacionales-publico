@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 4 — Arrays asociativos y datos en archivo aparte</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 4 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Arrays asociativos y datos en archivo aparte</h1>
+  <p class="sub">Primero recuperamos los fundamentos (variables, <code>if</code>/<code>switch</code>, bucles). Después guardás cada sección como un <code>array asociativo</code>, movés los datos a <code>datos.php</code> y dejás que el menú se arme solo con <code>foreach</code>. Es el puente hacia la base de datos.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s0">Repaso: variables, sintaxis y selectivas</a></li>
+    <li><a href="#s1">Arrays: común vs asociativo</a></li>
+    <li><a href="#s2">Un array asociativo es un registro</a></li>
+    <li><a href="#s3">Todas las secciones juntas (array de arrays)</a></li>
+    <li><a href="#s4">Datos en archivo aparte (datos.php)</a></li>
+    <li><a href="#s5">Buscar la sección: lookup con ??</a></li>
+    <li><a href="#s6">Recorrer con foreach (el menú que se arma solo)</a></li>
+    <li><a href="#s7">Errores frecuentes</a></li>
+    <li><a href="#s8">Glosario</a></li>
+    <li><a href="#quiz">Práctica</a></li>
+    <li><a href="#s10">Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<h2 id="s0">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+  0. Repaso: variables, sintaxis y estructuras selectivas
+</h2>
+
+<p>Antes de lo nuevo, afilamos las herramientas que más se traban. Si algo de esto te cuesta, tené a mano el <a href="../repaso-fundamentos/">repaso de fundamentos</a>: es material para consultar todo el año.</p>
+
+<h3>Declarar variables y sintaxis</h3>
+
+<pre><code>$nombre = "Ana";          // el $ adelante, comillas, ; al final
+$edad   = 17;             // los números van SIN comillas
+echo "Hola " . $nombre;   // el punto (.) concatena: pega textos
+echo "Hola $nombre";      // dentro de comillas dobles, la variable se reemplaza</code></pre>
+
+<p>Tres símbolos que se confunden y rompen todo:</p>
+
+<table>
+  <tr><th>Símbolo</th><th>Qué hace</th></tr>
+  <tr><td><code>=</code></td><td><strong>Asigna</strong>: guarda un valor en una variable. <code>$x = 5;</code></td></tr>
+  <tr><td><code>==</code></td><td><strong>Compara</strong> si dos valores son iguales. <code>if ($x == 5)</code></td></tr>
+  <tr><td><code>===</code></td><td>Compara valor <strong>y</strong> tipo. <code>'5' === 5</code> es falso (texto ≠ número).</td></tr>
+</table>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Errores que vamos a cazar</div>
+  Olvidar el <code>$</code> de la variable, olvidar el <code>;</code> al final, mezclar comillas, y escribir <code>=</code> (asignar) cuando querías <code>==</code> (comparar). El 90% de los "no me anda" salen de acá.
+</div>
+
+<h3>¿if/elseif o switch? (decidilo vos)</h3>
+
+<p>Las dos son estructuras <strong>selectivas</strong>: eligen qué código corre. La diferencia es cuándo conviene cada una.</p>
+
+<ul>
+  <li><code>if</code> / <code>elseif</code> / <code>else</code> → para <strong>rangos y condiciones</strong> (mayor que, distinto, combinaciones con <code>&amp;&amp;</code> / <code>||</code>).</li>
+  <li><code>switch</code> → para comparar <strong>una variable contra valores fijos</strong> (lo de Clase 3 con <code>?seccion=</code>).</li>
+</ul>
+
+<p class="drag-help">Probá: arrastrá cada situación a la herramienta que mejor le va, o seleccionala (clic / Enter) y después tocá la zona. Al final tocá <strong>Verificar</strong>.</p>
+
+<div class="drag-activity" data-key="clase4-selectivas">
+  <div class="drag-pool" aria-label="Tarjetas para clasificar">
+    <div class="drag-chip" data-id="c1" data-target="switch" data-why="Comparás una variable (la sección) contra valores fijos: inicio, ayuda, contacto." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar el contenido según la sección: inicio, ayuda o contacto</div>
+    <div class="drag-chip" data-id="c2" data-target="if" data-why="Son rangos con comparaciones (≥ 9, ≥ 6): eso se resuelve con if/elseif." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Calcular la nota: ≥ 9 Excelente, ≥ 6 Aprobado, si no Desaprobado</div>
+    <div class="drag-chip" data-id="c3" data-target="switch" data-why="Una variable (el día) contra valores fijos: lunes, martes, … domingo." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Elegir el saludo según el día: lunes, martes, … domingo</div>
+    <div class="drag-chip" data-id="c4" data-target="if" data-why="Es una comparación con un límite (≥ 18), no valores fijos: va con if." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Mostrar “Es mayor de edad” si la edad es ≥ 18</div>
+  </div>
+  <div class="drag-zones">
+    <div class="drop-zone" data-zone="if" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en if / elseif">
+      <h4>if / elseif</h4>
+      <p class="hint">rangos o condiciones distintas</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="switch" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en switch">
+      <h4>switch</h4>
+      <p class="hint">una misma variable contra valores fijos</p>
+      <div class="zone-items"></div>
+    </div>
+  </div>
+  <button type="button" class="btn drag-check">Verificar</button>
+  <button type="button" class="drag-reset">Reiniciar</button>
+  <div class="drag-feedback" role="status" aria-live="polite"></div>
+</div>
+
+<h2 id="s1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+  1. Arrays: común vs asociativo
+</h2>
+
+<p>Un <strong>array</strong> guarda varios valores en una sola variable. Hasta ahora usamos arrays <em>comunes</em>, donde cada valor tiene una posición numérica:</p>
+
+<pre><code>$colores = ['rojo', 'verde', 'azul'];
+echo $colores[0];   // rojo  (la primera posición es 0)
+echo $colores[2];   // azul</code></pre>
+
+<p>El <strong>array asociativo</strong> cambia los números por <strong>claves con nombre</strong>:</p>
+
+<pre><code>$seccion = [
+    'titulo' =&gt; 'Ayuda',
+    'texto'  =&gt; 'Instrucciones del sistema.',
+    'imagen' =&gt; 'https://picsum.photos/seed/ayuda/800/350',
+    'clase'  =&gt; 'sec-ayuda',
+];
+
+echo $seccion['titulo'];   // Ayuda
+echo $seccion['clase'];    // sec-ayuda</code></pre>
+
+<ul>
+  <li>La <strong>clave</strong> (<code>'titulo'</code>) reemplaza al número de posición.</li>
+  <li>Se lee con <code>$seccion['clave']</code>.</li>
+  <li>El símbolo <code>=&gt;</code> (<strong>operador de doble flecha</strong>) asocia cada <strong>clave</strong> con su <strong>valor</strong>.</li>
+</ul>
+
+<div class="code-check" data-answer="$seccion['clase']|echo $seccion['clase']|echo $seccion['clase'];" data-hint="Se accede por la clave: el nombre entre corchetes y comillas, igual que con 'titulo'.">
+  <p><strong>Probá vos:</strong> dado el array de arriba, ¿cómo leés el valor de la clave <code>clase</code>? Escribilo y comprobá.</p>
+  <div class="code-check-row">
+    <input type="text" class="code-check-input" placeholder="ej: $seccion['...']" aria-label="Escribí tu respuesta en código" autocomplete="off" spellcheck="false">
+    <button type="button" class="btn code-check-btn">Comprobar</button>
+  </div>
+  <div class="code-check-feedback" role="status" aria-live="polite"></div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">¿Por qué nombres y no números?</div>
+  Con <code>$seccion['titulo']</code> sabés exactamente qué estás leyendo. Con <code>$seccion[0]</code> tendrías que acordarte de que "la posición 0 era el título". Los nombres hacen el código legible.
+</div>
+
+<h2 id="s2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+  2. Un array asociativo es un registro
+</h2>
+
+<p>Esta es la idea clave de la clase. Un array asociativo es lo mismo que una <strong>ficha</strong> o una <strong>fila de una tabla</strong>: campos con nombre y valor.</p>
+
+<pre><code>ARRAY ASOCIATIVO              UNA FILA DE UNA TABLA
+['titulo' =&gt; 'Ayuda',         titulo | texto | imagen | clase
+ 'texto'  =&gt; '...',           -------+-------+--------+----------
+ 'imagen' =&gt; '...',           Ayuda  |  ...  |  ...   | sec-ayuda
+ 'clase'  =&gt; 'sec-ayuda']</code></pre>
+
+<ul>
+  <li>Las <strong>claves</strong> (<code>titulo</code>, <code>texto</code>…) son los nombres de los campos: las futuras <strong>columnas</strong>.</li>
+  <li>El <strong>array</strong> entero es <strong>una fila</strong> (un registro).</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Guardá esta idea</div>
+  Si un array asociativo es una fila, juntar varios va a ser… una tabla. Y ahí estamos a un paso de una base de datos de verdad (Clase 5).
+</div>
+
+<h2 id="s3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+  3. Todas las secciones juntas (array de arrays)
+</h2>
+
+<p>En Clase 3, cada sección vivía adentro de un <code>case</code> del <code>switch</code>. Ahora las juntamos todas en <strong>un array de arrays</strong>: la clave de afuera es la que viaja en la URL (<code>?seccion=...</code>).</p>
+
+<pre><code>$secciones = [
+    'inicio' =&gt; ['titulo' =&gt; 'Inicio', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-inicio'],
+    'ayuda'  =&gt; ['titulo' =&gt; 'Ayuda',  'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-ayuda'],
+    'error'  =&gt; ['titulo' =&gt; 'No encontrada', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-error'],
+];
+
+echo $secciones['ayuda']['titulo'];   // Ayuda  (entro por la clave de afuera y después por la de adentro)</code></pre>
+
+<p>Esto <strong>es</strong> la tabla: cada entrada de afuera es una <strong>fila</strong>, y su clave (<code>'ayuda'</code>) funciona como identificador.</p>
+
+<h2 id="s4">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+  4. Datos en archivo aparte (datos.php)
+</h2>
+
+<p>Tener los datos mezclados con la lógica ensucia el <code>info.php</code>. La solución: poner <strong>todas las secciones en un archivo solo</strong>, <code>datos.php</code>, que <strong>devuelve</strong> el array con <code>return</code>.</p>
+
+<div class="code-switch">
+<pre class="old"><code>// datos.php — SOLO datos
+&lt;?php
+return [
+    'inicio' =&gt; ['titulo' =&gt; 'Inicio', /* ... */],
+    'ayuda'  =&gt; ['titulo' =&gt; 'Ayuda',  /* ... */],
+];</code></pre>
+
+<pre class="new"><code>// info.php — trae los datos
+$secciones = require 'datos.php';
+
+// ahora $secciones tiene TODO lo que devolvió datos.php</code></pre>
+</div>
+
+<ul>
+  <li><code>require</code> ejecuta <code>datos.php</code> y guarda lo que ese archivo <code>return</code>ea.</li>
+  <li>Ventaja enorme: para agregar o cambiar una sección, tocás <strong>solo <code>datos.php</code></strong>, no la lógica.</li>
+</ul>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">verdadero o falso</p>
+  <div class="quiz-q" data-correct="f" data-explanation="Falso. Sin return, datos.php no devuelve nada: $secciones queda vacío. El return es lo que entrega el array a quien hizo el require.">
+    <p>Si <code>datos.php</code> arma el array pero <strong>no</strong> le ponés <code>return</code>, <code>$secciones = require 'datos.php'</code> igual recibe los datos.</p>
+    <button type="button" class="quiz-opt" data-opt="v">Verdadero</button>
+    <button type="button" class="quiz-opt" data-opt="f">Falso</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">require vs include</div>
+  Los dos traen un archivo. La diferencia: <code>require</code> corta el programa si el archivo falta (mejor para datos imprescindibles); <code>include</code> sigue con un aviso. Para <code>datos.php</code> usamos <code>require</code>.
+</div>
+
+<h2 id="s5">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  5. Buscar la sección: lookup con ??
+</h2>
+
+<p>Con los datos en <code>$secciones</code>, el <code>switch</code> ya no hace falta: buscamos la sección <strong>por su clave</strong>.</p>
+
+<pre><code>$seccion = $_GET['seccion'] ?? 'inicio';                 // qué pidió el usuario
+$datos   = $secciones[$seccion] ?? $secciones['error'];  // la fila pedida, o error si no existe</code></pre>
+
+<ul>
+  <li><code>$secciones[$seccion]</code> busca la fila por su clave.</li>
+  <li><code>?? $secciones['error']</code> es el "plan B": si la clave no existe (ej. <code>?seccion=admin</code>), muestra la sección de error. Es el reemplazo del <code>default</code> del switch.</li>
+  <li><strong>El <code>switch</code> desaparece</strong>: lo reemplaza una búsqueda en el array.</li>
+</ul>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">¿qué queda en $datos?</p>
+  <pre><code>// el usuario entró a info.php?seccion=descuentos
+// pero en datos.php NO existe la clave 'descuentos'
+$datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="'descuentos' no existe como clave, así que ?? usa $secciones['error']. Por eso una URL inventada muestra la página de error en vez de romperse.">
+    <p>¿Qué queda en <code>$datos</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La sección 'inicio'</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Un error de PHP (la clave no existe)</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La sección 'error'</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<p>Después, como la cabecera de Clase 2/3 espera <code>$titulo</code> y <code>$clase</code>, se los pasamos desde el registro antes del <code>include</code>:</p>
+
+<pre><code>$titulo = $datos['titulo'];
+$clase  = $datos['clase'];
+include 'includes/cabecera.php';</code></pre>
+
+<h2 id="s6">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+  6. Recorrer con foreach (el menú que se arma solo)
+</h2>
+
+<p>Las estructuras <strong>repetitivas</strong> (bucles) repiten un bloque de código. Repaso rápido de las que ya viste:</p>
+
+<pre><code>for ($i = 1; $i &lt;= 3; $i++) { echo $i; }     // 123  (arranque; condición; paso)
+$i = 1; while ($i &lt;= 3) { echo $i; $i++; }   // 123  (mientras se cumpla la condición)</code></pre>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">comprobá: ¿cuántas veces corre?</p>
+  <pre><code>for ($i = 0; $i &lt; 4; $i++) { echo "x"; }</code></pre>
+  <div class="quiz-q" data-correct="b" data-explanation="Arranca en 0 y corre mientras $i &lt; 4: pasa por 0, 1, 2 y 3 → 4 veces.">
+    <p><strong>Probá antes de seguir.</strong></p>
+    <button type="button" class="quiz-opt" data-opt="a">a) 3 veces</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) 4 veces</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) 5 veces</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Cuidado con el bucle infinito</div>
+  En el <code>while</code>, si te olvidás de <code>$i++</code>, la condición nunca deja de cumplirse y el programa no termina. Todo bucle tiene que <em>avanzar</em> hacia su final.
+</div>
+
+<p>Para recorrer un array, el bucle natural es <code>foreach</code> ("<strong>para cada</strong> elemento, hacé esto"). No necesita contador:</p>
+
+<pre><code>$colores = ['rojo', 'verde', 'azul'];
+foreach ($colores as $c) { echo $c; }          // rojo verde azul
+
+// con clave Y valor (para arrays asociativos):
+foreach ($secciones as $clave =&gt; $info) {
+    echo $clave . ': ' . $info['titulo'];
+}</code></pre>
+
+<h3>El navbar que se arma solo</h3>
+
+<p>Hasta ahora el menú se escribía link por link a mano. Con <code>foreach</code> sobre <code>$secciones</code>, se genera solo:</p>
+
+<pre><code>&lt;?php
+  foreach ($secciones as $clave =&gt; $info) {
+      if ($clave === 'error') continue;   // la de error no va en el menú
+      echo "&lt;a href='info.php?seccion=$clave'&gt;" . $info['titulo'] . "&lt;/a&gt;";
+  }
+?&gt;</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">La recompensa</div>
+  Agregás una sección nueva a <code>datos.php</code> y recargás: <strong>aparece sola en el menú</strong>. No tocaste el navbar. Ese es el sentido de separar los datos de la presentación.
+</div>
+
+<p><code>continue</code> saltea esa vuelta del bucle (no genera el link de <code>error</code>) y sigue con la siguiente.</p>
+
+<h2 id="s7">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  7. Errores frecuentes
+</h2>
+
+<table>
+  <tr><th>Síntoma</th><th>Causa y solución</th></tr>
+  <tr><td><code>datos.php</code> llega vacío</td><td>Falta el <code>return</code> antes del array. Sin <code>return</code>, <code>require</code> no trae nada.</td></tr>
+  <tr><td>La cabecera sale sin título</td><td>No asignaste <code>$titulo</code> / <code>$clase</code> desde <code>$datos</code> antes del <code>include</code>.</td></tr>
+  <tr><td>Una sección sale vacía</td><td>Quedó un <code>&lt;?= $titulo ?&gt;</code> viejo en el HTML; ahora va <code>&lt;?= $datos['titulo'] ?&gt;</code>.</td></tr>
+  <tr><td>El menú no muestra nada</td><td>El <code>foreach</code> no recorre <code>$secciones</code>, o <code>$secciones</code> no estaba cargado antes del <code>include</code> de la cabecera.</td></tr>
+  <tr><td>Una URL inexistente rompe todo</td><td>Falta el <code>?? $secciones['error']</code> en el lookup.</td></tr>
+  <tr><td><code>Undefined array key</code></td><td>Pediste una clave que no existe (ej. <code>$datos['precio']</code> cuando la sección no tiene ese campo).</td></tr>
+</table>
+
+<h2 id="s8">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  8. Glosario
+</h2>
+
+<table>
+  <tr><th>Término</th><th>Qué es</th></tr>
+  <tr><td>Array asociativo</td><td>Array cuyas posiciones son claves con nombre (<code>'titulo' =&gt; 'Ayuda'</code>) en vez de números.</td></tr>
+  <tr><td>Registro / fila</td><td>Un conjunto de campos con nombre que describen una cosa. Un array asociativo es un registro.</td></tr>
+  <tr><td>Array de arrays</td><td>Un array cuyos valores son, a su vez, arrays. Sirve para guardar varias filas.</td></tr>
+  <tr><td><code>=&gt;</code></td><td>Asocia una clave con su valor dentro de un array.</td></tr>
+  <tr><td><code>require</code></td><td>Trae y ejecuta otro archivo PHP; guarda lo que ese archivo <code>return</code>ea.</td></tr>
+  <tr><td><code>return</code></td><td>Devuelve un valor. En <code>datos.php</code>, devuelve el array a quien hizo el <code>require</code>.</td></tr>
+  <tr><td><code>??</code></td><td>Operador "si no existe, usá esto". <code>$a ?? $b</code> vale <code>$a</code> si existe, si no <code>$b</code>.</td></tr>
+  <tr><td><code>foreach</code></td><td>Bucle que recorre cada elemento de un array, sin contador.</td></tr>
+  <tr><td><code>continue</code></td><td>Saltea la vuelta actual del bucle y sigue con la siguiente.</td></tr>
+</table>
+
+<h2 id="quiz">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Práctica
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p class="quiz-intro">Ejercicios para repasar los conceptos de la clase y analizar código. Leé con atención y resolvé en base a lo abordado.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">leé el array</p>
+  <pre><code>$u = ['nombre' =&gt; 'Ana', 'edad' =&gt; 17];
+echo $u['nombre'];</code></pre>
+  <div class="quiz-q" data-correct="b" data-explanation="Se accede por la clave: $u['nombre'] vale 'Ana'. Los arrays asociativos NO se leen por número.">
+    <p><strong>1.</strong> ¿Qué imprime?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) 17</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Ana</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) nombre</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">el require</p>
+  <pre><code>// datos.php
+&lt;?php
+[ 'a' =&gt; 1, 'b' =&gt; 2 ];   // ¿algo falta?
+
+// info.php
+$d = require 'datos.php';
+var_dump($d);</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="A datos.php le falta el return. Sin return, require no devuelve el array y $d no recibe los datos.">
+    <p><strong>2.</strong> ¿Por qué <code>$d</code> no recibe el array?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Porque usa require en vez de include</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Porque el array está mal escrito</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Porque falta <code>return</code> antes del array</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">el lookup</p>
+  <pre><code>$secciones = ['inicio' =&gt; [...], 'ayuda' =&gt; [...], 'error' =&gt; [...]];
+$seccion = 'precios';   // vino de ?seccion=precios
+$datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="'precios' no existe como clave, así que ?? usa la sección de error. Por eso una URL inválida no rompe la página.">
+    <p><strong>3.</strong> ¿Qué queda en <code>$datos</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La sección 'inicio'</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Un error de PHP</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La sección 'error'</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="= asigna (guarda un valor); == compara si dos valores son iguales. Confundirlos es el error más común.">
+    <p><strong>4.</strong> ¿Qué diferencia hay entre <code>=</code> y <code>==</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Ninguna, son lo mismo</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) <code>=</code> asigna, <code>==</code> compara</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) <code>==</code> asigna, <code>=</code> compara</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="switch evalúa una variable contra valores fijos (como ?seccion=). Para rangos numéricos va if/elseif.">
+    <p><strong>5.</strong> ¿Cuándo conviene <code>switch</code> sobre <code>if/elseif</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Para comparar una variable contra valores fijos</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Para rangos numéricos (≥, ≤)</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Nunca, son iguales</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="foreach recorre cada elemento de un array sin necesidad de un contador. for y while sí usan contador/condición.">
+    <p><strong>6.</strong> ¿Qué bucle usás para recorrer un array sin contador?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) <code>for</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) <code>while</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) <code>foreach</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score"></p>
+  <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
+</div>
+
+<h2 id="s10">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  Próximos pasos
+</h2>
+
+<p>Ya tenés los datos separados en <code>datos.php</code> (que es casi una tabla) y un <code>foreach</code> que la recorre (que es casi un <code>SELECT * FROM</code>). Lo que viene:</p>
+
+<ul>
+  <li><strong>Clase 5:</strong> Primer contacto con <strong>MySQL</strong>. Pasamos <code>datos.php</code> a una tabla real (<code>CREATE TABLE</code>, <code>INSERT</code>, <code>SELECT</code>) y definimos las entidades de tu proyecto.</li>
+  <li><strong>Más adelante:</strong> conectar PHP con la base, leer y guardar datos de verdad (el CRUD).</li>
+</ul>
+
+<p><strong>Documentación oficial</strong> para tener a mano:</p>
+<ul>
+  <li>Arrays en PHP — <a href="https://www.php.net/manual/es/language.types.array.php" target="_blank" rel="noopener noreferrer">php.net (manual en español)</a></li>
+  <li><code>foreach</code> — <a href="https://www.php.net/manual/es/control-structures.foreach.php" target="_blank" rel="noopener noreferrer">php.net</a></li>
+  <li><code>require</code> / <code>include</code> — <a href="https://www.php.net/manual/es/function.require.php" target="_blank" rel="noopener noreferrer">php.net</a></li>
+</ul>
+
+<p>Material de esta clase y las anteriores:</p>
+<p class="mat-links">
+  <a href="clase-04-tp-datos.html"><strong>→ TP de Clase 4</strong></a> ·
+  <a href="../repaso-fundamentos/"><strong>Repaso de fundamentos</strong></a> ·
+  <a href="../clase_3/clase-03-teoria.html"><strong>Teoría de Clase 3</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+<script>
+/* Clasificar: arrastre (mouse+touch) y, además, tap/teclado para colocar. Accesible. */
+(function () {
+  var act = document.querySelector('.drag-activity');
+  if (!act) return;
+  var pool  = act.querySelector('.drag-pool');
+  var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
+  var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
+  var selected = null, dragging = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var THRESH = 6;
+  var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
+
+  function save() {
+    try {
+      var st = {};
+      chips.forEach(function (c) { var z = c.closest('.drop-zone'); st[c.getAttribute('data-id')] = z ? z.getAttribute('data-zone') : 'pool'; });
+      localStorage.setItem(KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+  function restore() {
+    try {
+      var st = JSON.parse(localStorage.getItem(KEY) || '{}');
+      chips.forEach(function (c) {
+        var zoneName = st[c.getAttribute('data-id')];
+        if (!zoneName || zoneName === 'pool') return;
+        var z = zones.filter(function (zz) { return zz.getAttribute('data-zone') === zoneName; })[0];
+        if (z) z.querySelector('.zone-items').appendChild(c);
+      });
+    } catch (e) {}
+  }
+
+  function place(chip, zone) {
+    var dest = (zone && zone !== pool) ? zone.querySelector('.zone-items') : pool;
+    dest.appendChild(chip);
+    chip.classList.remove('ok', 'bad');
+    var m = chip.querySelector('.dz-mark'); if (m) m.textContent = '';
+    var w = chip.querySelector('.dz-why'); if (w) w.remove();
+    save();
+  }
+  function clearSel() { if (selected) selected.classList.remove('selected'); selected = null; act.classList.remove('has-selection'); }
+  function selectChip(chip) {
+    if (selected === chip) { clearSel(); return; }
+    clearSel(); selected = chip; chip.classList.add('selected'); act.classList.add('has-selection');
+  }
+  function zoneUnder(x, y) {
+    if (dragging) dragging.style.visibility = 'hidden';
+    var el = document.elementFromPoint(x, y);
+    if (dragging) dragging.style.visibility = '';
+    if (!el) return null;
+    return el.closest('.drop-zone') || (el.closest('.drag-pool') ? pool : null);
+  }
+  function endDrag(chip) {
+    chip.classList.remove('dragging');
+    chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    zones.forEach(function (zz) { zz.classList.remove('over'); });
+    dragging = null;
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('pointerdown', function (e) {
+      sx = e.clientX; sy = e.clientY; moved = false; dragging = null;
+      chip.setPointerCapture(e.pointerId);
+    });
+    chip.addEventListener('pointermove', function (e) {
+      if (!moved && (Math.abs(e.clientX - sx) > THRESH || Math.abs(e.clientY - sy) > THRESH)) {
+        moved = true; dragging = chip;
+        var r = chip.getBoundingClientRect();
+        ox = sx - r.left; oy = sy - r.top;
+        chip.style.width = r.width + 'px'; chip.style.position = 'fixed'; chip.style.zIndex = '9999';
+        chip.classList.add('dragging'); clearSel();
+      }
+      if (dragging === chip) {
+        chip.style.left = (e.clientX - ox) + 'px';
+        chip.style.top  = (e.clientY - oy) + 'px';
+        var z = zoneUnder(e.clientX, e.clientY);
+        zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+      }
+    });
+    chip.addEventListener('pointerup', function (e) {
+      if (dragging === chip) { var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
+      else if (!moved) { selectChip(chip); }
+    });
+    chip.addEventListener('pointercancel', function () { if (dragging === chip) endDrag(chip); });
+    chip.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectChip(chip); }
+    });
+  });
+
+  zones.concat([pool]).forEach(function (zone) {
+    zone.addEventListener('click', function () {
+      if (selected && !dragging) { var s = selected; place(s, zone); clearSel(); s.focus(); }
+    });
+    if (zone !== pool) zone.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && selected) { e.preventDefault(); var s = selected; place(s, zone); clearSel(); s.focus(); }
+    });
+  });
+
+  var btn = act.querySelector('.drag-check');
+  var fb  = act.querySelector('.drag-feedback');
+  btn.addEventListener('click', function () {
+    var ok = 0;
+    chips.forEach(function (chip) {
+      var z = chip.closest('.drop-zone');
+      var good = z && z.getAttribute('data-zone') === chip.getAttribute('data-target');
+      chip.classList.toggle('ok', !!good);
+      chip.classList.toggle('bad', !good);
+      var m = chip.querySelector('.dz-mark'); if (m) m.textContent = good ? '✓ ' : '✗ ';
+      var zoneName = chip.getAttribute('data-target') === 'if' ? 'if / elseif' : 'switch';
+      var why = chip.querySelector('.dz-why');
+      if (!why) { why = document.createElement('span'); why.className = 'dz-why'; chip.appendChild(why); }
+      why.textContent = good ? chip.getAttribute('data-why') : 'Va en ' + zoneName + '. ' + chip.getAttribute('data-why');
+      if (good) ok++;
+    });
+    var all = ok === chips.length;
+    fb.textContent = all
+      ? '¡Perfecto! ' + ok + '/' + chips.length + ' bien ubicadas.'
+      : ok + '/' + chips.length + ' bien. Revisá las marcadas con ✗ y volvé a moverlas.';
+    fb.className = 'drag-feedback ' + (all ? 'all-ok' : 'partial');
+  });
+
+  var resetBtn = act.querySelector('.drag-reset');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    clearSel();
+    chips.forEach(function (c) {
+      pool.appendChild(c);
+      c.classList.remove('ok', 'bad', 'selected');
+      var m = c.querySelector('.dz-mark'); if (m) m.textContent = '';
+      var w = c.querySelector('.dz-why'); if (w) w.remove();
+    });
+    fb.textContent = ''; fb.className = 'drag-feedback';
+    try { localStorage.removeItem(KEY); } catch (e) {}
+  });
+
+  restore();
+})();
+</script>
+
+</body>
+</html>
