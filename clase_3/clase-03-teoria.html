@@ -881,39 +881,58 @@ echo $titulo;</code></pre>
     dragging = null;
   }
 
+  /* En lugar de setPointerCapture (que causa problemas en táctil
+     al combinarlo con position:fixed), usamos listeners a nivel
+     document que se agregan al empezar el arrastre y se quitan
+     al soltar. Así el chip sigue al dedo/mouse en cualquier
+     dispositivo sin "escaparse". */
+  function onPointerMove(e) {
+    if (!moved && (Math.abs(e.clientX - sx) > THRESH || Math.abs(e.clientY - sy) > THRESH)) {
+      moved = true; dragging = chips.filter(function (c) { return c === e.target || c.contains(e.target); })[0];
+      if (!dragging) return;
+      var r = dragging.getBoundingClientRect();
+      ox = sx - r.left; oy = sy - r.top;
+      dragging.style.width = r.width + 'px'; dragging.style.position = 'fixed'; dragging.style.zIndex = '9999';
+      dragging.classList.add('dragging'); clearSel();
+    }
+    if (dragging) {
+      dragging.style.left = (e.clientX - ox) + 'px';
+      dragging.style.top  = (e.clientY - oy) + 'px';
+      var z = zoneUnder(e.clientX, e.clientY);
+      zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+    }
+  }
+  function onPointerUp(e) {
+    if (dragging) { var z = zoneUnder(e.clientX, e.clientY); endDrag(dragging); place(dragging, z); }
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+  }
+
   chips.forEach(function (chip) {
     chip.addEventListener('pointerdown', function (e) {
       sx = e.clientX; sy = e.clientY; moved = false; dragging = null;
-      chip.setPointerCapture(e.pointerId);
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
     });
-    chip.addEventListener('pointermove', function (e) {
-      if (!moved && (Math.abs(e.clientX - sx) > THRESH || Math.abs(e.clientY - sy) > THRESH)) {
-        moved = true; dragging = chip;
-        var r = chip.getBoundingClientRect();
-        ox = sx - r.left; oy = sy - r.top;
-        chip.style.width = r.width + 'px'; chip.style.position = 'fixed'; chip.style.zIndex = '9999';
-        chip.classList.add('dragging'); clearSel();
-      }
-      if (dragging === chip) {
-        chip.style.left = (e.clientX - ox) + 'px';
-        chip.style.top  = (e.clientY - oy) + 'px';
-        var z = zoneUnder(e.clientX, e.clientY);
-        zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
-      }
+    chip.addEventListener('pointercancel', function () {
+      if (dragging) endDrag(dragging);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
     });
-    chip.addEventListener('pointerup', function (e) {
-      if (dragging === chip) { var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
-      else if (!moved) { selectChip(chip); }
+    chip.addEventListener('click', function (e) {
+      if (!moved) { e.stopPropagation(); selectChip(chip); }
     });
-    chip.addEventListener('pointercancel', function () { if (dragging === chip) endDrag(chip); });
     chip.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectChip(chip); }
     });
   });
 
   zones.concat([pool]).forEach(function (zone) {
-    zone.addEventListener('click', function () {
-      if (selected && !dragging) { var s = selected; place(s, zone); clearSel(); s.focus(); }
+    zone.addEventListener('click', function (e) {
+      if (selected && !dragging) {
+        if (e.target.closest('.drag-chip')) return;
+        var s = selected; place(s, zone); clearSel(); s.focus();
+      }
     });
     if (zone !== pool) zone.addEventListener('keydown', function (e) {
       if ((e.key === 'Enter' || e.key === ' ') && selected) { e.preventDefault(); var s = selected; place(s, zone); clearSel(); s.focus(); }
