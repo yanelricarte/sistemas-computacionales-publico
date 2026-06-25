@@ -22,7 +22,7 @@
 <div class="hero">
   <div class="eyebrow">Clase 4 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
   <h1>Arrays asociativos y datos en archivo aparte</h1>
-  <p class="sub">Primero recuperamos los fundamentos (variables, <code>if</code>/<code>switch</code>, bucles). Después guardás cada sección como un <code>array asociativo</code>, movés los datos a <code>datos.php</code> y dejás que el menú se arme solo con <code>foreach</code>. Es el puente hacia la base de datos.</p>
+  <p class="sub">Primero recuperamos los fundamentos (variables, <code>if</code>/<code>switch</code>, bucles). Después armamos una <strong>cartelera de películas</strong>: cada película es un <code>array asociativo</code>, todas viven juntas en <code>datos.php</code> y la lista se arma sola con <code>foreach</code>. Es el puente hacia la base de datos.</p>
 </div>
 
 <nav class="toc">
@@ -31,14 +31,14 @@
     <li><a href="#s0">Repaso: variables, sintaxis y selectivas</a></li>
     <li><a href="#s1">Arrays: común vs asociativo</a></li>
     <li><a href="#s2">Un array asociativo es un registro</a></li>
-    <li><a href="#s3">Todas las secciones juntas (array de arrays)</a></li>
+    <li><a href="#s3">Toda la cartelera junta (array de arrays)</a></li>
     <li><a href="#s4">Datos en archivo aparte (datos.php)</a></li>
-    <li><a href="#s5">Buscar la sección: lookup con ??</a></li>
-    <li><a href="#s6">Recorrer con foreach (el menú que se arma solo)</a></li>
+    <li><a href="#s5">Buscar una película: lookup con ??</a></li>
+    <li><a href="#s6">Recorrer con foreach (la cartelera que se arma sola)</a></li>
     <li><a href="#s7">Errores frecuentes</a></li>
     <li><a href="#s8">Glosario</a></li>
     <li><a href="#quiz">Práctica</a></li>
-    <li><a href="#s10">Próximos pasos</a></li>
+    <li><a href="#s9">Próximos pasos</a></li>
   </ol>
 </nav>
 
@@ -118,26 +118,26 @@ echo $colores[2];   // azul</code></pre>
 
 <p>El <strong>array asociativo</strong> cambia los números por <strong>claves con nombre</strong>:</p>
 
-<pre><code>$seccion = [
-    'titulo' =&gt; 'Ayuda',
-    'texto'  =&gt; 'Instrucciones del sistema.',
-    'imagen' =&gt; 'https://picsum.photos/seed/ayuda/800/350',
-    'clase'  =&gt; 'sec-ayuda',
+<pre><code>$pelicula = [
+    'titulo' =&gt; 'Matrix',
+    'anio'   =&gt; 1999,
+    'genero' =&gt; 'Ciencia ficción',
+    'imagen' =&gt; 'https://picsum.photos/seed/matrix/400/300',
 ];
 
-echo $seccion['titulo'];   // Ayuda
-echo $seccion['clase'];    // sec-ayuda</code></pre>
+echo $pelicula['titulo'];   // Matrix
+echo $pelicula['anio'];     // 1999</code></pre>
 
 <ul>
   <li>La <strong>clave</strong> (<code>'titulo'</code>) reemplaza al número de posición.</li>
-  <li>Se lee con <code>$seccion['clave']</code>.</li>
+  <li>Se lee con <code>$pelicula['clave']</code>.</li>
   <li>El símbolo <code>=&gt;</code> (<strong>operador de doble flecha</strong>) asocia cada <strong>clave</strong> con su <strong>valor</strong>.</li>
 </ul>
 
-<div class="code-check" data-answer="$seccion['clase']|echo $seccion['clase']|echo $seccion['clase'];" data-hint="Se accede por la clave: el nombre entre corchetes y comillas, igual que con 'titulo'.">
-  <p><strong>Probá vos:</strong> dado el array de arriba, ¿cómo leés el valor de la clave <code>clase</code>? Escribilo y comprobá.</p>
+<div class="code-check" data-answer="$pelicula['genero']|echo $pelicula['genero']|echo $pelicula['genero'];" data-hint="Se accede por la clave: el nombre entre corchetes y comillas, igual que con 'titulo'.">
+  <p><strong>Probá vos:</strong> dado el array de arriba, ¿cómo leés el valor de la clave <code>genero</code>? Escribilo y comprobá.</p>
   <div class="code-check-row">
-    <input type="text" class="code-check-input" placeholder="ej: $seccion['...']" aria-label="Escribí tu respuesta en código" autocomplete="off" spellcheck="false">
+    <input type="text" class="code-check-input" placeholder="ej: $pelicula['...']" aria-label="Escribí tu respuesta en código" autocomplete="off" spellcheck="false">
     <button type="button" class="btn code-check-btn">Comprobar</button>
   </div>
   <div class="code-check-feedback" role="status" aria-live="polite"></div>
@@ -145,7 +145,7 @@ echo $seccion['clase'];    // sec-ayuda</code></pre>
 
 <div class="callout callout-info">
   <div class="callout-title">¿Por qué nombres y no números?</div>
-  Con <code>$seccion['titulo']</code> sabés exactamente qué estás leyendo. Con <code>$seccion[0]</code> tendrías que acordarte de que "la posición 0 era el título". Los nombres hacen el código legible.
+  Con <code>$pelicula['titulo']</code> sabés exactamente qué estás leyendo. Con <code>$pelicula[0]</code> tendrías que acordarte de que "la posición 0 era el título". Los nombres hacen el código legible.
 </div>
 
 <h2 id="s2">
@@ -155,15 +155,15 @@ echo $seccion['clase'];    // sec-ayuda</code></pre>
 
 <p>Esta es la idea clave de la clase. Un array asociativo es lo mismo que una <strong>ficha</strong> o una <strong>fila de una tabla</strong>: campos con nombre y valor.</p>
 
-<pre><code>ARRAY ASOCIATIVO              UNA FILA DE UNA TABLA
-['titulo' =&gt; 'Ayuda',         titulo | texto | imagen | clase
- 'texto'  =&gt; '...',           -------+-------+--------+----------
- 'imagen' =&gt; '...',           Ayuda  |  ...  |  ...   | sec-ayuda
- 'clase'  =&gt; 'sec-ayuda']</code></pre>
+<pre><code>ARRAY ASOCIATIVO                  UNA FILA DE UNA TABLA
+['titulo' =&gt; 'Matrix',             titulo | anio | genero
+ 'anio'   =&gt; 1999,                 -------+------+-----------------
+ 'genero' =&gt; 'Ciencia ficción',    Matrix | 1999 | Ciencia ficción
+ 'imagen' =&gt; '...']</code></pre>
 
 <ul>
-  <li>Las <strong>claves</strong> (<code>titulo</code>, <code>texto</code>…) son los nombres de los campos: las futuras <strong>columnas</strong>.</li>
-  <li>El <strong>array</strong> entero es <strong>una fila</strong> (un registro).</li>
+  <li>Las <strong>claves</strong> (<code>titulo</code>, <code>anio</code>…) son los nombres de los campos: las futuras <strong>columnas</strong>.</li>
+  <li>El <strong>array</strong> entero es <strong>una fila</strong> (un registro): una película.</li>
 </ul>
 
 <div class="callout callout-tip">
@@ -173,51 +173,93 @@ echo $seccion['clase'];    // sec-ayuda</code></pre>
 
 <h2 id="s3">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
-  3. Todas las secciones juntas (array de arrays)
+  3. Toda la cartelera junta (array de arrays)
 </h2>
 
-<p>En Clase 3, cada sección vivía adentro de un <code>case</code> del <code>switch</code>. Ahora las juntamos todas en <strong>un array de arrays</strong>: la clave de afuera es la que viaja en la URL (<code>?seccion=...</code>).</p>
+<p>En Clase 3, cada sección vivía adentro de un <code>case</code> del <code>switch</code>. Pero una cartelera tiene <strong>muchas</strong> películas parecidas: un <code>switch</code> con 20 casos sería absurdo. Las juntamos todas en <strong>un array de arrays</strong>. La clave de afuera es el <strong>id</strong> que viaja en la URL (<code>pelicula.php?id=...</code>).</p>
 
-<pre><code>$secciones = [
-    'inicio' =&gt; ['titulo' =&gt; 'Inicio', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-inicio'],
-    'ayuda'  =&gt; ['titulo' =&gt; 'Ayuda',  'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-ayuda'],
-    'error'  =&gt; ['titulo' =&gt; 'No encontrada', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-error'],
+<pre><code>$peliculas = [
+    'matrix'       =&gt; ['titulo' =&gt; 'Matrix',       'anio' =&gt; 1999, 'genero' =&gt; 'Ciencia ficción', 'imagen' =&gt; '...'],
+    'coco'         =&gt; ['titulo' =&gt; 'Coco',         'anio' =&gt; 2017, 'genero' =&gt; 'Animación',       'imagen' =&gt; '...'],
+    'intensamente' =&gt; ['titulo' =&gt; 'Intensamente', 'anio' =&gt; 2015, 'genero' =&gt; 'Animación',       'imagen' =&gt; '...'],
 ];
 
-echo $secciones['ayuda']['titulo'];   // Ayuda  (entro por la clave de afuera y después por la de adentro)</code></pre>
+echo $peliculas['coco']['titulo'];   // Coco  (entro por la clave de afuera y después por la de adentro)</code></pre>
 
-<p>Esto <strong>es</strong> la tabla: cada entrada de afuera es una <strong>fila</strong>, y su clave (<code>'ayuda'</code>) funciona como identificador.</p>
+<p>Esto <strong>es</strong> la tabla: cada entrada de afuera es una <strong>fila</strong> (una película), y su clave (<code>'coco'</code>) funciona como identificador.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">entrá por las dos claves</p>
+  <pre><code>echo $peliculas['coco']['titulo'];</code></pre>
+  <div class="quiz-q" data-correct="b" data-explanation="Primero entrás por la clave de afuera ('coco' → esa película) y después por la de adentro ('titulo'). Por eso imprime Coco. Los dos corchetes son válidos: array de arrays.">
+    <p>Con el array de arrays de arriba, ¿qué imprime?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) coco</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Coco</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Error: no se pueden usar dos corchetes seguidos</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<p class="drag-help">Y antes de seguir, conectemos esto con la base de datos que viene. Arrastrá cada elemento de tu código (o seleccionalo y tocá la zona) al lugar que ocuparía en una tabla. Al final tocá <strong>Verificar</strong>.</p>
+
+<div class="drag-activity" data-key="clase4-bd-equivalencias">
+  <div class="drag-pool" aria-label="Elementos del código para emparejar">
+    <div class="drag-chip" data-id="b1" data-target="tabla" data-why="$peliculas junta TODAS las películas (todas las filas): es la tabla entera." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>El array <code>$peliculas</code> completo</div>
+    <div class="drag-chip" data-id="b2" data-target="fila" data-why="Una película es un array asociativo: un registro, una fila." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Una película, ej. <code>'coco' =&gt; [...]</code></div>
+    <div class="drag-chip" data-id="b3" data-target="columna" data-why="Cada clave (titulo, anio, genero) es el nombre de un campo: una columna." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>Una clave, ej. <code>'anio'</code></div>
+  </div>
+  <div class="drag-zones">
+    <div class="drop-zone" data-zone="tabla" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en Tabla">
+      <h4>Tabla</h4>
+      <p class="hint">todas las filas juntas</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="fila" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en Fila (registro)">
+      <h4>Fila (registro)</h4>
+      <p class="hint">una cosa descrita por campos</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="columna" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en Columna (campo)">
+      <h4>Columna (campo)</h4>
+      <p class="hint">el nombre de un dato</p>
+      <div class="zone-items"></div>
+    </div>
+  </div>
+  <button type="button" class="btn drag-check">Verificar</button>
+  <button type="button" class="drag-reset">Reiniciar</button>
+  <div class="drag-feedback" role="status" aria-live="polite"></div>
+</div>
 
 <h2 id="s4">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
   4. Datos en archivo aparte (datos.php)
 </h2>
 
-<p>Tener los datos mezclados con la lógica ensucia el <code>info.php</code>. La solución: poner <strong>todas las secciones en un archivo solo</strong>, <code>datos.php</code>, que <strong>devuelve</strong> el array con <code>return</code>.</p>
+<p>Tener las películas mezcladas con la lógica ensucia el código. La solución: poner <strong>todas las películas en un archivo solo</strong>, <code>datos.php</code>, que <strong>devuelve</strong> el array con <code>return</code>.</p>
 
 <div class="code-switch">
-<pre class="old"><code>// datos.php — SOLO datos
-&lt;?php
+<pre class="old"><code>&lt;?php
+// datos.php — SOLO datos
 return [
-    'inicio' =&gt; ['titulo' =&gt; 'Inicio', /* ... */],
-    'ayuda'  =&gt; ['titulo' =&gt; 'Ayuda',  /* ... */],
+    'matrix' =&gt; ['titulo' =&gt; 'Matrix', /* ... */],
+    'coco'   =&gt; ['titulo' =&gt; 'Coco',   /* ... */],
 ];</code></pre>
 
-<pre class="new"><code>// info.php — trae los datos
-$secciones = require 'datos.php';
+<pre class="new"><code>// cartelera.php — trae los datos
+$peliculas = require 'datos.php';
 
-// ahora $secciones tiene TODO lo que devolvió datos.php</code></pre>
+// ahora $peliculas tiene TODO lo que devolvió datos.php</code></pre>
 </div>
 
 <ul>
   <li><code>require</code> ejecuta <code>datos.php</code> y guarda lo que ese archivo <code>return</code>ea.</li>
-  <li>Ventaja enorme: para agregar o cambiar una sección, tocás <strong>solo <code>datos.php</code></strong>, no la lógica.</li>
+  <li>Ventaja enorme: para agregar o cambiar una película, tocás <strong>solo <code>datos.php</code></strong>, no la lógica.</li>
 </ul>
 
 <div class="checkpoint">
   <p class="checkpoint-title">verdadero o falso</p>
-  <div class="quiz-q" data-correct="f" data-explanation="Falso. Sin return, datos.php no devuelve nada: $secciones queda vacío. El return es lo que entrega el array a quien hizo el require.">
-    <p>Si <code>datos.php</code> arma el array pero <strong>no</strong> le ponés <code>return</code>, <code>$secciones = require 'datos.php'</code> igual recibe los datos.</p>
+  <div class="quiz-q" data-correct="f" data-explanation="Falso. Sin return, datos.php no devuelve nada: $peliculas queda vacío. El return es lo que entrega el array a quien hizo el require.">
+    <p>Si <code>datos.php</code> arma el array pero <strong>no</strong> le ponés <code>return</code>, <code>$peliculas = require 'datos.php'</code> igual recibe los datos.</p>
     <button type="button" class="quiz-opt" data-opt="v">Verdadero</button>
     <button type="button" class="quiz-opt" data-opt="f">Falso</button>
     <div class="quiz-feedback"></div>
@@ -231,43 +273,47 @@ $secciones = require 'datos.php';
 
 <h2 id="s5">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  5. Buscar la sección: lookup con ??
+  5. Buscar una película: lookup con ??
 </h2>
 
-<p>Con los datos en <code>$secciones</code>, el <code>switch</code> ya no hace falta: buscamos la sección <strong>por su clave</strong>.</p>
+<p>Con los datos en <code>$peliculas</code>, el <code>switch</code> ya no hace falta: buscamos la película <strong>por su clave</strong> (el <code>id</code> que vino en la URL).</p>
 
-<pre><code>$seccion = $_GET['seccion'] ?? 'inicio';                 // qué pidió el usuario
-$datos   = $secciones[$seccion] ?? $secciones['error'];  // la fila pedida, o error si no existe</code></pre>
+<pre><code>$id   = $_GET['id'] ?? 'matrix';      // qué película pidió el usuario
+$peli = $peliculas[$id] ?? null;      // esa película, o null si la clave no existe</code></pre>
 
 <ul>
-  <li><code>$secciones[$seccion]</code> busca la fila por su clave.</li>
-  <li><code>?? $secciones['error']</code> es el "plan B": si la clave no existe (ej. <code>?seccion=admin</code>), muestra la sección de error. Es el reemplazo del <code>default</code> del switch.</li>
+  <li><code>$peliculas[$id]</code> busca la película por su clave.</li>
+  <li><code>?? null</code> es el "plan B": si la clave no existe (ej. <code>?id=avatar</code>), en vez de un error queda <code>null</code> y nosotros lo manejamos. Es el reemplazo del <code>default</code> del switch.</li>
   <li><strong>El <code>switch</code> desaparece</strong>: lo reemplaza una búsqueda en el array.</li>
 </ul>
 
+<pre><code>if ($peli === null) {                 // no existe: avisamos en vez de romper
+    echo "Esa película no existe.";
+    exit;
+}</code></pre>
+
 <div class="checkpoint">
-  <p class="checkpoint-title">¿qué queda en $datos?</p>
-  <pre><code>// el usuario entró a info.php?seccion=descuentos
-// pero en datos.php NO existe la clave 'descuentos'
-$datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
-  <div class="quiz-q" data-correct="c" data-explanation="'descuentos' no existe como clave, así que ?? usa $secciones['error']. Por eso una URL inventada muestra la página de error en vez de romperse.">
-    <p>¿Qué queda en <code>$datos</code>?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) La sección 'inicio'</button>
+  <p class="checkpoint-title">¿qué queda en $peli?</p>
+  <pre><code>// el usuario entró a pelicula.php?id=avatar
+// pero en datos.php NO existe la clave 'avatar'
+$peli = $peliculas[$id] ?? null;</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="'avatar' no existe como clave, así que ?? deja $peli en null. Por eso después chequeamos con if y avisamos, en vez de que la página se rompa.">
+    <p>¿Qué queda en <code>$peli</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La primera película de la cartelera</button>
     <button type="button" class="quiz-opt" data-opt="b">b) Un error de PHP (la clave no existe)</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) La sección 'error'</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) <code>null</code></button>
     <div class="quiz-feedback"></div>
   </div>
 </div>
 
-<p>Después, como la cabecera de Clase 2/3 espera <code>$titulo</code> y <code>$clase</code>, se los pasamos desde el registro antes del <code>include</code>:</p>
+<p>Después, como la cabecera espera <code>$titulo</code> para el <code>&lt;title&gt;</code>, se lo pasamos desde la película antes del <code>include</code>:</p>
 
-<pre><code>$titulo = $datos['titulo'];
-$clase  = $datos['clase'];
+<pre><code>$titulo = $peli['titulo'];
 include 'includes/cabecera.php';</code></pre>
 
 <h2 id="s6">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-  6. Recorrer con foreach (el menú que se arma solo)
+  6. Recorrer con foreach (la cartelera que se arma sola)
 </h2>
 
 <p>Las estructuras <strong>repetitivas</strong> (bucles) repiten un bloque de código. Repaso rápido de las que ya viste:</p>
@@ -298,27 +344,29 @@ $i = 1; while ($i &lt;= 3) { echo $i; $i++; }   // 123  (mientras se cumpla la c
 foreach ($colores as $c) { echo $c; }          // rojo verde azul
 
 // con clave Y valor (para arrays asociativos):
-foreach ($secciones as $clave =&gt; $info) {
-    echo $clave . ': ' . $info['titulo'];
+foreach ($peliculas as $id =&gt; $peli) {
+    echo $peli['titulo'];
 }</code></pre>
 
-<h3>El navbar que se arma solo</h3>
+<h3>La cartelera que se arma sola</h3>
 
-<p>Hasta ahora el menú se escribía link por link a mano. Con <code>foreach</code> sobre <code>$secciones</code>, se genera solo:</p>
+<p>Con <code>foreach</code> sobre <code>$peliculas</code>, la lista se genera sola: una tarjeta por película, sin escribirlas a mano.</p>
 
-<pre><code>&lt;?php
-  foreach ($secciones as $clave =&gt; $info) {
-      if ($clave === 'error') continue;   // la de error no va en el menú
-      echo "&lt;a href='info.php?seccion=$clave'&gt;" . $info['titulo'] . "&lt;/a&gt;";
-  }
-?&gt;</code></pre>
+<pre><code>&lt;?php foreach ($peliculas as $id =&gt; $peli): ?&gt;
+    &lt;article class="pelicula"&gt;
+        &lt;img src="&lt;?= $peli['imagen'] ?&gt;" alt="&lt;?= $peli['titulo'] ?&gt;"&gt;
+        &lt;h3&gt;&lt;?= $peli['titulo'] ?&gt;&lt;/h3&gt;
+        &lt;p&gt;&lt;?= $peli['anio'] ?&gt;&lt;/p&gt;
+        &lt;a href="pelicula.php?id=&lt;?= $id ?&gt;"&gt;Ver ficha&lt;/a&gt;
+    &lt;/article&gt;
+&lt;?php endforeach; ?&gt;</code></pre>
 
 <div class="callout callout-tip">
   <div class="callout-title">La recompensa</div>
-  Agregás una sección nueva a <code>datos.php</code> y recargás: <strong>aparece sola en el menú</strong>. No tocaste el navbar. Ese es el sentido de separar los datos de la presentación.
+  Agregás una película nueva a <code>datos.php</code> y recargás: <strong>aparece una tarjeta sola</strong> en la cartelera. No tocaste <code>cartelera.php</code>. Ese es el sentido de separar los datos de la presentación.
 </div>
 
-<p><code>continue</code> saltea esa vuelta del bucle (no genera el link de <code>error</code>) y sigue con la siguiente.</p>
+<p>El <code>$id</code> de cada vuelta es la clave (<code>'matrix'</code>, <code>'coco'</code>…): por eso el link <code>pelicula.php?id=&lt;?= $id ?&gt;</code> lleva a la ficha correcta.</p>
 
 <h2 id="s7">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -328,11 +376,11 @@ foreach ($secciones as $clave =&gt; $info) {
 <table>
   <tr><th>Síntoma</th><th>Causa y solución</th></tr>
   <tr><td><code>datos.php</code> llega vacío</td><td>Falta el <code>return</code> antes del array. Sin <code>return</code>, <code>require</code> no trae nada.</td></tr>
-  <tr><td>La cabecera sale sin título</td><td>No asignaste <code>$titulo</code> / <code>$clase</code> desde <code>$datos</code> antes del <code>include</code>.</td></tr>
-  <tr><td>Una sección sale vacía</td><td>Quedó un <code>&lt;?= $titulo ?&gt;</code> viejo en el HTML; ahora va <code>&lt;?= $datos['titulo'] ?&gt;</code>.</td></tr>
-  <tr><td>El menú no muestra nada</td><td>El <code>foreach</code> no recorre <code>$secciones</code>, o <code>$secciones</code> no estaba cargado antes del <code>include</code> de la cabecera.</td></tr>
-  <tr><td>Una URL inexistente rompe todo</td><td>Falta el <code>?? $secciones['error']</code> en el lookup.</td></tr>
-  <tr><td><code>Undefined array key</code></td><td>Pediste una clave que no existe (ej. <code>$datos['precio']</code> cuando la sección no tiene ese campo).</td></tr>
+  <tr><td>La cabecera sale sin título</td><td>No asignaste <code>$titulo</code> desde <code>$peli</code> antes del <code>include</code>.</td></tr>
+  <tr><td>La ficha sale vacía</td><td>Usaste una clave mal escrita: va <code>&lt;?= $peli['titulo'] ?&gt;</code> (con el nombre exacto de la clave).</td></tr>
+  <tr><td>La cartelera no muestra nada</td><td>El <code>foreach</code> no recorre <code>$peliculas</code>, o <code>$peliculas</code> no se cargó con <code>require</code> antes del <code>foreach</code>.</td></tr>
+  <tr><td>Una URL inexistente rompe todo</td><td>Falta el <code>?? null</code> y el chequeo <code>if ($peli === null)</code> en el lookup.</td></tr>
+  <tr><td><code>Undefined array key</code></td><td>Pediste una clave que no existe (ej. <code>$peli['director']</code> cuando la película no tiene ese campo).</td></tr>
 </table>
 
 <h2 id="s8">
@@ -342,7 +390,7 @@ foreach ($secciones as $clave =&gt; $info) {
 
 <table>
   <tr><th>Término</th><th>Qué es</th></tr>
-  <tr><td>Array asociativo</td><td>Array cuyas posiciones son claves con nombre (<code>'titulo' =&gt; 'Ayuda'</code>) en vez de números.</td></tr>
+  <tr><td>Array asociativo</td><td>Array cuyas posiciones son claves con nombre (<code>'titulo' =&gt; 'Matrix'</code>) en vez de números.</td></tr>
   <tr><td>Registro / fila</td><td>Un conjunto de campos con nombre que describen una cosa. Un array asociativo es un registro.</td></tr>
   <tr><td>Array de arrays</td><td>Un array cuyos valores son, a su vez, arrays. Sirve para guardar varias filas.</td></tr>
   <tr><td><code>=&gt;</code></td><td>Asocia una clave con su valor dentro de un array.</td></tr>
@@ -350,7 +398,6 @@ foreach ($secciones as $clave =&gt; $info) {
   <tr><td><code>return</code></td><td>Devuelve un valor. En <code>datos.php</code>, devuelve el array a quien hizo el <code>require</code>.</td></tr>
   <tr><td><code>??</code></td><td>Operador "si no existe, usá esto". <code>$a ?? $b</code> vale <code>$a</code> si existe, si no <code>$b</code>.</td></tr>
   <tr><td><code>foreach</code></td><td>Bucle que recorre cada elemento de un array, sin contador.</td></tr>
-  <tr><td><code>continue</code></td><td>Saltea la vuelta actual del bucle y sigue con la siguiente.</td></tr>
 </table>
 
 <h2 id="quiz">
@@ -380,7 +427,7 @@ echo $u['nombre'];</code></pre>
 &lt;?php
 [ 'a' =&gt; 1, 'b' =&gt; 2 ];   // ¿algo falta?
 
-// info.php
+// cartelera.php
 $d = require 'datos.php';
 var_dump($d);</code></pre>
   <div class="quiz-q" data-correct="c" data-explanation="A datos.php le falta el return. Sin return, require no devuelve el array y $d no recibe los datos.">
@@ -394,14 +441,14 @@ var_dump($d);</code></pre>
 
 <div class="checkpoint">
   <p class="checkpoint-title">el lookup</p>
-  <pre><code>$secciones = ['inicio' =&gt; [...], 'ayuda' =&gt; [...], 'error' =&gt; [...]];
-$seccion = 'precios';   // vino de ?seccion=precios
-$datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
-  <div class="quiz-q" data-correct="c" data-explanation="'precios' no existe como clave, así que ?? usa la sección de error. Por eso una URL inválida no rompe la página.">
-    <p><strong>3.</strong> ¿Qué queda en <code>$datos</code>?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) La sección 'inicio'</button>
+  <pre><code>$peliculas = ['matrix' =&gt; [...], 'coco' =&gt; [...], 'duna' =&gt; [...]];
+$id = 'avatar';   // vino de ?id=avatar
+$peli = $peliculas[$id] ?? null;</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="'avatar' no existe como clave, así que ?? deja $peli en null. Por eso después se chequea con if y se avisa, en vez de romper la página.">
+    <p><strong>3.</strong> ¿Qué queda en <code>$peli</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La película 'matrix'</button>
     <button type="button" class="quiz-opt" data-opt="b">b) Un error de PHP</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) La sección 'error'</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) <code>null</code></button>
     <div class="quiz-feedback"></div>
   </div>
 </div>
@@ -434,7 +481,7 @@ $datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
   <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
 </div>
 
-<h2 id="s10">
+<h2 id="s9">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
   Próximos pasos
 </h2>
@@ -470,8 +517,9 @@ $datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
 <script>
 /* Clasificar: arrastre (mouse+touch) y, además, tap/teclado para colocar. Accesible. */
 (function () {
-  var act = document.querySelector('.drag-activity');
-  if (!act) return;
+  var activities = Array.prototype.slice.call(document.querySelectorAll('.drag-activity'));
+  if (!activities.length) return;
+  activities.forEach(function (act) {
   var pool  = act.querySelector('.drag-pool');
   var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
   var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
@@ -574,7 +622,8 @@ $datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
       chip.classList.toggle('ok', !!good);
       chip.classList.toggle('bad', !good);
       var m = chip.querySelector('.dz-mark'); if (m) m.textContent = good ? '✓ ' : '✗ ';
-      var zoneName = chip.getAttribute('data-target') === 'if' ? 'if / elseif' : 'switch';
+      var targetZone = zones.filter(function (zz) { return zz.getAttribute('data-zone') === chip.getAttribute('data-target'); })[0];
+      var zoneName = targetZone ? targetZone.querySelector('h4').textContent : chip.getAttribute('data-target');
       var why = chip.querySelector('.dz-why');
       if (!why) { why = document.createElement('span'); why.className = 'dz-why'; chip.appendChild(why); }
       why.textContent = good ? chip.getAttribute('data-why') : 'Va en ' + zoneName + '. ' + chip.getAttribute('data-why');
@@ -601,6 +650,7 @@ $datos = $secciones[$seccion] ?? $secciones['error'];</code></pre>
   });
 
   restore();
+  });
 })();
 </script>
 

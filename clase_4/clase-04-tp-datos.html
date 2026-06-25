@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TP Clase 4 — Arrays asociativos y datos en archivo aparte</title>
+<title>TP Clase 4 — Cartelera de películas con arrays y datos.php</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/estilos.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
@@ -19,8 +19,8 @@
 
 <div class="hero">
   <div class="eyebrow">Trabajo práctico · Clase 4</div>
-  <h1>Arrays asociativos y datos en archivo aparte</h1>
-  <p class="sub">Guardás cada sección como un <code>array asociativo</code>, movés todos los datos a <code>datos.php</code> y hacés que el menú se arme solo con <code>foreach</code>. La página queda casi igual por fuera; cambia cómo están guardados los datos por dentro. Subís el avance como un nuevo commit.</p>
+  <h1>Cartelera de películas con arrays y datos.php</h1>
+  <p class="sub">A tu mini-sistema (el del login) le sumás una <strong>cartelera de películas</strong>. Cada película es un <code>array asociativo</code>, todas viven juntas en <code>datos.php</code>, la cartelera se arma sola con <code>foreach</code> y la ficha de cada película se busca con un lookup <code>??</code>. Subís el avance como un nuevo commit.</p>
 </div>
 
 <div class="meta">
@@ -29,7 +29,12 @@
 
 <h2>Objetivo</h2>
 
-<p>Partir de tu <code>info.php</code> de Clase 3 (el del <code>switch</code>) y dar un paso más: cada sección pasa a ser un <strong>array asociativo</strong> (un registro), todas las secciones viven juntas en un archivo aparte (<code>datos.php</code>), <code>info.php</code> queda corto y el menú se arma solo con un <code>foreach</code>. Es el puente hacia la base de datos que vamos a usar en la Clase 5.</p>
+<p>En Clase 3 elegías entre pocas secciones con un <code>switch</code>. Pero una cartelera tiene <strong>muchas</strong> películas parecidas: un <code>switch</code> con 20 casos sería absurdo. Para eso están los arrays. Vas a guardar cada película como un <strong>array asociativo</strong> (un registro), juntar todas en un archivo aparte (<code>datos.php</code>), armar la cartelera con un <code>foreach</code> y la ficha con un lookup <code>??</code>. Es el puente hacia la base de datos que vamos a usar en la Clase 5.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Las películas son solo un ejemplo — usá el tema que quieras</div>
+  Podés armar tu catálogo con lo que más te guste o con una entidad de tu proyecto: juegos, libros, canciones, recetas, jugadores, productos… Lo que importa es la <strong>estructura</strong> (array asociativo → <code>datos.php</code> → <code>foreach</code> → lookup), no que sean películas. Si elegís otro tema, cambiá las claves por las que tengan sentido (ej. un libro: <code>titulo</code>, <code>autor</code>, <code>anio</code>, <code>imagen</code>). Los ejemplos de abajo usan películas, pero adaptalos a lo tuyo.
+</div>
 
 <div class="callout callout-info">
   <div class="callout-title">Antes de empezar — repaso</div>
@@ -38,42 +43,38 @@
 
 <h2>Consigna</h2>
 
-<h3>Parte 1 — Una sección como array asociativo</h3>
+<h3>Parte 1 — Una película como array asociativo</h3>
 
 <ol>
-  <li>Elegí una sección (ej. <code>ayuda</code>) y, dentro de su <code>case</code>, juntá las cuatro variables en <strong>un solo array</strong>:
-    <pre><code>$seccion = [
-    'titulo' =&gt; 'Ayuda',
-    'texto'  =&gt; 'Instrucciones del sistema.',
-    'imagen' =&gt; 'https://picsum.photos/seed/ayuda/800/350',
-    'clase'  =&gt; 'sec-ayuda',
+  <li>Creá una variable con <strong>una</strong> película, juntando sus datos en un solo array con claves <code>titulo</code>, <code>anio</code>, <code>genero</code>, <code>imagen</code>:
+    <pre><code>$pelicula = [
+    'titulo' =&gt; 'Matrix',
+    'anio'   =&gt; 1999,
+    'genero' =&gt; 'Ciencia ficción',
+    'imagen' =&gt; 'https://picsum.photos/seed/matrix/400/300',
 ];</code></pre>
   </li>
-  <li>En el HTML, cambiá <code>&lt;?= $titulo ?&gt;</code> por <code>&lt;?= $seccion['titulo'] ?&gt;</code> (y lo mismo con <code>texto</code> e <code>imagen</code>).</li>
-  <li>Probá en el navegador: la sección tiene que verse <strong>igual</strong> que antes.</li>
-  <li>Cuando una ande, repetí con las demás secciones.</li>
+  <li>Mostrala leyendo por la clave: <code>&lt;?= $pelicula['titulo'] ?&gt;</code>, <code>&lt;?= $pelicula['anio'] ?&gt;</code>, etc.</li>
+  <li>Probá en el navegador que se vean bien los datos.</li>
 </ol>
 
 <div class="callout callout-tip">
   <div class="callout-title">✓ Checkpoint Parte 1</div>
-  ¿podés leer el título con <code>$seccion['titulo']</code>? ¿La página se ve igual que en Clase 3? Cuidado con dejar un <code>&lt;?= $titulo ?&gt;</code> viejo: si quedó, sale vacío.
+  ¿podés leer el título con <code>$pelicula['titulo']</code>? Ojo con las comillas en las claves y con el <code>=&gt;</code>.
 </div>
 
-<h3>Parte 2 — Datos en archivo aparte (datos.php)</h3>
+<h3>Parte 2 — Todas las películas en datos.php</h3>
 
 <ol>
-  <li>Creá un archivo nuevo, <code>datos.php</code>, que <strong>devuelva</strong> (con <code>return</code>) un array de arrays con todas tus secciones. La clave de afuera es lo que va en la URL (<code>?seccion=</code>):
+  <li>Creá un archivo nuevo, <code>datos.php</code>, que <strong>devuelva</strong> (con <code>return</code>) un array de arrays con todas tus películas. La clave de afuera es el <code>id</code> que va en la URL (<code>?id=</code>):
     <pre><code>&lt;?php
 return [
-    'inicio' =&gt; ['titulo' =&gt; 'Inicio', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-inicio'],
-    'ayuda'  =&gt; ['titulo' =&gt; 'Ayuda',  'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-ayuda'],
-    'error'  =&gt; ['titulo' =&gt; 'No encontrada', 'texto' =&gt; '...', 'imagen' =&gt; '...', 'clase' =&gt; 'sec-error'],
+    'matrix' =&gt; ['titulo' =&gt; 'Matrix', 'anio' =&gt; 1999, 'genero' =&gt; 'Ciencia ficción', 'imagen' =&gt; '...'],
+    'coco'   =&gt; ['titulo' =&gt; 'Coco',   'anio' =&gt; 2017, 'genero' =&gt; 'Animación',       'imagen' =&gt; '...'],
+    'duna'   =&gt; ['titulo' =&gt; 'Duna',   'anio' =&gt; 2021, 'genero' =&gt; 'Ciencia ficción', 'imagen' =&gt; '...'],
 ];</code></pre>
   </li>
-  <li>En <code>info.php</code>, traé esos datos:
-    <pre><code>$secciones = require 'datos.php';</code></pre>
-  </li>
-  <li>Mínimo <strong>4 secciones</strong> + la de <code>error</code>.</li>
+  <li>Mínimo <strong>4 películas</strong>.</li>
 </ol>
 
 <div class="callout callout-tip">
@@ -81,43 +82,55 @@ return [
   ¿<code>datos.php</code> empieza con <code>&lt;?php</code> y tiene <code>return [ ... ];</code>? Si te llega vacío, casi seguro te falta el <code>return</code>.
 </div>
 
-<h3>Parte 3 — Buscar la sección (lookup) y borrar el switch</h3>
+<h3>Parte 3 — La cartelera con foreach (cartelera.php)</h3>
 
 <ol>
-  <li>Reemplazá el <code>switch</code> por una búsqueda por clave:
-    <pre><code>$seccion = $_GET['seccion'] ?? 'inicio';
-$datos   = $secciones[$seccion] ?? $secciones['error'];</code></pre>
+  <li>Creá <code>cartelera.php</code>: traé los datos y recorrelos con un <code>foreach</code> que arme una tarjeta por película:
+    <pre><code>&lt;?php
+  $peliculas = require 'datos.php';
+?&gt;
+
+&lt;?php foreach ($peliculas as $id =&gt; $peli): ?&gt;
+    &lt;article class="pelicula"&gt;
+        &lt;img src="&lt;?= $peli['imagen'] ?&gt;" alt="&lt;?= $peli['titulo'] ?&gt;"&gt;
+        &lt;h3&gt;&lt;?= $peli['titulo'] ?&gt;&lt;/h3&gt;
+        &lt;p&gt;&lt;?= $peli['anio'] ?&gt;&lt;/p&gt;
+        &lt;a href="pelicula.php?id=&lt;?= $id ?&gt;"&gt;Ver ficha&lt;/a&gt;
+    &lt;/article&gt;
+&lt;?php endforeach; ?&gt;</code></pre>
   </li>
-  <li>Antes del <code>include</code> de la cabecera, pasale los datos que esta necesita:
-    <pre><code>$titulo = $datos['titulo'];
-$clase  = $datos['clase'];</code></pre>
-  </li>
-  <li>En el HTML usá <code>&lt;?= $datos['texto'] ?&gt;</code> y <code>&lt;?= $datos['imagen'] ?&gt;</code>.</li>
-  <li>Probá <code>?seccion=ayuda</code> y una inexistente (<code>?seccion=admin</code>): tiene que <strong>caer en error</strong>, no romperse.</li>
+  <li><strong>Probalo:</strong> agregá una película nueva a <code>datos.php</code> y recargá. Tiene que <strong>aparecer una tarjeta sola</strong>, sin tocar <code>cartelera.php</code>.</li>
 </ol>
 
 <div class="callout callout-tip">
   <div class="callout-title">✓ Checkpoint Parte 3</div>
-  el <code>switch</code> ya no está. <code>?seccion=admin</code> muestra la sección de error (gracias al <code>??</code>). La cabecera no salió vacía (asignaste <code>$titulo</code> y <code>$clase</code> desde <code>$datos</code>).
+  agregás una película a <code>datos.php</code> → aparece sola en la cartelera. Ese es el sentido de separar los datos: <em>tocás un solo archivo</em>.
 </div>
 
-<h3>Parte 4 — El menú que se arma solo (foreach)</h3>
+<h3>Parte 4 — La ficha con lookup (pelicula.php)</h3>
 
 <ol>
-  <li>En <code>cabecera.php</code> (donde está el navbar), reemplazá los links escritos a mano por un <code>foreach</code> sobre <code>$secciones</code>:
+  <li>Creá <code>pelicula.php</code>: buscá la película por el <code>id</code> de la URL con <code>??</code> y, si no existe, avisá en vez de romper:
     <pre><code>&lt;?php
-  foreach ($secciones as $clave =&gt; $info) {
-      if ($clave === 'error') continue;   // la de error no va en el menú
-      echo "&lt;a href='info.php?seccion=$clave'&gt;" . $info['titulo'] . "&lt;/a&gt;";
+  $peliculas = require 'datos.php';
+  $id   = $_GET['id'] ?? 'matrix';
+  $peli = $peliculas[$id] ?? null;
+
+  if ($peli === null) {
+      echo "Esa película no existe.";
+      exit;
   }
-?&gt;</code></pre>
+?&gt;
+
+&lt;h1&gt;&lt;?= $peli['titulo'] ?&gt;&lt;/h1&gt;
+&lt;p&gt;Año: &lt;?= $peli['anio'] ?&gt; — &lt;?= $peli['genero'] ?&gt;&lt;/p&gt;</code></pre>
   </li>
-  <li><strong>Probalo:</strong> agregá una sección nueva a <code>datos.php</code> y recargá. Tiene que <strong>aparecer sola</strong> en el menú, sin tocar <code>cabecera.php</code> ni <code>info.php</code>.</li>
+  <li>Probá <code>pelicula.php?id=coco</code> y una inexistente (<code>pelicula.php?id=avatar</code>): tiene que <strong>avisar</strong>, no romperse.</li>
 </ol>
 
 <div class="callout callout-tip">
   <div class="callout-title">✓ Checkpoint Parte 4</div>
-  agregás una sección a <code>datos.php</code> → aparece sola en el menú. Ese es el sentido de separar los datos: <em>tocás un solo archivo</em>.
+  <code>?id=avatar</code> no rompe la página: el <code>?? null</code> + el <code>if</code> la mandan al aviso. El <code>switch</code> no hizo falta en ningún lado.
 </div>
 
 <h3>Parte 5 — Nuevo commit (subí el avance)</h3>
@@ -125,26 +138,25 @@ $clase  = $datos['clase'];</code></pre>
 <p>Ya tenés el repo de Clase 3. Ahora subís el avance de hoy como un nuevo commit:</p>
 
 <ol>
-  <li>Guardá todos los cambios (incluido el archivo nuevo <code>datos.php</code>).</li>
+  <li>Guardá todos los cambios (incluidos los archivos nuevos <code>datos.php</code>, <code>cartelera.php</code> y <code>pelicula.php</code>).</li>
   <li>En la terminal (Git Bash en VS Code: <kbd>Ctrl</kbd> + <kbd>ñ</kbd>):
     <pre><code>git add .
-git commit -m "Datos en datos.php, arrays asociativos y navbar con foreach"
+git commit -m "Cartelera de peliculas: arrays asociativos, datos.php y foreach"
 git push</code></pre>
   </li>
-  <li>Entrá a tu repo en GitHub: tiene que aparecer el archivo nuevo <code>datos.php</code> y un commit más. Es tu <strong>tercer o cuarto</strong> commit (según si hiciste el de tarea de Clase 3).</li>
+  <li>Entrá a tu repo en GitHub: tienen que aparecer los archivos nuevos y un commit más.</li>
 </ol>
 
 <div class="callout callout-info">
   <div class="callout-title">Opcional — techo</div>
-  en el navbar, marcá con un color distinto la sección activa. Pista: dentro del <code>foreach</code>, compará <code>$clave</code> con <code>$seccion</code> y, si coinciden, agregá una clase al link.
+  en la ficha (<code>pelicula.php</code>), agregá un link "Volver a la cartelera". Y en la cartelera, mostrá también el género de cada película.
 </div>
 
 <h2>Mantené lo de antes (no se borra)</h2>
 
 <ul>
-  <li><code>session_start()</code> y la protección de la página (login).</li>
-  <li>Los <code>include 'includes/cabecera.php'</code> / <code>pie.php</code>.</li>
-  <li>El CSS dinámico por sección (<code>class="&lt;?= $clase ?&gt;"</code> en el <code>&lt;body&gt;</code>).</li>
+  <li><code>session_start()</code> y la protección de las páginas (login): la cartelera y la ficha también son páginas protegidas.</li>
+  <li>Los <code>include 'includes/cabecera.php'</code> / <code>pie.php</code>; agregá el link <strong>Cartelera</strong> al menú.</li>
 </ul>
 
 <h2>Errores comunes</h2>
@@ -152,10 +164,9 @@ git push</code></pre>
 <table>
   <tr><th>Error</th><th>Qué revisar</th></tr>
   <tr><td><code>datos.php</code> llega vacío</td><td>¿Le pusiste <code>return</code> antes del array? Sin <code>return</code>, <code>require</code> no trae nada.</td></tr>
-  <tr><td>La cabecera sale vacía (sin título)</td><td>¿Asignaste <code>$titulo = $datos['titulo'];</code> y <code>$clase = $datos['clase'];</code> antes del <code>include</code>?</td></tr>
-  <tr><td>Una sección sale vacía</td><td>Quedó un <code>&lt;?= $titulo ?&gt;</code> viejo en el HTML; ahora va <code>&lt;?= $datos['titulo'] ?&gt;</code>.</td></tr>
-  <tr><td>El menú no muestra nada</td><td>¿El <code>foreach</code> recorre <code>$secciones</code>? ¿<code>$secciones</code> está cargado antes del <code>include</code> de la cabecera?</td></tr>
-  <tr><td>Una URL inexistente rompe la página</td><td>Falta el <code>?? $secciones['error']</code> en el lookup.</td></tr>
+  <tr><td>La cartelera no muestra nada</td><td>¿El <code>foreach</code> recorre <code>$peliculas</code>? ¿Hiciste el <code>require 'datos.php'</code> antes del <code>foreach</code>?</td></tr>
+  <tr><td>La ficha sale vacía</td><td>Clave mal escrita: va <code>&lt;?= $peli['titulo'] ?&gt;</code> con el nombre exacto de la clave.</td></tr>
+  <tr><td>Una URL inexistente rompe la página</td><td>Falta el <code>?? null</code> y el chequeo <code>if ($peli === null)</code>.</td></tr>
   <tr><td>GitHub no acepta la contraseña</td><td>No va la clave de tu cuenta: va el <strong>token</strong> o <code>gh auth login</code> con GitHub CLI.</td></tr>
 </table>
 
@@ -169,19 +180,19 @@ git push</code></pre>
     <span class="selfcheck-count"></span>
   </div>
   <ul>
-    <li><input type="checkbox" id="tpc4-1"><label for="tpc4-1">Cada sección es un array asociativo con claves <code>titulo</code>, <code>texto</code>, <code>imagen</code>, <code>clase</code>.</label></li>
-    <li><input type="checkbox" id="tpc4-2"><label for="tpc4-2"><code>datos.php</code> devuelve (con <code>return</code>) el array de arrays: mínimo 4 secciones + <code>error</code>.</label></li>
-    <li><input type="checkbox" id="tpc4-3"><label for="tpc4-3"><code>info.php</code> trae los datos con <code>require</code> y busca la sección con <code>$secciones[$seccion] ?? $secciones['error']</code>.</label></li>
-    <li><input type="checkbox" id="tpc4-4"><label for="tpc4-4">El <code>switch</code> ya no está; una URL inexistente cae en la sección de error.</label></li>
-    <li><input type="checkbox" id="tpc4-5"><label for="tpc4-5">El menú se arma con <code>foreach</code>; agregar una sección a <code>datos.php</code> la hace aparecer sola.</label></li>
-    <li><input type="checkbox" id="tpc4-6"><label for="tpc4-6">Sigue funcionando el login, los <code>include</code> y el color por sección.</label></li>
-    <li><input type="checkbox" id="tpc4-7"><label for="tpc4-7">Subí el avance: en GitHub aparece <code>datos.php</code> y un commit más.</label></li>
+    <li><input type="checkbox" id="tpc4-1"><label for="tpc4-1">Cada película es un array asociativo con claves <code>titulo</code>, <code>anio</code>, <code>genero</code>, <code>imagen</code>.</label></li>
+    <li><input type="checkbox" id="tpc4-2"><label for="tpc4-2"><code>datos.php</code> devuelve (con <code>return</code>) el array de arrays: mínimo 4 películas.</label></li>
+    <li><input type="checkbox" id="tpc4-3"><label for="tpc4-3"><code>cartelera.php</code> trae los datos con <code>require</code> y arma la lista con un <code>foreach</code> sobre <code>$peliculas</code>.</label></li>
+    <li><input type="checkbox" id="tpc4-4"><label for="tpc4-4"><code>pelicula.php</code> busca la película con <code>$peliculas[$id] ?? null</code>; un <code>id</code> inexistente avisa en vez de romper.</label></li>
+    <li><input type="checkbox" id="tpc4-5"><label for="tpc4-5">Agregar una película a <code>datos.php</code> la hace aparecer sola en la cartelera.</label></li>
+    <li><input type="checkbox" id="tpc4-6"><label for="tpc4-6">Sigue funcionando el login y los <code>include</code>; el menú tiene el link a la cartelera.</label></li>
+    <li><input type="checkbox" id="tpc4-7"><label for="tpc4-7">Subí el avance: en GitHub aparecen los archivos nuevos y un commit más.</label></li>
   </ul>
 </div>
 
 <h2>Para pensar (tarea de cierre)</h2>
 
-<p>Si cada array es una fila y las claves son las columnas, <code>datos.php</code> es casi una <strong>tabla</strong>. Para cada entidad de tu proyecto (usuarios, productos, turnos…), anotá qué <strong>campos</strong> tendría, como las claves de un array. Por ejemplo: <code>usuario → nombre, email, clave</code>. Eso lo usamos en la Clase 5 para armar la base de datos de verdad.</p>
+<p>Si cada array es una fila y las claves son las columnas, <code>datos.php</code> es casi una <strong>tabla</strong> de películas. Para cada entidad de tu proyecto (usuarios, productos, turnos…), anotá qué <strong>campos</strong> tendría, como las claves de un array. Por ejemplo: <code>usuario → nombre, email, clave</code>. Eso lo usamos en la Clase 5 para armar la base de datos de verdad.</p>
 
 <div class="nav">
   <a href="clase-04-teoria.html">← Volver a la teoría de Clase 4</a>
