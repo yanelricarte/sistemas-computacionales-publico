@@ -831,7 +831,7 @@ echo $titulo;</code></pre>
   var pool  = act.querySelector('.drag-pool');
   var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
   var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
-  var selected = null, dragging = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var selected = null, dragging = null, placeholder = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
   var THRESH = 6;
   var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
 
@@ -877,6 +877,8 @@ echo $titulo;</code></pre>
   function endDrag(chip) {
     chip.classList.remove('dragging');
     chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+    placeholder = null;
     zones.forEach(function (zz) { zz.classList.remove('over'); });
     dragging = null;
   }
@@ -892,6 +894,13 @@ echo $titulo;</code></pre>
       if (!dragging) return;
       var r = dragging.getBoundingClientRect();
       ox = sx - r.left; oy = sy - r.top;
+      /* Reservar el lugar de la tarjeta con un placeholder del mismo tamaño:
+         al pasar a position:fixed sale del flujo y, sin esto, el pool se colapsa
+         y las zonas saltan hacia arriba en pleno arrastre (drop cae mal, sobre todo en mobile). */
+      placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.width = r.width + 'px'; placeholder.style.height = r.height + 'px';
+      dragging.parentNode.insertBefore(placeholder, dragging);
       dragging.style.width = r.width + 'px'; dragging.style.position = 'fixed'; dragging.style.zIndex = '9999';
       dragging.classList.add('dragging'); clearSel();
     }
@@ -903,7 +912,7 @@ echo $titulo;</code></pre>
     }
   }
   function onPointerUp(e) {
-    if (dragging) { var z = zoneUnder(e.clientX, e.clientY); endDrag(dragging); place(dragging, z); }
+    if (dragging) { var chip = dragging; var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
   }

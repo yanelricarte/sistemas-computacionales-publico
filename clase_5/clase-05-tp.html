@@ -46,7 +46,7 @@
 
 <h3>Parte 1 — Diseñá tu tabla (en papel)</h3>
 
-<p>Antes de tocar phpMyAdmin, diseñá tu tabla en la carpeta. Elegí una entidad de tu proyecto y completá esta <strong>ficha de diseño</strong>: qué columnas tiene, de qué tipo es cada una (<code>INT</code> número / <code>VARCHAR(n)</code> texto) y cuál es la clave primaria.</p>
+<p>Antes de tocar phpMyAdmin, diseñá tu tabla en la carpeta. Elegí una entidad de tu proyecto y completá esta <strong>ficha de diseño</strong>: qué columnas tiene, de qué tipo es cada una (<code>INT</code> número, <code>VARCHAR(n)</code> texto, <code>DATE</code> fecha, <code>BOOLEAN</code> sí/no) y cuál es la clave primaria.</p>
 
 <pre><code>Tabla: ____________
 ┌──────────┬──────────────┬──────────────────┬───────┐
@@ -77,7 +77,7 @@
 <h3>Parte 3 — Crear la tabla (CREATE TABLE)</h3>
 
 <ol>
-  <li>Traducí tu entidad a una tabla: cada dato pasa a ser una <strong>columna con su tipo</strong> (<code>INT</code> para números, <code>VARCHAR(n)</code> para texto). Agregá una columna <code>id</code> como <strong>clave primaria autonumerada</strong>:
+  <li>Traducí tu entidad a una tabla: cada dato pasa a ser una <strong>columna con su tipo</strong> (<code>INT</code> números, <code>VARCHAR(n)</code> texto, <code>DATE</code> fechas, <code>BOOLEAN</code> sí/no). Agregá una columna <code>id</code> como <strong>clave primaria autonumerada</strong>:
     <pre><code>CREATE TABLE peliculas (
     id      INT AUTO_INCREMENT PRIMARY KEY,
     titulo  VARCHAR(100) NOT NULL,
@@ -149,6 +149,29 @@ git push</code></pre>
   Ese archivo es la <strong>receta</strong> de tu base: con él, cualquiera (o vos en otra máquina) recrea la tabla y los datos ejecutándolo. Es una de las entregas de esta etapa del proyecto (el <em>script de creación de la base</em>).
 </div>
 
+<h3>Parte 7 (opcional) — Si les sobra tiempo: más consultas</h3>
+
+<p>Para los grupos que ya terminaron. <strong>Escriban ustedes</strong> el <code>SELECT</code> de cada consigna sobre su misma tabla y anoten cuántas filas trae. No hay una única respuesta: depende de las columnas de tu entidad.</p>
+
+<ol>
+  <li>Traé <strong>solo dos columnas</strong> que les interesen (ej. <code>SELECT titulo, anio FROM ...</code>).</li>
+  <li>Traé las filas que cumplen una <strong>condición numérica</strong> (ej. <code>WHERE anio &gt;= 2015</code>; o precio, edad, stock…).</li>
+  <li>Traé las filas de una <strong>categoría exacta</strong> por texto (ej. <code>WHERE genero = 'Animación'</code>). Ojo con las comillas simples.</li>
+  <li>Combiná <strong>dos condiciones</strong> con <code>AND</code> (traen las filas que cumplen las dos a la vez):
+    <pre><code>SELECT * FROM peliculas WHERE genero = 'Ciencia ficción' AND anio &gt;= 2000;</code></pre>
+  </li>
+  <li><strong>Si tu tabla tiene una fecha</strong> (<code>DATE</code>): traé las posteriores a una fecha (<code>WHERE fecha_estreno &gt;= '2015-01-01'</code>). <strong>Si tiene un sí/no</strong> (<code>BOOLEAN</code>): traé solo las que están en verdadero (<code>WHERE en_cartel = true</code>).</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">Registro de la actividad (para entregar)</div>
+  Por <strong>cada consulta</strong> que resuelvan, dejen registro —en la carpeta a mano, o en la <a href="clase-05-planilla.html">planilla del grupo</a>— con este formato:
+  <pre><code>Consigna n.º: ___
+Mi consulta:  SELECT ______________________________________ ;
+Trajo ______ filas.</code></pre>
+  Así queda asentado qué probaron, aunque no lleguen a todas.
+</div>
+
 <h2>Errores comunes</h2>
 
 <table>
@@ -172,10 +195,11 @@ git push</code></pre>
   <ul>
     <li><input type="checkbox" id="tpc5-1"><label for="tpc5-1">Creé la base con cotejamiento <code>utf8mb4_unicode_ci</code>.</label></li>
     <li><input type="checkbox" id="tpc5-2"><label for="tpc5-2">La tabla tiene una columna <code>id</code> como <code>PRIMARY KEY AUTO_INCREMENT</code>.</label></li>
-    <li><input type="checkbox" id="tpc5-3"><label for="tpc5-3">Cada columna tiene su tipo (<code>INT</code> / <code>VARCHAR</code>) según sea número o texto.</label></li>
+    <li><input type="checkbox" id="tpc5-3"><label for="tpc5-3">Cada columna tiene su tipo (<code>INT</code>, <code>VARCHAR</code>, <code>DATE</code> o <code>BOOLEAN</code>) según el dato que guarda.</label></li>
     <li><input type="checkbox" id="tpc5-4"><label for="tpc5-4">Cargué <strong>mínimo 4 filas</strong> con <code>INSERT</code>, sin escribir el <code>id</code>.</label></li>
     <li><input type="checkbox" id="tpc5-5"><label for="tpc5-5">Corrí un <code>SELECT *</code>, uno de columnas puntuales y uno con <code>WHERE</code>.</label></li>
     <li><input type="checkbox" id="tpc5-6"><label for="tpc5-6">Exporté el script <code>.sql</code> y lo subí al repo con un commit nuevo.</label></li>
+    <li><input type="checkbox" id="tpc5-7"><label for="tpc5-7"><em>(Opcional)</em> Resolví consultas de la <strong>Parte 7</strong> y dejé el registro de cada una.</label></li>
   </ul>
 </div>
 

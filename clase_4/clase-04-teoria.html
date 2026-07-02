@@ -176,7 +176,7 @@ echo $pelicula['anio'];     // 1999</code></pre>
   3. Toda la cartelera junta (array de arrays)
 </h2>
 
-<p>En Clase 3, cada sección vivía adentro de un <code>case</code> del <code>switch</code>. Pero una cartelera tiene <strong>muchas</strong> películas parecidas: un <code>switch</code> con 20 casos sería absurdo. Las juntamos todas en <strong>un array de arrays</strong>. La clave de afuera es el <strong>id</strong> que viaja en la URL (<code>pelicula.php?id=...</code>).</p>
+<p>En Clase 3, cada sección vivía adentro de un <code>case</code> del <code>switch</code>. Pero una cartelera tiene <strong>muchas</strong> películas parecidas: un <code>switch</code> con 20 casos sería absurdo. Las juntamos todas en <strong>un array de arrays</strong>. La clave de la película es el <strong>id</strong> que viaja en la URL (<code>pelicula.php?id=...</code>).</p>
 
 <pre><code>$peliculas = [
     'matrix'       =&gt; ['titulo' =&gt; 'Matrix',       'anio' =&gt; 1999, 'genero' =&gt; 'Ciencia ficción', 'imagen' =&gt; '...'],
@@ -184,14 +184,14 @@ echo $pelicula['anio'];     // 1999</code></pre>
     'intensamente' =&gt; ['titulo' =&gt; 'Intensamente', 'anio' =&gt; 2015, 'genero' =&gt; 'Animación',       'imagen' =&gt; '...'],
 ];
 
-echo $peliculas['coco']['titulo'];   // Coco  (entro por la clave de afuera y después por la de adentro)</code></pre>
+echo $peliculas['coco']['titulo'];   // Coco  (entro por la clave de la película y después por la clave del dato)</code></pre>
 
-<p>Esto <strong>es</strong> la tabla: cada entrada de afuera es una <strong>fila</strong> (una película), y su clave (<code>'coco'</code>) funciona como identificador.</p>
+<p>Esto <strong>es</strong> la tabla: cada película es una <strong>fila</strong>, y su clave (<code>'coco'</code>) funciona como identificador.</p>
 
 <div class="checkpoint">
   <p class="checkpoint-title">entrá por las dos claves</p>
   <pre><code>echo $peliculas['coco']['titulo'];</code></pre>
-  <div class="quiz-q" data-correct="b" data-explanation="Primero entrás por la clave de afuera ('coco' → esa película) y después por la de adentro ('titulo'). Por eso imprime Coco. Los dos corchetes son válidos: array de arrays.">
+  <div class="quiz-q" data-correct="b" data-explanation="Primero entrás por la clave de la película ('coco') y después por la clave del dato ('titulo'). Por eso imprime Coco. Los dos corchetes son válidos: array de arrays.">
     <p>Con el array de arrays de arriba, ¿qué imprime?</p>
     <button type="button" class="quiz-opt" data-opt="a">a) coco</button>
     <button type="button" class="quiz-opt" data-opt="b">b) Coco</button>
@@ -523,7 +523,7 @@ $peli = $peliculas[$id] ?? null;</code></pre>
   var pool  = act.querySelector('.drag-pool');
   var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
   var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
-  var selected = null, dragging = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var selected = null, dragging = null, placeholder = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
   var THRESH = 6;
   var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
 
@@ -569,6 +569,8 @@ $peli = $peliculas[$id] ?? null;</code></pre>
   function endDrag(chip) {
     chip.classList.remove('dragging');
     chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+    placeholder = null;
     zones.forEach(function (zz) { zz.classList.remove('over'); });
     dragging = null;
   }
@@ -584,6 +586,13 @@ $peli = $peliculas[$id] ?? null;</code></pre>
       if (!dragging) return;
       var r = dragging.getBoundingClientRect();
       ox = sx - r.left; oy = sy - r.top;
+      /* Reservar el lugar de la tarjeta con un placeholder del mismo tamaño:
+         al pasar a position:fixed sale del flujo y, sin esto, el pool se colapsa
+         y las zonas saltan hacia arriba en pleno arrastre (drop cae mal, sobre todo en mobile). */
+      placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.width = r.width + 'px'; placeholder.style.height = r.height + 'px';
+      dragging.parentNode.insertBefore(placeholder, dragging);
       dragging.style.width = r.width + 'px'; dragging.style.position = 'fixed'; dragging.style.zIndex = '9999';
       dragging.classList.add('dragging'); clearSel();
     }
@@ -595,7 +604,7 @@ $peli = $peliculas[$id] ?? null;</code></pre>
     }
   }
   function onPointerUp(e) {
-    if (dragging) { var z = zoneUnder(e.clientX, e.clientY); endDrag(dragging); place(dragging, z); }
+    if (dragging) { var chip = dragging; var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
   }

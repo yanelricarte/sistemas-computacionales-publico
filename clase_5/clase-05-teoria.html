@@ -128,7 +128,7 @@ $peliculas = [
 <ol>
   <li><strong>Identificá la entidad:</strong> ¿de qué cosa guardás datos? (la <em>película</em>). Ese es el nombre de la tabla, en plural: <code>peliculas</code>.</li>
   <li><strong>Listá sus atributos:</strong> ¿qué querés saber de cada película? (título, año, género, imagen). Cada atributo va a ser una <strong>columna</strong>.</li>
-  <li><strong>Elegí el tipo</strong> de cada columna: ¿es número o texto? → <code>INT</code> o <code>VARCHAR</code>.</li>
+  <li><strong>Elegí el tipo</strong> de cada columna según el dato que guarda: número (<code>INT</code>), texto (<code>VARCHAR</code>), fecha (<code>DATE</code>) o sí/no (<code>BOOLEAN</code>).</li>
   <li><strong>Poné una clave primaria:</strong> una columna <code>id</code> que identifique cada fila sin repetirse.</li>
   <li><strong>Volcá todo en la ficha de diseño</strong> (la tablita de más abajo). Recién con eso hecho, se abre phpMyAdmin.</li>
 </ol>
@@ -141,9 +141,13 @@ $peliculas = [
   <tr><th>Tipo</th><th>Para qué</th><th>Ejemplo (película)</th></tr>
   <tr><td><code>INT</code></td><td>Números enteros</td><td><code>anio</code> = 1999</td></tr>
   <tr><td><code>VARCHAR(n)</code></td><td>Texto de hasta <em>n</em> caracteres</td><td><code>titulo</code> = 'Matrix'</td></tr>
+  <tr><td><code>DATE</code></td><td>Fechas (formato <code>AAAA-MM-DD</code>)</td><td><code>fecha_estreno</code> = '1999-03-31'</td></tr>
+  <tr><td><code>BOOLEAN</code></td><td>Un sí / no (verdadero o falso)</td><td><code>en_cartel</code> = true</td></tr>
 </table>
 
-<p>Además, toda tabla necesita una <strong>clave primaria</strong> (<em>primary key</em>): una columna que <strong>identifica a cada fila sin repetirse</strong>. En la Clase 4 ese rol lo hacía la clave de afuera (<code>'matrix'</code>). En la tabla usamos una columna <code>id</code> que <strong>la base autonumera sola</strong> (<code>AUTO_INCREMENT</code>): 1, 2, 3…</p>
+<p>Dos aclaraciones sobre los tipos nuevos: <code>DATE</code> guarda la fecha como texto ordenado <code>AAAA-MM-DD</code> (por eso <code>'1999-03-31'</code>), así la base puede compararlas y ordenarlas. <code>BOOLEAN</code> guarda un sí/no; por dentro MySQL lo anota como <code>1</code> (verdadero) o <code>0</code> (falso).</p>
+
+<p>Además, toda tabla necesita una <strong>clave primaria</strong> (<em>primary key</em>): una columna que <strong>identifica a cada fila sin repetirse</strong>. En la Clase 4 ese rol lo hacía la clave de la película (<code>'matrix'</code>). En la tabla usamos una columna <code>id</code> que <strong>la base autonumera sola</strong> (<code>AUTO_INCREMENT</code>): 1, 2, 3…</p>
 
 <div class="callout callout-tip">
   <div class="callout-title">¿Por qué un <code>id</code> automático y no el título?</div>
@@ -169,15 +173,17 @@ $peliculas = [
   Pensar la estructura en papel evita rehacer todo cuando ya cargaste datos. Diseñás una vez, y lo escribís bien de entrada. Este es el orden real de trabajo: <strong>diseñar → crear → cargar → consultar</strong>.
 </div>
 
-<p class="drag-help">Ubicá cada columna de la tabla <code>peliculas</code> según el tipo de dato que le corresponde. Arrastrá (o tocá la tarjeta y después la zona) y al final tocá <strong>Verificar</strong>.</p>
+<p class="drag-help">Ubicá cada columna según el tipo de dato que le corresponde. Además de las de <code>peliculas</code>, sumamos dos que podrían ampliarla (<code>fecha_estreno</code> y <code>en_cartel</code>). Arrastrá (o tocá la tarjeta y después la zona) y al final tocá <strong>Verificar</strong>.</p>
 
 <div class="drag-activity" data-key="clase5-tipos">
   <div class="drag-pool" aria-label="Columnas para clasificar por tipo">
     <div class="drag-chip" data-id="d1" data-target="int" data-why="El año es un número entero: va en INT." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>anio (ej: 1999)</div>
     <div class="drag-chip" data-id="d2" data-target="varchar" data-why="El título es texto: va en VARCHAR." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>titulo (ej: Matrix)</div>
-    <div class="drag-chip" data-id="d3" data-target="int" data-why="El id es un número que la base autonumera: INT." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>id (ej: 1, 2, 3)</div>
+    <div class="drag-chip" data-id="d3" data-target="int" data-why="El id es INT y la base lo autonumera sola con AUTO_INCREMENT (1, 2, 3…)." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>id (ej: 1, 2, 3)</div>
     <div class="drag-chip" data-id="d4" data-target="varchar" data-why="El género es texto corto: VARCHAR." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>genero (ej: Drama)</div>
     <div class="drag-chip" data-id="d5" data-target="varchar" data-why="La URL de la imagen es texto: VARCHAR." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>imagen (ej: una URL)</div>
+    <div class="drag-chip" data-id="d6" data-target="date" data-why="Una fecha de estreno va en DATE, con formato AAAA-MM-DD." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>fecha_estreno (ej: 1999-03-31)</div>
+    <div class="drag-chip" data-id="d7" data-target="boolean" data-why="Un sí/no (¿sigue en cartel?) va en BOOLEAN." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>en_cartel (ej: sí / no)</div>
   </div>
   <div class="drag-zones">
     <div class="drop-zone" data-zone="int" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en INT (número)">
@@ -188,6 +194,16 @@ $peliculas = [
     <div class="drop-zone" data-zone="varchar" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en VARCHAR (texto)">
       <h4>VARCHAR (texto)</h4>
       <p class="hint">palabras, entre comillas</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="date" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en DATE (fecha)">
+      <h4>DATE (fecha)</h4>
+      <p class="hint">formato AAAA-MM-DD</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="boolean" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en BOOLEAN (sí/no)">
+      <h4>BOOLEAN (sí/no)</h4>
+      <p class="hint">verdadero o falso</p>
       <div class="zone-items"></div>
     </div>
   </div>
@@ -201,7 +217,15 @@ $peliculas = [
   3. phpMyAdmin: crear la base y usar la herramienta
 </h2>
 
-<p>Con el diseño en la mano, recién ahora abrimos la herramienta. <strong>phpMyAdmin</strong> viene con XAMPP: con <strong>Apache + MySQL</strong> encendidos, entrá en el navegador a:</p>
+<p>Con el diseño en la mano, recién ahora abrimos la herramienta. <strong>phpMyAdmin</strong> viene con XAMPP, pero antes hay que <strong>prender los servicios</strong> desde el <strong>Panel de control de XAMPP</strong>:</p>
+
+<ol>
+  <li>En la fila de <strong>Apache</strong>, tocá <strong>Start</strong> (es el servidor web que sirve phpMyAdmin).</li>
+  <li>En la fila de <strong>MySQL</strong>, tocá <strong>Start</strong> (es el motor de base de datos).</li>
+  <li>Cuando los dos quedan <strong>en verde</strong>, están corriendo. Recién ahí phpMyAdmin responde.</li>
+</ol>
+
+<p>Con Apache y MySQL encendidos, entrá en el navegador a:</p>
 
 <pre><code>http://localhost/phpmyadmin</code></pre>
 
@@ -212,6 +236,11 @@ $peliculas = [
   <li>Nombre: <code>cartelera</code>. Cotejamiento: <code>utf8mb4_unicode_ci</code> (soporta tildes y ñ).</li>
   <li><strong>Crear</strong>. Ya tenés la base, todavía vacía (sin tablas).</li>
 </ol>
+
+<figure class="captura">
+  <img src="img/pma-crear-base.png" alt="phpMyAdmin en la pestaña Bases de datos, con el formulario Crear base de datos: el nombre cartelera escrito y el cotejamiento utf8mb4_unicode_ci elegido, listo para tocar Crear.">
+  <figcaption><strong>Crear la base:</strong> pestaña <em>Bases de datos</em> → nombre <code>cartelera</code> → cotejamiento <code>utf8mb4_unicode_ci</code> → <strong>Crear</strong>.</figcaption>
+</figure>
 
 <p>Adentro de la base, phpMyAdmin te deja hacer <strong>todo de dos maneras</strong>. Conviene conocer las dos:</p>
 
@@ -261,6 +290,18 @@ CREATE TABLE peliculas (
   <li><code>NOT NULL</code> = esa columna no puede quedar vacía (una película sin título no tiene sentido).</li>
 </ul>
 
+<p><strong>Lo mismo con el formulario de phpMyAdmin</strong> (pestaña <em>Estructura</em> → <em>Crear tabla</em>): en vez de escribir el SQL, cargás cada columna con su tipo. Es exactamente la misma tabla, hecha con el mouse.</p>
+
+<figure class="captura">
+  <img src="img/pma-crear-tabla-form.png" alt="Formulario Crear nueva tabla de phpMyAdmin en la base cartelera: el nombre de la tabla peliculas y el número de columnas 5, con el botón Crear.">
+  <figcaption><strong>Paso 1:</strong> el nombre de la tabla (<code>peliculas</code>) y cuántas columnas tiene (5).</figcaption>
+</figure>
+
+<figure class="captura">
+  <img src="img/pma-columnas-tipos.png" alt="Grilla de definición de columnas de phpMyAdmin: filas id, titulo, anio, genero, imagen, cada una con su Tipo (INT o VARCHAR), su Longitud (100, 50, 255), la columna Predeterminado (DEFAULT) e Índice PRIMARY en id.">
+  <figcaption><strong>Paso 2:</strong> cada columna con su <strong>tipo</strong> (<code>INT</code>/<code>VARCHAR</code>), su <strong>longitud</strong>, el <strong>Predeterminado</strong> (DEFAULT) y el índice <code>PRIMARY</code> en <code>id</code>. Es la ficha de diseño hecha en pantalla.</figcaption>
+</figure>
+
 <p><strong>Anatomía de una columna</strong> (leé el <code>CREATE TABLE</code> despacio):</p>
 
 <pre><code>    titulo    VARCHAR(100)    NOT NULL
@@ -281,6 +322,11 @@ CREATE TABLE peliculas (
   <code>'titulo' =&gt; 'Matrix'</code> (clave =&gt; valor, en PHP) se vuelve la columna <code>titulo VARCHAR(100)</code> (nombre + tipo, en SQL). La estructura es la misma; la tabla, además, le pone tipo a cada campo.
 </div>
 
+<figure class="captura">
+  <img src="img/pma-estructura.png" alt="Vista Estructura de la tabla peliculas en phpMyAdmin: columnas id, titulo, anio, genero, imagen con su tipo y cotejamiento; el id figura con AUTO_INCREMENT y como índice PRIMARY.">
+  <figcaption>La tabla ya creada, en la vista <em>Estructura</em>: cada columna con su <strong>tipo</strong>, y el <code>id</code> como <code>PRIMARY</code> + <code>AUTO_INCREMENT</code>. Da igual si la hiciste por SQL o por el formulario: el resultado es este.</figcaption>
+</figure>
+
 <h2 id="s5">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   5. INSERT: cada película es una fila
@@ -298,6 +344,13 @@ CREATE TABLE peliculas (
   <li>El texto va <strong>entre comillas simples</strong> (<code>'Matrix'</code>); los números, <strong>sin comillas</strong> (<code>1999</code>). Igual que en PHP.</li>
   <li><strong>No escribimos el <code>id</code>:</strong> lo pone la base sola (1, 2, 3…) gracias a <code>AUTO_INCREMENT</code>.</li>
 </ul>
+
+<p><strong>Con el formulario</strong> (pestaña <em>Insertar</em>): un campo por columna. El <code>id</code> se deja <strong>vacío</strong> (lo completa la base).</p>
+
+<figure class="captura">
+  <img src="img/pma-insertar-form.png" alt="Pestaña Insertar de phpMyAdmin sobre la tabla peliculas: un campo Valor por cada columna (id vacío, titulo El Padrino, anio 1972, genero Drama, imagen una URL) y el botón Continuar.">
+  <figcaption>Cargar una fila con la pestaña <em>Insertar</em>: un campo por columna. Fijate que el <code>id</code> queda vacío.</figcaption>
+</figure>
 
 <p><strong>Así queda la tabla</strong> después de esos <code>INSERT</code> (fijate cómo la columna <code>id</code> se llenó sola):</p>
 
@@ -337,6 +390,11 @@ SELECT * FROM peliculas WHERE anio &gt;= 2015;    -- solo las de 2015 en adelant
   <li><code>FROM peliculas</code> = de qué tabla.</li>
   <li><code>WHERE</code> = la <strong>condición</strong> para filtrar (como el <code>if</code>): trae solo las filas que la cumplen.</li>
 </ul>
+
+<figure class="captura">
+  <img src="img/pma-sql-select-where.png" alt="Resultado en phpMyAdmin de SELECT * FROM peliculas WHERE anio >= 2015: la consulta arriba y una tabla con 4 filas (Coco, Intensamente, Parásitos, Duna); Matrix, de 1999, no aparece.">
+  <figcaption>Un <code>SELECT … WHERE</code> corrido en la pestaña <em>SQL</em>: <code>WHERE anio &gt;= 2015</code> devuelve <strong>4 de las 5</strong> películas (Matrix, de 1999, queda afuera). Eso es filtrar.</figcaption>
+</figure>
 
 <p><strong>Anatomía de un <code>SELECT</code></strong> (las cuatro partes, siempre en este orden):</p>
 
@@ -518,7 +576,7 @@ SELECT * FROM peliculas WHERE anio &gt;= 2015;    -- solo las de 2015 en adelant
   var pool  = act.querySelector('.drag-pool');
   var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
   var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
-  var selected = null, dragging = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var selected = null, dragging = null, placeholder = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
   var THRESH = 6;
   var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
 
@@ -564,6 +622,8 @@ SELECT * FROM peliculas WHERE anio &gt;= 2015;    -- solo las de 2015 en adelant
   function endDrag(chip) {
     chip.classList.remove('dragging');
     chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+    placeholder = null;
     zones.forEach(function (zz) { zz.classList.remove('over'); });
     dragging = null;
   }
@@ -579,6 +639,13 @@ SELECT * FROM peliculas WHERE anio &gt;= 2015;    -- solo las de 2015 en adelant
       if (!dragging) return;
       var r = dragging.getBoundingClientRect();
       ox = sx - r.left; oy = sy - r.top;
+      /* Reservar el lugar de la tarjeta con un placeholder del mismo tamaño:
+         al pasar a position:fixed sale del flujo y, sin esto, el pool se colapsa
+         y las zonas saltan hacia arriba en pleno arrastre (drop cae mal, sobre todo en mobile). */
+      placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.width = r.width + 'px'; placeholder.style.height = r.height + 'px';
+      dragging.parentNode.insertBefore(placeholder, dragging);
       dragging.style.width = r.width + 'px'; dragging.style.position = 'fixed'; dragging.style.zIndex = '9999';
       dragging.classList.add('dragging'); clearSel();
     }
@@ -590,7 +657,7 @@ SELECT * FROM peliculas WHERE anio &gt;= 2015;    -- solo las de 2015 en adelant
     }
   }
   function onPointerUp(e) {
-    if (dragging) { var z = zoneUnder(e.clientX, e.clientY); endDrag(dragging); place(dragging, z); }
+    if (dragging) { var chip = dragging; var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
   }
