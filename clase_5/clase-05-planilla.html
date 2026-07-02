@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planilla de autocorrección — TP Clase 5</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Planilla de autocorrección · TP Clase 5</div>
+  <h1>¿Qué tiene resuelto el grupo?</h1>
+  <p class="sub">Completá los datos del grupo y marcá lo que ya tienen listo. Se guarda solo en esta computadora. Cuando esté todo tildado, pedile a la profe la revisión. Podés <strong>imprimirla</strong> o descargarla en PDF para entregar.</p>
+</div>
+
+<div class="planilla-datos">
+  <label>Grupo:
+    <input type="text" id="pl-grupo" placeholder="Nombre o número del grupo" autocomplete="off">
+  </label>
+  <label>Integrantes:
+    <input type="text" id="pl-integrantes" placeholder="Nombres y apellidos, separados por coma" autocomplete="off">
+  </label>
+  <label>Entidad elegida:
+    <input type="text" id="pl-entidad" placeholder="ej: peliculas, productos, turnos…" autocomplete="off">
+  </label>
+  <label>Fecha:
+    <input type="text" id="pl-fecha" placeholder="__ / __ / ____" autocomplete="off">
+  </label>
+</div>
+
+<h2>Lo que tenemos resuelto</h2>
+
+<p>Marquen cada punto cuando el grupo lo tenga funcionando en phpMyAdmin. La corrección es de ustedes: si algo no anda, revisen la <a href="clase-05-teoria.html">teoría</a> o los <em>errores comunes</em> del <a href="clase-05-tp.html">TP</a>.</p>
+
+<div class="selfcheck" data-key="planilla-clase5">
+  <div class="selfcheck-head">
+    <span>Autocorrección — TP Clase 5</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="pl0"><label for="pl0"><b>Diseño en papel.</b> Hicimos la <b>ficha de diseño</b> (columnas + tipo de cada una + clave primaria) antes de tocar phpMyAdmin.</label></li>
+    <li><input type="checkbox" id="pl1"><label for="pl1"><b>Base creada.</b> Existe la base con cotejamiento <code>utf8mb4_unicode_ci</code> y trabajamos adentro de ella.</label></li>
+    <li><input type="checkbox" id="pl2"><label for="pl2"><b>Tabla con clave primaria.</b> La tabla tiene una columna <code>id</code> como <code>PRIMARY KEY AUTO_INCREMENT</code>.</label></li>
+    <li><input type="checkbox" id="pl3"><label for="pl3"><b>Tipos correctos.</b> Cada columna es <code>INT</code> (números) o <code>VARCHAR</code> (texto) según corresponde.</label></li>
+    <li><input type="checkbox" id="pl4"><label for="pl4"><b>Datos cargados.</b> Hicimos <code>INSERT</code> de <strong>4 filas o más</strong>, sin escribir el <code>id</code> a mano.</label></li>
+    <li><input type="checkbox" id="pl5"><label for="pl5"><b>Consulta total.</b> <code>SELECT * FROM ...</code> nos muestra todas las filas.</label></li>
+    <li><input type="checkbox" id="pl6"><label for="pl6"><b>Consulta de columnas.</b> Un <code>SELECT</code> que trae solo algunas columnas.</label></li>
+    <li><input type="checkbox" id="pl7"><label for="pl7"><b>Consulta con filtro.</b> Un <code>SELECT ... WHERE ...</code> que trae <strong>menos</strong> filas que el total.</label></li>
+    <li><input type="checkbox" id="pl8"><label for="pl8"><b>Script guardado.</b> Exportamos el <code>.sql</code> y lo subimos al repo con un commit nuevo.</label></li>
+    <li><input type="checkbox" id="pl9"><label for="pl9"><b>Para pensar.</b> Anotamos una <strong>segunda entidad</strong> y cómo se relaciona con la primera.</label></li>
+  </ul>
+</div>
+
+<div class="planilla-acciones">
+  <button type="button" class="btn" id="pl-print">🖨 Imprimir / guardar PDF</button>
+  <button type="button" class="drag-reset" id="pl-clear">Borrar lo cargado</button>
+</div>
+
+<p class="planilla-nota">La planilla se guarda automáticamente en <strong>esta</strong> computadora y navegador. Si cambian de máquina, se completa de nuevo.</p>
+
+<div class="nav">
+  <a href="clase-05-tp.html">← Volver al TP de Clase 5</a>
+</div>
+
+<script src="../js/estudiantes.js"></script>
+<script>
+/* Persistencia de los campos de texto del grupo + botones (la lista de tildes
+   la maneja estudiantes.js por su data-key). Todo local a este navegador. */
+(function () {
+  var campos = ['pl-grupo', 'pl-integrantes', 'pl-entidad', 'pl-fecha'];
+  var KEY = 'sc-planilla-clase5-datos';
+
+  function cargar() {
+    try {
+      var d = JSON.parse(localStorage.getItem(KEY) || '{}');
+      campos.forEach(function (id) { var el = document.getElementById(id); if (el && d[id] != null) el.value = d[id]; });
+    } catch (e) {}
+  }
+  function guardar() {
+    try {
+      var d = {};
+      campos.forEach(function (id) { var el = document.getElementById(id); if (el) d[id] = el.value; });
+      localStorage.setItem(KEY, JSON.stringify(d));
+    } catch (e) {}
+  }
+  campos.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', guardar);
+  });
+
+  var printBtn = document.getElementById('pl-print');
+  if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
+
+  var clearBtn = document.getElementById('pl-clear');
+  if (clearBtn) clearBtn.addEventListener('click', function () {
+    if (!confirm('¿Borrar todo lo cargado en esta planilla (datos y tildes)?')) return;
+    campos.forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
+    try {
+      localStorage.removeItem(KEY);
+      localStorage.removeItem('estudiantes-check-planilla-clase5');
+    } catch (e) {}
+    document.querySelectorAll('.selfcheck[data-key="planilla-clase5"] input[type="checkbox"]').forEach(function (c) { c.checked = false; });
+    var cnt = document.querySelector('.selfcheck[data-key="planilla-clase5"] .selfcheck-count');
+    if (cnt) cnt.textContent = '';
+    location.reload();
+  });
+
+  cargar();
+})();
+</script>
+
+</body>
+</html>

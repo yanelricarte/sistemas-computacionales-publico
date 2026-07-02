@@ -135,7 +135,11 @@ body { font-size: var(--font-base-size); }
   #progress,
   .nav,
   .quiz .quiz-opt,
+  .planilla-acciones,
+  .planilla-nota,
   .copy-btn { display: none !important; }
+
+  .planilla-datos input { border: 0; border-bottom: 1px solid #000; }
 
   body {
     background: white;
@@ -622,4 +626,90 @@ details[open] summary::before { transform: rotate(90deg); }
 .code-check.ok { border-left-color:var(--ok); }
 .code-check.ok .code-check-feedback { color:var(--ok); }
 .code-check.bad { border-left-color:#e74c3c; }
+
+/* ===== Planilla de autocorrección (grupo) ===== */
+.planilla-datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  margin: 18px 0;
+}
+.planilla-datos label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 600;
+  font-size: .9em;
+  color: var(--ink-soft);
+}
+.planilla-datos input {
+  font: inherit;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 11px;
+}
+.planilla-datos input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.planilla-acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 18px 0 8px; }
+.planilla-nota { font-size: .85em; color: var(--ink-light); margin: 4px 0 0; }
+@media (max-width: 560px) { .planilla-datos { grid-template-columns: 1fr; } }
+
+/* ===== Captura de pantalla (figura) ===== */
+figure.captura { margin: 1.6em 0; }
+figure.captura img { max-width: 100%; height: auto; display: block; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+figure.captura figcaption { font-size: .88em; color: var(--ink-light); margin-top: .55em; line-height: 1.5; }
 .code-check.bad .code-check-feedback { color:#c0392b; }
+
+/* ===========================================================
+   Banner del programa (index)
+   =========================================================== */
+.programa-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2em;
+  flex-wrap: wrap;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 1.6em 1.8em;
+  margin: 2em 0 1em;
+  box-shadow: var(--shadow);
+}
+.programa-banner .programa-text { flex: 1 1 320px; }
+.programa-banner h3 { margin: .35em 0 .3em; color: var(--ink); font-size: 1.25em; }
+.programa-banner p { margin: 0; color: var(--ink-soft); font-size: .95em; line-height: 1.55; }
+.programa-banner .btn { flex-shrink: 0; }
+
+/* ===========================================================
+   Previsualización inline en las tarjetas de materiales (index)
+   Reutiliza <details> pero más liviano dentro de la tarjeta.
+   =========================================================== */
+.material-card .preview {
+  margin: 1em 0 0;
+  padding: .8em 0 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+}
+.material-card .preview[open] { padding-bottom: 0; }
+.material-card .preview > summary { padding: .3em 0; font-size: .92em; color: var(--ink-soft); }
+.material-card .preview[open] > summary { color: var(--accent); }
+.preview-body { margin-top: .8em; display: flex; flex-direction: column; gap: .6em; }
+.preview-body iframe {
+  width: 100%;
+  height: min(60vh, 540px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.preview-open { font-size: .85em; font-weight: 600; align-self: flex-start; }

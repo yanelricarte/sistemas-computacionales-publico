@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TP Clase 5 — Tu primera base de datos en MySQL</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 5</div>
+  <h1>Tu primera base de datos en MySQL</h1>
+  <p class="sub">Vas a pasar los datos de tu proyecto (los que en la Clase 4 estaban en <code>datos.php</code>) a una <strong>tabla real</strong> en MySQL: creás la base, la tabla con <code>CREATE TABLE</code>, cargás filas con <code>INSERT</code> y las consultás con <code>SELECT</code>. Al final exportás el script <code>.sql</code> y lo subís al repo.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Entorno:</strong> XAMPP (Apache + MySQL) · phpMyAdmin en <code>http://localhost/phpmyadmin</code>
+</div>
+
+<h2>Objetivo</h2>
+
+<p>Elegir <strong>una entidad</strong> de tu proyecto (la cartelera de películas del ejemplo, o tu propio tema: usuarios, productos, turnos, libros…) y llevarla a una base de datos MySQL: <code>CREATE TABLE</code> con una clave primaria, <code>INSERT</code> de varias filas y <code>SELECT</code> para consultarlas. Es el primer contacto con la base de datos real que va a sostener tu proyecto.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Las películas son un ejemplo</div>
+  Todo el TP usa la <strong>cartelera de películas</strong> para explicar, pero podés (y conviene) hacerlo con <strong>una entidad de tu proyecto</strong>. Lo que se evalúa es la estructura (tabla, tipos, PK, INSERT, SELECT), no el tema.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Antes de empezar</div>
+  Abrí XAMPP y encendé <strong>Apache</strong> y <strong>MySQL</strong>. Entrá a <code>http://localhost/phpmyadmin</code>. Si algo no arranca, avisá: es un tema de entorno, no del TP. Repaso de conceptos en la <a href="clase-05-teoria.html">teoría de Clase 5</a>.
+</div>
+
+<h2>Consigna</h2>
+
+<h3>Parte 1 — Diseñá tu tabla (en papel)</h3>
+
+<p>Antes de tocar phpMyAdmin, diseñá tu tabla en la carpeta. Elegí una entidad de tu proyecto y completá esta <strong>ficha de diseño</strong>: qué columnas tiene, de qué tipo es cada una (<code>INT</code> número / <code>VARCHAR(n)</code> texto) y cuál es la clave primaria.</p>
+
+<pre><code>Tabla: ____________
+┌──────────┬──────────────┬──────────────────┬───────┐
+│ columna  │ tipo         │ ejemplo          │ ¿PK?  │
+├──────────┼──────────────┼──────────────────┼───────┤
+│ id       │ INT          │ 1, 2, 3          │  SÍ   │
+│ ...      │ ...          │ ...              │       │
+└──────────┴──────────────┴──────────────────┴───────┘</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 1</div>
+  tu ficha tiene <strong>mínimo 4 columnas + un <code>id</code></strong> marcado como clave primaria (PK), y cada columna tiene decidido su tipo (número o texto). Recién con esto pasás a phpMyAdmin.
+</div>
+
+<h3>Parte 2 — Crear la base de datos</h3>
+
+<ol>
+  <li>En phpMyAdmin, creá una base nueva (botón <strong>Nueva</strong>).</li>
+  <li>Nombre: el de tu proyecto (ej. <code>cartelera</code>). Cotejamiento: <code>utf8mb4_unicode_ci</code> (para que anden las tildes y la ñ).</li>
+  <li>Entrá a la base y abrí la pestaña <strong>SQL</strong>: ahí vas a escribir los comandos.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 2</div>
+  la base aparece en el panel izquierdo (todavía sin tablas). Estás parado <strong>adentro</strong> de ella (arriba dice su nombre).
+</div>
+
+<h3>Parte 3 — Crear la tabla (CREATE TABLE)</h3>
+
+<ol>
+  <li>Traducí tu entidad a una tabla: cada dato pasa a ser una <strong>columna con su tipo</strong> (<code>INT</code> para números, <code>VARCHAR(n)</code> para texto). Agregá una columna <code>id</code> como <strong>clave primaria autonumerada</strong>:
+    <pre><code>CREATE TABLE peliculas (
+    id      INT AUTO_INCREMENT PRIMARY KEY,
+    titulo  VARCHAR(100) NOT NULL,
+    anio    INT,
+    genero  VARCHAR(50),
+    imagen  VARCHAR(255)
+);</code></pre>
+  </li>
+  <li>Cambiá <code>peliculas</code> y las columnas por las de <strong>tu</strong> entidad (mínimo 4 columnas + el <code>id</code>).</li>
+  <li>Ejecutá (<strong>Continuar</strong>). La tabla aparece en el panel izquierdo.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 3</div>
+  la tabla existe y tiene una columna <code>id</code> marcada como <strong>PRIMARY</strong>. Cada columna tiene su tipo. Si sale "syntax error", revisá las comas entre columnas y el <code>;</code> final.
+</div>
+
+<h3>Parte 4 — Cargar filas (INSERT)</h3>
+
+<ol>
+  <li>Cargá <strong>mínimo 4 filas</strong>. No escribas el <code>id</code>: lo pone la base sola.
+    <pre><code>INSERT INTO peliculas (titulo, anio, genero, imagen) VALUES
+    ('Matrix', 1999, 'Ciencia ficción', 'https://picsum.photos/seed/matrix/400/300'),
+    ('Coco',   2017, 'Animación',       'https://picsum.photos/seed/coco/400/300'),
+    ('Duna',   2021, 'Ciencia ficción', 'https://picsum.photos/seed/duna/400/300');</code></pre>
+  </li>
+  <li>Recordá: el <strong>texto entre comillas simples</strong> (<code>'Matrix'</code>), los <strong>números sin comillas</strong> (<code>1999</code>).</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 4</div>
+  clic en la tabla → pestaña <strong>Examinar</strong>: ves tus filas y la columna <code>id</code> numerada sola (1, 2, 3…).
+</div>
+
+<h3>Parte 5 — Consultar (SELECT)</h3>
+
+<ol>
+  <li>Traé toda la tabla:
+    <pre><code>SELECT * FROM peliculas;</code></pre>
+  </li>
+  <li>Traé solo algunas columnas:
+    <pre><code>SELECT titulo, anio FROM peliculas;</code></pre>
+  </li>
+  <li>Filtrá con una condición (<code>WHERE</code>). Al menos una consulta con filtro:
+    <pre><code>SELECT * FROM peliculas WHERE genero = 'Animación';
+SELECT * FROM peliculas WHERE anio &gt;= 2015;</code></pre>
+  </li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 5</div>
+  el <code>SELECT *</code> muestra todas las filas; el <code>WHERE</code> muestra <strong>menos</strong> (solo las que cumplen). Si el <code>WHERE</code> con texto no filtra, revisá las comillas simples del valor.
+</div>
+
+<h3>Parte 6 — Exportar el script y subirlo al repo</h3>
+
+<ol>
+  <li>En phpMyAdmin, con tu base seleccionada, andá a la pestaña <strong>Exportar</strong> → método rápido → formato <strong>SQL</strong> → <strong>Continuar</strong>. Se descarga un archivo <code>.sql</code>.</li>
+  <li>Renombralo a <code>db.sql</code> (o <code>cartelera.sql</code>) y ponelo en la carpeta de tu proyecto.</li>
+  <li>Subilo como un commit nuevo:
+    <pre><code>git add db.sql
+git commit -m "Base de datos: tabla de mi entidad con CREATE, INSERT y SELECT"
+git push</code></pre>
+  </li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">¿Por qué guardar el <code>.sql</code>?</div>
+  Ese archivo es la <strong>receta</strong> de tu base: con él, cualquiera (o vos en otra máquina) recrea la tabla y los datos ejecutándolo. Es una de las entregas de esta etapa del proyecto (el <em>script de creación de la base</em>).
+</div>
+
+<h2>Errores comunes</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td>"You have an error in your SQL syntax"</td><td>Falta un <code>;</code>, una coma entre columnas, o un paréntesis sin cerrar. Mirá la línea que marca el mensaje.</td></tr>
+  <tr><td><code>Unknown database</code></td><td>No creaste la base, o no estás parado adentro de ella (falta el <code>USE</code> o seleccionarla a la izquierda).</td></tr>
+  <tr><td>El texto da error o no se guarda</td><td>El texto va entre <strong>comillas simples</strong> (<code>'Coco'</code>), no dobles ni sin comillas.</td></tr>
+  <tr><td><code>Table ... already exists</code></td><td>Ya la creaste. Agregá <code>DROP TABLE IF EXISTS tabla;</code> antes del <code>CREATE</code> para rehacerla.</td></tr>
+  <tr><td>Las tildes salen raras (Ã©, Ã±)</td><td>La base no quedó en <code>utf8mb4</code>. Recreala con ese cotejamiento.</td></tr>
+</table>
+
+<h2>¿Terminaste? Verificá lo que tenés</h2>
+
+<p>Tildá lo que ya tengas hecho. Se guarda solo en este navegador, así podés volver a chequearlo.</p>
+
+<div class="selfcheck" data-key="tp-clase5">
+  <div class="selfcheck-head">
+    <span>Checklist del TP de Clase 5</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="tpc5-1"><label for="tpc5-1">Creé la base con cotejamiento <code>utf8mb4_unicode_ci</code>.</label></li>
+    <li><input type="checkbox" id="tpc5-2"><label for="tpc5-2">La tabla tiene una columna <code>id</code> como <code>PRIMARY KEY AUTO_INCREMENT</code>.</label></li>
+    <li><input type="checkbox" id="tpc5-3"><label for="tpc5-3">Cada columna tiene su tipo (<code>INT</code> / <code>VARCHAR</code>) según sea número o texto.</label></li>
+    <li><input type="checkbox" id="tpc5-4"><label for="tpc5-4">Cargué <strong>mínimo 4 filas</strong> con <code>INSERT</code>, sin escribir el <code>id</code>.</label></li>
+    <li><input type="checkbox" id="tpc5-5"><label for="tpc5-5">Corrí un <code>SELECT *</code>, uno de columnas puntuales y uno con <code>WHERE</code>.</label></li>
+    <li><input type="checkbox" id="tpc5-6"><label for="tpc5-6">Exporté el script <code>.sql</code> y lo subí al repo con un commit nuevo.</label></li>
+  </ul>
+</div>
+
+<h2>Para pensar (tarea de cierre)</h2>
+
+<p>Tu proyecto casi seguro tiene <strong>más de una entidad</strong>, y están <strong>relacionadas</strong>: una película tiene un <em>director</em>; un turno pertenece a un <em>paciente</em>; un producto tiene una <em>categoría</em>. Anotá:</p>
+
+<ol>
+  <li>Una <strong>segunda entidad</strong> de tu proyecto, con sus columnas y tipos.</li>
+  <li>Cómo se <strong>relaciona</strong> con la primera (¿quién "pertenece a" quién?).</li>
+</ol>
+
+<p>Eso lo usamos en la próxima clase para conectar dos tablas (claves foráneas y diagrama entidad-relación).</p>
+
+<div class="nav">
+  <a href="clase-05-teoria.html">← Volver a la teoría de Clase 5</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>

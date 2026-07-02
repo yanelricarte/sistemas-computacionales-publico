@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 5 — Primer contacto con MySQL: de datos.php a una tabla real</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 5 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Primer contacto con MySQL: de <code>datos.php</code> a una tabla real</h1>
+  <p class="sub">En la Clase 4 la cartelera vivía en <code>datos.php</code> (un array de arrays). Hoy la pasamos a una <strong>base de datos de verdad</strong>: creamos la tabla con <code>CREATE TABLE</code>, cargamos las películas con <code>INSERT</code> y las consultamos con <code>SELECT</code>. Cada película deja de ser un array para ser una <strong>fila</strong> de una tabla.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s0">De dónde venimos: repaso hasta acá</a></li>
+    <li><a href="#s1">Qué es una base de datos y MySQL</a></li>
+    <li><a href="#s2">Diseñar la tabla</a></li>
+    <li><a href="#s3">phpMyAdmin: crear la base y usar la herramienta</a></li>
+    <li><a href="#s4">CREATE TABLE: la tabla es el array con tipos</a></li>
+    <li><a href="#s5">INSERT: cada película es una fila</a></li>
+    <li><a href="#s6">SELECT: leer la tabla (= el foreach)</a></li>
+    <li><a href="#s7">Errores frecuentes</a></li>
+    <li><a href="#s8">Glosario</a></li>
+    <li><a href="#quiz">Práctica</a></li>
+    <li><a href="#s9">Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<h2 id="s0">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+  0. De dónde venimos: repaso hasta acá
+</h2>
+
+<p>Venimos construyendo un <strong>mini-sistema web</strong>, sumando una pieza por clase. Antes de arrancar con lo nuevo, ubiquémonos:</p>
+
+<ul>
+  <li><strong>Clase 1 —</strong> el entorno listo (XAMPP, VS Code, Git) y el primer <code>.php</code> corriendo en <code>localhost</code>.</li>
+  <li><strong>Clase 2 —</strong> <strong>login con sesión</strong> (<code>session_start()</code>) y páginas que reutilizan <code>cabecera.php</code> / <code>pie.php</code> con <code>include</code>.</li>
+  <li><strong>Clase 3 —</strong> navegación con <code>switch</code> (<code>?seccion=</code>) y CSS distinto por sección.</li>
+  <li><strong>Clase 4 —</strong> los datos en <strong>arrays asociativos</strong> dentro de <code>datos.php</code>, y la <strong>cartelera</strong> que se arma sola con <code>foreach</code>.</li>
+</ul>
+
+<p>Hoy damos el paso que venimos anticipando desde la Clase 4: esos datos dejan de estar en un archivo <code>.php</code> y pasan a una <strong>base de datos de verdad</strong>.</p>
+
+<h3>El puente: <code>datos.php</code> ya era casi una tabla</h3>
+
+<p>Cerramos la Clase 4 con esta idea: si un array asociativo es una <strong>fila</strong> y sus claves son las <strong>columnas</strong>, entonces <code>datos.php</code> (todas las películas juntas) es <strong>casi una tabla</strong>. Hoy la hacemos tabla de verdad.</p>
+
+<pre><code>// datos.php (Clase 4): un array de arrays
+$peliculas = [
+    'matrix' =&gt; ['titulo' =&gt; 'Matrix', 'anio' =&gt; 1999, 'genero' =&gt; 'Ciencia ficción', ...],
+    'coco'   =&gt; ['titulo' =&gt; 'Coco',   'anio' =&gt; 2017, 'genero' =&gt; 'Animación', ...],
+];</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">Lo que cambia (y lo que no)</div>
+  Los datos son los mismos. Lo que cambia es <strong>dónde viven</strong>: salen de un archivo <code>.php</code> y pasan a un <strong>servidor de base de datos</strong>, pensado para guardar, buscar y ordenar montones de datos sin tocar código.
+</div>
+
+<p><strong>El mapeo, de un vistazo</strong> (guardá esta imagen mental, es la idea de toda la clase):</p>
+
+<pre><code>   datos.php  (Clase 4)                 tabla  peliculas  (Clase 5)
+ ───────────────────────────         ─────────────────────────────────────────
+ 'matrix' =&gt; [                        id │ titulo │ anio │ genero
+     'titulo' =&gt; 'Matrix',            ───┼────────┼──────┼─────────────────
+     'anio'   =&gt; 1999,        ═══►      1 │ Matrix │ 1999 │ Ciencia ficción
+     'genero' =&gt; 'Ciencia f.',          2 │ Coco   │ 2017 │ Animación
+ ],                                     3 │ Duna   │ 2021 │ Ciencia ficción
+                                        ▲      ▲
+ un array asociativo = una FILA         │      └─ cada CLAVE del array = una COLUMNA
+ las claves        = las COLUMNAS       └─ un id que la base pone sola (clave primaria)</code></pre>
+
+<h2 id="s1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+  1. Qué es una base de datos y MySQL
+</h2>
+
+<p>Una <strong>base de datos</strong> es un lugar organizado para guardar datos en <strong>tablas</strong> (filas y columnas). Un <strong>gestor de base de datos</strong> es el programa que las administra: crea tablas, guarda filas, responde consultas. Nosotros usamos <strong>MySQL</strong> (el que trae XAMPP; su variante se llama MariaDB, es lo mismo para lo nuestro).</p>
+
+<ul>
+  <li><strong>MySQL</strong> es el motor: guarda los datos y entiende un idioma para pedirle cosas.</li>
+  <li>Ese idioma es <strong>SQL</strong> (Structured Query Language): <code>CREATE</code>, <code>INSERT</code>, <code>SELECT</code>…</li>
+  <li><strong>phpMyAdmin</strong> es un panel web para usar MySQL con el mouse (ver tablas, correr SQL) sin memorizar comandos de consola.</li>
+</ul>
+
+<p><strong>Esquema — dónde vive cada cosa:</strong></p>
+
+<pre><code>Servidor MySQL                (el motor; viene con XAMPP)
+│
+└── Base de datos: cartelera  (el "cajón" de datos de este sistema)
+    │
+    └── Tabla: peliculas      (una grilla: filas y columnas)
+        │
+        ├── fila 1 →  1 | Matrix | 1999 | Ciencia ficción
+        ├── fila 2 →  2 | Coco   | 2017 | Animación
+        └── ...</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">La jerarquía</div>
+  <strong>Servidor MySQL</strong> → adentro, varias <strong>bases de datos</strong> → adentro de cada una, varias <strong>tablas</strong> → adentro de cada tabla, las <strong>filas</strong>. Hoy creamos una base (<code>cartelera</code>) con una tabla (<code>peliculas</code>).
+</div>
+
+<h2 id="s2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+  2. Diseñar la tabla
+</h2>
+
+<p>Los que saben lo hacen así: <strong>primero se diseña la tabla en papel</strong> y recién después se abre la computadora. Con el diseño resuelto, escribir el <code>CREATE TABLE</code> es casi copiar.</p>
+
+<p><strong>Cómo se diseña, paso a paso:</strong></p>
+
+<ol>
+  <li><strong>Identificá la entidad:</strong> ¿de qué cosa guardás datos? (la <em>película</em>). Ese es el nombre de la tabla, en plural: <code>peliculas</code>.</li>
+  <li><strong>Listá sus atributos:</strong> ¿qué querés saber de cada película? (título, año, género, imagen). Cada atributo va a ser una <strong>columna</strong>.</li>
+  <li><strong>Elegí el tipo</strong> de cada columna: ¿es número o texto? → <code>INT</code> o <code>VARCHAR</code>.</li>
+  <li><strong>Poné una clave primaria:</strong> una columna <code>id</code> que identifique cada fila sin repetirse.</li>
+  <li><strong>Volcá todo en la ficha de diseño</strong> (la tablita de más abajo). Recién con eso hecho, se abre phpMyAdmin.</li>
+</ol>
+
+<p>Los pasos 3 y 4 necesitan dos ideas: los <strong>tipos de dato</strong> y la <strong>clave primaria</strong>.</p>
+
+<p>En la tabla, <strong>cada columna tiene un tipo de dato</strong> fijo. Los que usamos hoy:</p>
+
+<table>
+  <tr><th>Tipo</th><th>Para qué</th><th>Ejemplo (película)</th></tr>
+  <tr><td><code>INT</code></td><td>Números enteros</td><td><code>anio</code> = 1999</td></tr>
+  <tr><td><code>VARCHAR(n)</code></td><td>Texto de hasta <em>n</em> caracteres</td><td><code>titulo</code> = 'Matrix'</td></tr>
+</table>
+
+<p>Además, toda tabla necesita una <strong>clave primaria</strong> (<em>primary key</em>): una columna que <strong>identifica a cada fila sin repetirse</strong>. En la Clase 4 ese rol lo hacía la clave de afuera (<code>'matrix'</code>). En la tabla usamos una columna <code>id</code> que <strong>la base autonumera sola</strong> (<code>AUTO_INCREMENT</code>): 1, 2, 3…</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">¿Por qué un <code>id</code> automático y no el título?</div>
+  Porque dos películas podrían llamarse igual, o querés renombrar una. El <code>id</code> es un número único y estable que <strong>no cambia nunca</strong>, ideal para identificar la fila.
+</div>
+
+<p><strong>La ficha de diseño.</strong> Antes de escribir una línea de SQL, armá esta tablita en tu carpeta. Es el <strong>diseño</strong> de tu tabla; después el <code>CREATE TABLE</code> sale casi solo:</p>
+
+<pre><code>Tabla: peliculas
+┌──────────┬──────────────┬──────────────────┬───────┐
+│ columna  │ tipo         │ ejemplo          │ ¿PK?  │
+├──────────┼──────────────┼──────────────────┼───────┤
+│ id       │ INT          │ 1, 2, 3          │  SÍ   │
+│ titulo   │ VARCHAR(100) │ Matrix           │       │
+│ anio     │ INT          │ 1999             │       │
+│ genero   │ VARCHAR(50)  │ Ciencia ficción  │       │
+│ imagen   │ VARCHAR(255) │ https://...      │       │
+└──────────┴──────────────┴──────────────────┴───────┘
+        cada fila de la ficha  →  una columna de la tabla</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">Diseño primero, teclado después</div>
+  Pensar la estructura en papel evita rehacer todo cuando ya cargaste datos. Diseñás una vez, y lo escribís bien de entrada. Este es el orden real de trabajo: <strong>diseñar → crear → cargar → consultar</strong>.
+</div>
+
+<p class="drag-help">Ubicá cada columna de la tabla <code>peliculas</code> según el tipo de dato que le corresponde. Arrastrá (o tocá la tarjeta y después la zona) y al final tocá <strong>Verificar</strong>.</p>
+
+<div class="drag-activity" data-key="clase5-tipos">
+  <div class="drag-pool" aria-label="Columnas para clasificar por tipo">
+    <div class="drag-chip" data-id="d1" data-target="int" data-why="El año es un número entero: va en INT." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>anio (ej: 1999)</div>
+    <div class="drag-chip" data-id="d2" data-target="varchar" data-why="El título es texto: va en VARCHAR." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>titulo (ej: Matrix)</div>
+    <div class="drag-chip" data-id="d3" data-target="int" data-why="El id es un número que la base autonumera: INT." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>id (ej: 1, 2, 3)</div>
+    <div class="drag-chip" data-id="d4" data-target="varchar" data-why="El género es texto corto: VARCHAR." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>genero (ej: Drama)</div>
+    <div class="drag-chip" data-id="d5" data-target="varchar" data-why="La URL de la imagen es texto: VARCHAR." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>imagen (ej: una URL)</div>
+  </div>
+  <div class="drag-zones">
+    <div class="drop-zone" data-zone="int" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en INT (número)">
+      <h4>INT (número)</h4>
+      <p class="hint">enteros, sin comillas</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="varchar" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en VARCHAR (texto)">
+      <h4>VARCHAR (texto)</h4>
+      <p class="hint">palabras, entre comillas</p>
+      <div class="zone-items"></div>
+    </div>
+  </div>
+  <button type="button" class="btn drag-check">Verificar</button>
+  <button type="button" class="drag-reset">Reiniciar</button>
+  <div class="drag-feedback" role="status" aria-live="polite"></div>
+</div>
+
+<h2 id="s3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+  3. phpMyAdmin: crear la base y usar la herramienta
+</h2>
+
+<p>Con el diseño en la mano, recién ahora abrimos la herramienta. <strong>phpMyAdmin</strong> viene con XAMPP: con <strong>Apache + MySQL</strong> encendidos, entrá en el navegador a:</p>
+
+<pre><code>http://localhost/phpmyadmin</code></pre>
+
+<p><strong>Crear la base</strong> (el "cajón" donde va a vivir la tabla):</p>
+
+<ol>
+  <li>En el panel izquierdo, <strong>Nueva</strong> (o pestaña <em>Bases de datos</em>).</li>
+  <li>Nombre: <code>cartelera</code>. Cotejamiento: <code>utf8mb4_unicode_ci</code> (soporta tildes y ñ).</li>
+  <li><strong>Crear</strong>. Ya tenés la base, todavía vacía (sin tablas).</li>
+</ol>
+
+<p>Adentro de la base, phpMyAdmin te deja hacer <strong>todo de dos maneras</strong>. Conviene conocer las dos:</p>
+
+<table>
+  <tr><th>Operación</th><th>Con botones (GUI)</th><th>Con SQL (pestaña SQL)</th></tr>
+  <tr><td>Crear una tabla</td><td>Formulario "Crear tabla": nombre + columnas + tipos</td><td><code>CREATE TABLE ...</code></td></tr>
+  <tr><td>Cargar una fila</td><td>Pestaña <em>Insertar</em>: un campo por columna</td><td><code>INSERT INTO ...</code></td></tr>
+  <tr><td>Ver los datos</td><td>Pestaña <em>Examinar</em></td><td><code>SELECT * FROM ...</code></td></tr>
+  <tr><td>Buscar / filtrar</td><td>Pestaña <em>Buscar</em></td><td><code>SELECT ... WHERE ...</code></td></tr>
+</table>
+
+<figure class="captura">
+  <img src="img/pma-cartelera-examinar.png" alt="phpMyAdmin mostrando la tabla peliculas de la base cartelera con sus 5 filas (id, titulo, anio, genero, imagen), en la vista Examinar, que es el resultado de SELECT * FROM peliculas.">
+  <figcaption>Así se ve <strong>phpMyAdmin</strong> con la base <code>cartelera</code> y la tabla <code>peliculas</code> ya cargada. La pestaña <em>Examinar</em> muestra las filas: es, en la práctica, el resultado de <code>SELECT * FROM peliculas</code> (lo vemos en la sección 6).</figcaption>
+</figure>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Por qué vamos a escribir SQL</div>
+  Los botones son cómodos, pero <strong>SQL se entiende en cualquier lado</strong> (otro gestor, otra máquina, y más adelante desde PHP). Por eso lo aprendemos escrito. Todo lo que hagas con SQL en la pestaña <strong>SQL</strong>, phpMyAdmin también lo tiene en botones: es la misma operación.
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">En SQL, cada comando termina en <code>;</code></div>
+  Igual que el <code>;</code> de PHP al final de cada línea. Es el punto final de la instrucción.
+</div>
+
+<h2 id="s4">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+  4. CREATE TABLE: la tabla es el array con tipos
+</h2>
+
+<p><code>CREATE TABLE</code> arma la <strong>estructura</strong>: dice qué columnas tiene la tabla y de qué tipo es cada una. Comparalo con el array: las mismas claves, ahora con su tipo.</p>
+
+<pre><code>USE cartelera;   -- trabajar dentro de la base 'cartelera'
+
+CREATE TABLE peliculas (
+    id      INT AUTO_INCREMENT PRIMARY KEY,   -- clave primaria autonumerada
+    titulo  VARCHAR(100) NOT NULL,            -- texto obligatorio (NOT NULL)
+    anio    INT,
+    genero  VARCHAR(50),
+    imagen  VARCHAR(255)
+);</code></pre>
+
+<ul>
+  <li>Cada línea es una <strong>columna</strong>: <code>nombre  TIPO</code>.</li>
+  <li><code>PRIMARY KEY</code> marca la columna identificadora; <code>AUTO_INCREMENT</code> hace que la base ponga el número sola.</li>
+  <li><code>NOT NULL</code> = esa columna no puede quedar vacía (una película sin título no tiene sentido).</li>
+</ul>
+
+<p><strong>Anatomía de una columna</strong> (leé el <code>CREATE TABLE</code> despacio):</p>
+
+<pre><code>    titulo    VARCHAR(100)    NOT NULL
+      │            │             │
+      │            │             └── restricción: no puede quedar vacía
+      │            └── tipo de dato: texto de hasta 100 caracteres
+      └── nombre de la columna
+
+    id    INT    AUTO_INCREMENT    PRIMARY KEY
+     │     │           │                │
+     │     │           │                └── es la que identifica cada fila
+     │     │           └── la base la numera sola: 1, 2, 3...
+     │     └── tipo: número entero
+     └── nombre de la columna</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">Array vs tabla, lado a lado</div>
+  <code>'titulo' =&gt; 'Matrix'</code> (clave =&gt; valor, en PHP) se vuelve la columna <code>titulo VARCHAR(100)</code> (nombre + tipo, en SQL). La estructura es la misma; la tabla, además, le pone tipo a cada campo.
+</div>
+
+<h2 id="s5">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  5. INSERT: cada película es una fila
+</h2>
+
+<p>La tabla ya existe pero está vacía. <code>INSERT</code> agrega <strong>filas</strong>: cada película que era un array pasa a ser una fila.</p>
+
+<pre><code>INSERT INTO peliculas (titulo, anio, genero, imagen) VALUES
+    ('Matrix', 1999, 'Ciencia ficción', 'https://picsum.photos/seed/matrix/400/300'),
+    ('Coco',   2017, 'Animación',       'https://picsum.photos/seed/coco/400/300'),
+    ('Duna',   2021, 'Ciencia ficción', 'https://picsum.photos/seed/duna/400/300');</code></pre>
+
+<ul>
+  <li>Primero se nombran las <strong>columnas</strong> que vas a llenar; después, los <strong>valores</strong> en el mismo orden.</li>
+  <li>El texto va <strong>entre comillas simples</strong> (<code>'Matrix'</code>); los números, <strong>sin comillas</strong> (<code>1999</code>). Igual que en PHP.</li>
+  <li><strong>No escribimos el <code>id</code>:</strong> lo pone la base sola (1, 2, 3…) gracias a <code>AUTO_INCREMENT</code>.</li>
+</ul>
+
+<p><strong>Así queda la tabla</strong> después de esos <code>INSERT</code> (fijate cómo la columna <code>id</code> se llenó sola):</p>
+
+<table>
+  <tr><th>id</th><th>titulo</th><th>anio</th><th>genero</th></tr>
+  <tr><td>1</td><td>Matrix</td><td>1999</td><td>Ciencia ficción</td></tr>
+  <tr><td>2</td><td>Coco</td><td>2017</td><td>Animación</td></tr>
+  <tr><td>3</td><td>Duna</td><td>2021</td><td>Ciencia ficción</td></tr>
+</table>
+
+<p class="drag-help" style="margin-top:4px">Cada fila es lo que antes era un array. La columna <code>id</code> apareció sola: vos cargaste solo <code>titulo</code>, <code>anio</code>, <code>genero</code> e <code>imagen</code>.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">verdadero o falso</p>
+  <div class="quiz-q" data-correct="f" data-explanation="Falso. El id es AUTO_INCREMENT: lo pone la base sola. Si lo escribís no hace falta, y por eso en el INSERT solo cargamos titulo, anio, genero e imagen.">
+    <p>En cada <code>INSERT</code> hay que escribir a mano el <code>id</code> de la película (1, 2, 3…), si no la fila no se guarda.</p>
+    <button type="button" class="quiz-opt" data-opt="v">Verdadero</button>
+    <button type="button" class="quiz-opt" data-opt="f">Falso</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<h2 id="s6">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  6. SELECT: leer la tabla (= el <code>foreach</code>)
+</h2>
+
+<p><code>SELECT</code> <strong>consulta</strong> la tabla: le pide filas. Es lo que en la Clase 4 hacía el <code>foreach</code> (recorrer todo) y el lookup (buscar una).</p>
+
+<pre><code>SELECT * FROM peliculas;                      -- TODAS las filas y columnas (= el foreach)
+SELECT titulo, anio FROM peliculas;           -- solo esas dos columnas
+SELECT * FROM peliculas WHERE genero = 'Animación';   -- solo las de ese género
+SELECT * FROM peliculas WHERE anio &gt;= 2015;    -- solo las de 2015 en adelante</code></pre>
+
+<ul>
+  <li><code>SELECT *</code> = todas las columnas; <code>SELECT titulo, anio</code> = solo esas.</li>
+  <li><code>FROM peliculas</code> = de qué tabla.</li>
+  <li><code>WHERE</code> = la <strong>condición</strong> para filtrar (como el <code>if</code>): trae solo las filas que la cumplen.</li>
+</ul>
+
+<p><strong>Anatomía de un <code>SELECT</code></strong> (las cuatro partes, siempre en este orden):</p>
+
+<pre><code>SELECT   titulo, anio   FROM   peliculas   WHERE   anio &gt;= 2015 ;
+  │            │          │        │         │          │
+  │            │          │        │         │          └── la condición
+  │            │          │        │         └── "solo las filas que la cumplan"
+  │            │          │        └── nombre de la tabla
+  │            │          └── "de esta tabla…"
+  │            └── qué columnas quiero    ( *  = todas )
+  └── "traeme / mostrame"</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">La conexión con la Clase 4</div>
+  <code>SELECT * FROM peliculas</code> es "dame todas las películas" = el <code>foreach ($peliculas as ...)</code>. Y <code>WHERE</code> es "dame solo esta" = el lookup <code>$peliculas[$id]</code>. El mismo objetivo, ahora en la base.
+</div>
+
+<div class="code-check" data-answer="peliculas" data-hint="Es el nombre de la tabla que creaste. Va en minúscula, sin comillas.">
+  <p><strong>Probá vos:</strong> querés traer TODA la cartelera. ¿Qué va en el hueco?</p>
+  <pre><code>SELECT * FROM ______ ;</code></pre>
+  <div class="code-check-row">
+    <input type="text" class="code-check-input" placeholder="ej: nombre_de_la_tabla" aria-label="Escribí el nombre de la tabla" autocomplete="off" spellcheck="false">
+    <button type="button" class="btn code-check-btn">Comprobar</button>
+  </div>
+  <div class="code-check-feedback" role="status" aria-live="polite"></div>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">¿qué trae esta consulta?</p>
+  <pre><code>SELECT titulo FROM peliculas WHERE anio &gt;= 2019;</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="Pide la columna titulo (solo esa) de las filas con anio &gt;= 2019. De la cartelera de ejemplo, Parásitos (2019) y Duna (2021).">
+    <p>Sobre la cartelera de ejemplo (Matrix 1999, Coco 2017, Intensamente 2015, Parásitos 2019, Duna 2021):</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Todas las columnas de todas las películas</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) El título de todas las películas</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) El título de Parásitos y Duna</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<h2 id="s7">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  7. Errores frecuentes
+</h2>
+
+<table>
+  <tr><th>Síntoma</th><th>Causa y solución</th></tr>
+  <tr><td>"You have an error in your SQL syntax"</td><td>Casi siempre falta el <code>;</code> al final, una coma entre columnas, o un paréntesis sin cerrar. Leé la línea que marca el error.</td></tr>
+  <tr><td>El texto no se guarda / da error</td><td>El texto va entre <strong>comillas simples</strong> (<code>'Matrix'</code>). Sin comillas, MySQL lo toma como un nombre de columna.</td></tr>
+  <tr><td><code>Unknown database 'cartelera'</code></td><td>No creaste la base todavía, o te olvidaste el <code>USE cartelera;</code> antes de las consultas.</td></tr>
+  <tr><td><code>Table 'peliculas' already exists</code></td><td>Ya la habías creado. Usá <code>DROP TABLE IF EXISTS peliculas;</code> antes del <code>CREATE</code> para rehacerla.</td></tr>
+  <tr><td>Las tildes/ñ salen raras</td><td>La base no está en <code>utf8mb4</code>. Recreala con ese cotejamiento.</td></tr>
+</table>
+
+<h2 id="s8">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  8. Glosario
+</h2>
+
+<table>
+  <tr><th>Término</th><th>Qué es</th></tr>
+  <tr><td>Base de datos</td><td>Lugar organizado donde viven las tablas de un sistema.</td></tr>
+  <tr><td>MySQL / MariaDB</td><td>El gestor: el programa que guarda los datos y responde consultas.</td></tr>
+  <tr><td>SQL</td><td>El idioma para hablarle a la base (<code>CREATE</code>, <code>INSERT</code>, <code>SELECT</code>…).</td></tr>
+  <tr><td>phpMyAdmin</td><td>Panel web (viene con XAMPP) para usar MySQL con el mouse.</td></tr>
+  <tr><td>Tabla</td><td>Conjunto de filas y columnas. Es la versión "de verdad" del array de arrays.</td></tr>
+  <tr><td>Fila (registro)</td><td>Una entrada de la tabla. Antes era un array asociativo.</td></tr>
+  <tr><td>Columna (campo)</td><td>Un dato con nombre y <strong>tipo</strong> (<code>titulo VARCHAR(100)</code>).</td></tr>
+  <tr><td>Tipo de dato</td><td><code>INT</code> (número entero), <code>VARCHAR(n)</code> (texto), etc.</td></tr>
+  <tr><td>Clave primaria (PK)</td><td>Columna que identifica cada fila sin repetirse (el <code>id</code>).</td></tr>
+  <tr><td><code>AUTO_INCREMENT</code></td><td>La base numera esa columna sola (1, 2, 3…).</td></tr>
+  <tr><td><code>WHERE</code></td><td>Condición para filtrar filas en un <code>SELECT</code> (como un <code>if</code>).</td></tr>
+</table>
+
+<h2 id="quiz">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Práctica
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p class="quiz-intro">Ejercicios para repasar los conceptos de la clase y analizar SQL. Leé con atención y resolvé en base a lo abordado.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">leé el CREATE</p>
+  <pre><code>CREATE TABLE alumnos (
+    id     INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    edad   INT
+);</code></pre>
+  <div class="quiz-q" data-correct="b" data-explanation="La clave primaria es id: es la columna que identifica cada fila y se autonumera. nombre y edad son datos comunes.">
+    <p><strong>1.</strong> ¿Cuál es la clave primaria de esta tabla?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) nombre</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) id</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) No tiene</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="El texto va entre comillas simples y los números sin comillas: ('Matrix', 1999). La opción c respeta eso.">
+    <p><strong>2.</strong> ¿Cuál <code>INSERT</code> está bien escrito?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) <code>INSERT INTO peliculas VALUES (Matrix, "1999");</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) <code>INSERT INTO peliculas VALUES ("Matrix", '1999');</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) <code>INSERT INTO peliculas (titulo, anio) VALUES ('Matrix', 1999);</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="SELECT * FROM trae todas las filas y columnas. Es el equivalente del foreach de la Clase 4.">
+    <p><strong>3.</strong> ¿Qué consulta trae <strong>toda</strong> la cartelera?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) <code>SELECT * FROM peliculas;</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) <code>GET ALL peliculas;</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) <code>SHOW peliculas;</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="WHERE filtra: trae solo las filas que cumplen la condición. Sin WHERE, el SELECT trae todas.">
+    <p><strong>4.</strong> ¿Para qué sirve <code>WHERE</code> en un <code>SELECT</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Para ordenar las filas alfabéticamente</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Para filtrar: traer solo las filas que cumplen una condición</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Para crear una columna nueva</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="Una fila del array de arrays (un registro) se corresponde con una fila de la tabla. Las claves del array son las columnas.">
+    <p><strong>5.</strong> En el puente Clase 4 → Clase 5, ¿a qué corresponde <strong>una película</strong> (un array asociativo)?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) A una base de datos</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) A una columna</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) A una fila de la tabla</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score"></p>
+  <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
+</div>
+
+<h2 id="s9">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  Próximos pasos
+</h2>
+
+<p>Ya tenés tu primera tabla con datos reales y sabés consultarla. Lo que viene:</p>
+
+<ul>
+  <li><strong>Más SQL:</strong> cambiar filas (<code>UPDATE</code>), borrarlas (<code>DELETE</code>) y ordenar resultados (<code>ORDER BY</code>).</li>
+  <li><strong>Segunda entidad y relaciones:</strong> tu proyecto seguro tiene otra cosa relacionada (una película tiene un <em>director</em>; un turno, un <em>paciente</em>). La próxima clase conectamos dos tablas (claves foráneas, diagrama entidad-relación).</li>
+  <li><strong>Más adelante:</strong> conectar <strong>PHP con MySQL</strong> para que la cartelera lea la tabla sola (el CRUD). Ahí aparece la contraseña de la base y aprendemos qué archivos <strong>no</strong> subir a GitHub.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Para pensar (tarea de cierre)</div>
+  Elegí <strong>una entidad de tu proyecto</strong> (usuarios, productos, turnos…) y anotá qué <strong>columnas</strong> tendría y de qué <strong>tipo</strong> sería cada una (¿número o texto?). Después pensá una <strong>segunda entidad relacionada</strong>: ¿cómo se conectan? Eso lo usamos la próxima.
+</div>
+
+<p><strong>Documentación y práctica</strong> para tener a mano:</p>
+<ul>
+  <li>MySQL — <a href="https://dev.mysql.com/doc/" target="_blank" rel="noopener noreferrer">documentación oficial</a></li>
+  <li><code>SELECT</code>, <code>INSERT</code>, <code>CREATE TABLE</code> — <a href="https://www.w3schools.com/sql/" target="_blank" rel="noopener noreferrer">W3Schools SQL</a></li>
+  <li>Ejercicios interactivos — <a href="https://sqlbolt.com/" target="_blank" rel="noopener noreferrer">SQLBolt</a></li>
+</ul>
+
+<p>Material de esta clase y las anteriores:</p>
+<p class="mat-links">
+  <a href="clase-05-tp.html"><strong>→ TP de Clase 5</strong></a> ·
+  <a href="../clase_4/clase-04-teoria.html"><strong>Teoría de Clase 4</strong></a> ·
+  <a href="../repaso-fundamentos/"><strong>Repaso de fundamentos</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+<script>
+/* Clasificar: arrastre (mouse+touch) y, además, tap/teclado para colocar. Accesible. */
+(function () {
+  var activities = Array.prototype.slice.call(document.querySelectorAll('.drag-activity'));
+  if (!activities.length) return;
+  activities.forEach(function (act) {
+  var pool  = act.querySelector('.drag-pool');
+  var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
+  var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
+  var selected = null, dragging = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var THRESH = 6;
+  var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
+
+  function save() {
+    try {
+      var st = {};
+      chips.forEach(function (c) { var z = c.closest('.drop-zone'); st[c.getAttribute('data-id')] = z ? z.getAttribute('data-zone') : 'pool'; });
+      localStorage.setItem(KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+  function restore() {
+    try {
+      var st = JSON.parse(localStorage.getItem(KEY) || '{}');
+      chips.forEach(function (c) {
+        var zoneName = st[c.getAttribute('data-id')];
+        if (!zoneName || zoneName === 'pool') return;
+        var z = zones.filter(function (zz) { return zz.getAttribute('data-zone') === zoneName; })[0];
+        if (z) z.querySelector('.zone-items').appendChild(c);
+      });
+    } catch (e) {}
+  }
+
+  function place(chip, zone) {
+    var dest = (zone && zone !== pool) ? zone.querySelector('.zone-items') : pool;
+    dest.appendChild(chip);
+    chip.classList.remove('ok', 'bad');
+    var m = chip.querySelector('.dz-mark'); if (m) m.textContent = '';
+    var w = chip.querySelector('.dz-why'); if (w) w.remove();
+    save();
+  }
+  function clearSel() { if (selected) selected.classList.remove('selected'); selected = null; act.classList.remove('has-selection'); }
+  function selectChip(chip) {
+    if (selected === chip) { clearSel(); return; }
+    clearSel(); selected = chip; chip.classList.add('selected'); act.classList.add('has-selection');
+  }
+  function zoneUnder(x, y) {
+    if (dragging) dragging.style.visibility = 'hidden';
+    var el = document.elementFromPoint(x, y);
+    if (dragging) dragging.style.visibility = '';
+    if (!el) return null;
+    return el.closest('.drop-zone') || (el.closest('.drag-pool') ? pool : null);
+  }
+  function endDrag(chip) {
+    chip.classList.remove('dragging');
+    chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    zones.forEach(function (zz) { zz.classList.remove('over'); });
+    dragging = null;
+  }
+
+  /* En lugar de setPointerCapture (que causa problemas en táctil
+     al combinarlo con position:fixed), usamos listeners a nivel
+     document que se agregan al empezar el arrastre y se quitan
+     al soltar. Así el chip sigue al dedo/mouse en cualquier
+     dispositivo sin "escaparse". */
+  function onPointerMove(e) {
+    if (!moved && (Math.abs(e.clientX - sx) > THRESH || Math.abs(e.clientY - sy) > THRESH)) {
+      moved = true; dragging = chips.filter(function (c) { return c === e.target || c.contains(e.target); })[0];
+      if (!dragging) return;
+      var r = dragging.getBoundingClientRect();
+      ox = sx - r.left; oy = sy - r.top;
+      dragging.style.width = r.width + 'px'; dragging.style.position = 'fixed'; dragging.style.zIndex = '9999';
+      dragging.classList.add('dragging'); clearSel();
+    }
+    if (dragging) {
+      dragging.style.left = (e.clientX - ox) + 'px';
+      dragging.style.top  = (e.clientY - oy) + 'px';
+      var z = zoneUnder(e.clientX, e.clientY);
+      zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+    }
+  }
+  function onPointerUp(e) {
+    if (dragging) { var z = zoneUnder(e.clientX, e.clientY); endDrag(dragging); place(dragging, z); }
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('pointerdown', function (e) {
+      sx = e.clientX; sy = e.clientY; moved = false; dragging = null;
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    });
+    chip.addEventListener('pointercancel', function () {
+      if (dragging) endDrag(dragging);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+    });
+    chip.addEventListener('click', function (e) {
+      if (!moved) { e.stopPropagation(); selectChip(chip); }
+    });
+    chip.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectChip(chip); }
+    });
+  });
+
+  zones.concat([pool]).forEach(function (zone) {
+    zone.addEventListener('click', function (e) {
+      if (selected && !dragging) {
+        if (e.target.closest('.drag-chip')) return;
+        var s = selected; place(s, zone); clearSel(); s.focus();
+      }
+    });
+    if (zone !== pool) zone.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && selected) { e.preventDefault(); var s = selected; place(s, zone); clearSel(); s.focus(); }
+    });
+  });
+
+  var btn = act.querySelector('.drag-check');
+  var fb  = act.querySelector('.drag-feedback');
+  btn.addEventListener('click', function () {
+    var ok = 0;
+    chips.forEach(function (chip) {
+      var z = chip.closest('.drop-zone');
+      var good = z && z.getAttribute('data-zone') === chip.getAttribute('data-target');
+      chip.classList.toggle('ok', !!good);
+      chip.classList.toggle('bad', !good);
+      var m = chip.querySelector('.dz-mark'); if (m) m.textContent = good ? '✓ ' : '✗ ';
+      var targetZone = zones.filter(function (zz) { return zz.getAttribute('data-zone') === chip.getAttribute('data-target'); })[0];
+      var zoneName = targetZone ? targetZone.querySelector('h4').textContent : chip.getAttribute('data-target');
+      var why = chip.querySelector('.dz-why');
+      if (!why) { why = document.createElement('span'); why.className = 'dz-why'; chip.appendChild(why); }
+      why.textContent = good ? chip.getAttribute('data-why') : 'Va en ' + zoneName + '. ' + chip.getAttribute('data-why');
+      if (good) ok++;
+    });
+    var all = ok === chips.length;
+    fb.textContent = all
+      ? '¡Perfecto! ' + ok + '/' + chips.length + ' bien ubicadas.'
+      : ok + '/' + chips.length + ' bien. Revisá las marcadas con ✗ y volvé a moverlas.';
+    fb.className = 'drag-feedback ' + (all ? 'all-ok' : 'partial');
+  });
+
+  var resetBtn = act.querySelector('.drag-reset');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    clearSel();
+    chips.forEach(function (c) {
+      pool.appendChild(c);
+      c.classList.remove('ok', 'bad', 'selected');
+      var m = c.querySelector('.dz-mark'); if (m) m.textContent = '';
+      var w = c.querySelector('.dz-why'); if (w) w.remove();
+    });
+    fb.textContent = ''; fb.className = 'drag-feedback';
+    try { localStorage.removeItem(KEY); } catch (e) {}
+  });
+
+  restore();
+  });
+})();
+</script>
+
+</body>
+</html>
