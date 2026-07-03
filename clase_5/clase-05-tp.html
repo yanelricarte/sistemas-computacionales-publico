@@ -163,6 +163,89 @@ git push</code></pre>
   <li><strong>Si tu tabla tiene una fecha</strong> (<code>DATE</code>): traé las posteriores a una fecha (<code>WHERE fecha_estreno &gt;= '2015-01-01'</code>). <strong>Si tiene un sí/no</strong> (<code>BOOLEAN</code>): traé solo las que están en verdadero (<code>WHERE en_cartel = true</code>).</li>
 </ol>
 
+<h3>Parte 8 — Cargar 18 películas y filtrar de verdad</h3>
+
+<p>Esta parte es obligatoria. No alcanza con 4 filas para aprender a filtrar — necesitás un conjunto de datos que tenga varios géneros, décadas distintas y combinaciones que no sean obvias. Acá el objetivo es aprender a preguntarle bien a la base.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">¿Por qué 18 películas?</div>
+  Con 3 o 4 filas cualquier filtro da lo mismo. Con 18 tenés que <strong>pensar bien la condición</strong> porque hay resultados que no se ven a simple vista. Además, al escribir 18 registros practicás INSERT de verdad — con errores, con repetición, con atención a los detalles.
+</div>
+
+<div class="checkpoint" style="margin-top:20px">
+  <p class="checkpoint-title">Paso 1 — Cargar los datos</p>
+  <p>Eliminá las películas que cargaste antes con <code>DELETE FROM peliculas;</code> (esto vacía la tabla, dejando la estructura intacta). Después insertá estas 18 películas:</p>
+
+  <table>
+    <tr><th>Título</th><th>Año</th><th>Género</th></tr>
+    <tr><td>Matrix</td><td>1999</td><td>Ciencia ficción</td></tr>
+    <tr><td>Coco</td><td>2017</td><td>Animación</td></tr>
+    <tr><td>Duna</td><td>2021</td><td>Ciencia ficción</td></tr>
+    <tr><td>Intensamente</td><td>2015</td><td>Animación</td></tr>
+    <tr><td>Parásitos</td><td>2019</td><td>Drama</td></tr>
+    <tr><td>El viaje de Chihiro</td><td>2001</td><td>Animación</td></tr>
+    <tr><td>Interestelar</td><td>2014</td><td>Ciencia ficción</td></tr>
+    <tr><td>El Padrino</td><td>1972</td><td>Drama</td></tr>
+    <tr><td>Todo en todas partes al mismo tiempo</td><td>2022</td><td>Ciencia ficción</td></tr>
+    <tr><td>Mi villano favorito</td><td>2010</td><td>Animación</td></tr>
+    <tr><td>La La Land</td><td>2016</td><td>Musical</td></tr>
+    <tr><td>El discurso del rey</td><td>2010</td><td>Drama</td></tr>
+    <tr><td>Volver al futuro</td><td>1985</td><td>Ciencia ficción</td></tr>
+    <tr><td>Spider-Man: Into the Spider-Verse</td><td>2018</td><td>Animación</td></tr>
+    <tr><td>Whiplash</td><td>2014</td><td>Drama</td></tr>
+    <tr><td>Pulp Fiction</td><td>1994</td><td>Drama</td></tr>
+    <tr><td>Alien</td><td>1979</td><td>Ciencia ficción</td></tr>
+    <tr><td>Buscando a Nemo</td><td>2003</td><td>Animación</td></tr>
+  </table>
+
+  <p>Escribí los <code>INSERT</code> necesarios para cargarlas todas. No vale un solo comando con 18 filas de una — partilo en <strong>3 o 4 comandos</strong> (así si un comando falla, no perdés todo). La columna <code>imagen</code> puede ir vacía o con cualquier valor.</p>
+
+  <details class="hint-box">
+    <summary>💡 Ayuda: estructura del INSERT</summary>
+    <pre><code>INSERT INTO peliculas (titulo, anio, genero, imagen) VALUES
+('Matrix', 1999, 'Ciencia ficción', ''),
+('Coco',   2017, 'Animación',       ''),
+...    -- hasta 5 o 6 filas por comando
+;</code></pre>
+    <p>Después de cargar, verificá con <code>SELECT COUNT(*) FROM peliculas;</code> — tiene que dar 18. Si da menos, revisá qué INSERT falló y corregí antes de seguir.</p>
+  </details>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">Paso 2 — Consultas que exigen pensar</p>
+  <p>Escribí la consulta SQL que resuelve cada punto sin copiar y pegar de otro lado. Tenés que elegir las columnas, armar las condiciones y escribir los operadores vos mismo. Corré cada consulta en la pestaña SQL de phpMyAdmin y fijate si el resultado tiene sentido con los datos que cargaste.</p>
+  <p><strong>Formato de respuesta:</strong> escribí la consulta SQL completa y al lado anotá cuántas filas devuelve.</p>
+
+  <ol>
+    <li><strong>a)</strong> Traé título y año de las películas que sean <strong>de ciencia ficción Y anteriores al año 2000</strong>. Tenés que combinar dos condiciones con <code>AND</code>. ¿Cuántas películas cumplen las dos?</li>
+    <li><strong>b)</strong> Traé título y género de las películas estrenadas <strong>entre 2010 y 2020 inclusive</strong>. Hay dos formas distintas de escribirlo: con <code>AND</code> (dos condiciones) o con <code>BETWEEN</code>. Escribí una de las dos y decí cuántas filas devuelve.</li>
+    <li><strong>c)</strong> Traé todas las columnas (<code>SELECT *</code>) de las películas que sean <strong>de Drama o de Musical</strong>. Necesitás <code>OR</code>.</li>
+    <li><strong>d)</strong> Traé título y año de las películas <strong>animadas estrenadas después de 2010</strong>. Dos condiciones combinadas. ¿Cuántas devuelve? Revisá bien: no todas las animadas son después de 2010.</li>
+  </ol>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">Paso 3 — Observar y explicar</p>
+  <p>Corré las consultas y respondé. Tenés que ejecutar, mirar y pensar cada caso.</p>
+
+  <ol>
+    <li><strong>a)</strong> Corré <code>SELECT genero, COUNT(*) FROM peliculas GROUP BY genero;</code> — ¿qué género tiene más películas? ¿Cuántas? ¿Hay algún género con una sola? ¿Cuál?</li>
+    <li><strong>b)</strong> Corré <code>SELECT titulo, anio FROM peliculas WHERE anio &gt;= 2000 ORDER BY anio;</code> — ¿qué columna determina el orden? Si cambiás <code>ORDER BY anio</code> por <code>ORDER BY anio DESC</code>, ¿cómo cambia el listado?</li>
+    <li><strong>c)</strong> Un compañero te muestra esta consulta y dice que MySQL devuelve error: <code>SELECT titulo, anio FROM peliculas WHERE titulo = Volver al futuro;</code>. Los datos están bien. ¿Cuál es el error?</li>
+  </ol>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">Paso 4 — Armá tus propias consultas</p>
+  <p>Inventá y ejecutá consultas que respondan estas preguntas. Son más abiertas: no hay una sola respuesta correcta, pero el resultado tiene que coincidir con lo que esperás. Anotá cada consulta y cuántas filas devolvió.</p>
+  <ol>
+    <li><strong>a)</strong> ¿Qué películas son del siglo XX (año &lt; 2001)? ¿Cuántas son?</li>
+    <li><strong>b)</strong> ¿Hay alguna película de ciencia ficción de los 80?</li>
+    <li><strong>c)</strong> ¿Cuántas películas de animación hay en total?</li>
+    <li><strong>d)</strong> ¿Y si querés saber cuántas películas de ciencia ficción hay después del 2000? ¿Cómo harías para contarlas con una sola consulta?</li>
+  </ol>
+</div>
+
 <h2>Errores comunes</h2>
 
 <table>
