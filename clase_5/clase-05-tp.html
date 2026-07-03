@@ -149,9 +149,9 @@ git push</code></pre>
   Ese archivo es la <strong>receta</strong> de tu base: con él, cualquiera (o vos en otra máquina) recrea la tabla y los datos ejecutándolo. Es una de las entregas de esta etapa del proyecto (el <em>script de creación de la base</em>).
 </div>
 
-<h3>Parte 7 (opcional) — Si les sobra tiempo: más consultas</h3>
+<h3>Parte 7 — Más consultas sobre tu entidad</h3>
 
-<p>Para los grupos que ya terminaron. <strong>Escriban ustedes</strong> el <code>SELECT</code> de cada consigna sobre su misma tabla y anoten cuántas filas trae. No hay una única respuesta: depende de las columnas de tu entidad.</p>
+<p>Escribí <code>SELECT</code> sobre tu propia tabla (la de la entidad de tu proyecto) y anotá cuántas filas devuelve cada una. No hay una única respuesta porque depende de las columnas que tengas.</p>
 
 <ol>
   <li>Traé <strong>solo dos columnas</strong> que les interesen (ej. <code>SELECT titulo, anio FROM ...</code>).</li>
@@ -213,7 +213,7 @@ git push</code></pre>
 
 <div class="checkpoint">
   <p class="checkpoint-title">Paso 2 — Consultas que exigen pensar</p>
-  <p>Escribí la consulta SQL que resuelve cada punto sin copiar y pegar de otro lado. Tenés que elegir las columnas, armar las condiciones y escribir los operadores vos mismo. Corré cada consulta en la pestaña SQL de phpMyAdmin y fijate si el resultado tiene sentido con los datos que cargaste.</p>
+  <p>Para cada punto escribí la consulta SQL completa y ejecutala en la pestaña SQL de phpMyAdmin. Si el resultado no coincide con lo que esperabas, revisá las columnas, las condiciones y los operadores antes de pasar al siguiente.</p>
   <p><strong>Formato de respuesta:</strong> escribí la consulta SQL completa y al lado anotá cuántas filas devuelve.</p>
 
   <ol>
@@ -273,7 +273,8 @@ git push</code></pre>
     <li><input type="checkbox" id="tpc5-4"><label for="tpc5-4">Cargué <strong>mínimo 4 filas</strong> con <code>INSERT</code>, sin escribir el <code>id</code>.</label></li>
     <li><input type="checkbox" id="tpc5-5"><label for="tpc5-5">Corrí un <code>SELECT *</code>, uno de columnas puntuales y uno con <code>WHERE</code>.</label></li>
     <li><input type="checkbox" id="tpc5-6"><label for="tpc5-6">Exporté el script <code>.sql</code> y lo subí al repo con un commit nuevo.</label></li>
-    <li><input type="checkbox" id="tpc5-7"><label for="tpc5-7"><em>(Opcional)</em> Resolví consultas de la <strong>Parte 7</strong> y dejé el registro de cada una.</label></li>
+    <li><input type="checkbox" id="tpc5-7"><label for="tpc5-7">Resolví las consultas de la <strong>Parte 7</strong> y anoté los resultados.</label></li>
+    <li><input type="checkbox" id="tpc5-8"><label for="tpc5-8">Completé la <strong>Parte 8</strong>: cargué 18 películas, escribí las consultas con filtros y respondí las preguntas.</label></li>
   </ul>
 </div>
 
