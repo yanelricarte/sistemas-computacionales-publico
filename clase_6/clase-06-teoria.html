@@ -7,58 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/estilos.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-<style>
-  .ceval-q { margin: 1.2rem 0; padding: 1rem 1.1rem; border: 1px solid var(--border, #d0d0d8); border-radius: 10px; }
-  .ceval-prompt { margin: 0 0 .7rem; }
-  .ceval-opts { display: flex; flex-direction: column; gap: .45rem; }
-  .ceval-opt { text-align: left; padding: .55rem .8rem; border: 1px solid var(--border, #d0d0d8); border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
-  .ceval-opt:hover:not(:disabled) { border-color: var(--accent, #4b5bd6); }
-  .ceval-opt.correct { border-color: var(--ok, #1a9e5e); background: color-mix(in srgb, var(--ok, #1a9e5e) 14%, transparent); font-weight: 600; }
-  .ceval-opt.wrong { border-color: var(--warm, #d1662b); opacity: .65; text-decoration: line-through; }
-  .ceval-feedback { margin: .6rem 0 0; min-height: 1.2em; font-size: .95em; }
-  .doc-lens { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; margin: 1.2rem 0; }
-  .doc-lens .lens { display: flex; flex-direction: column; border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 12px; padding: 1rem 1.05rem 1.05rem; background: var(--surface); }
-  .doc-lens .lens .n { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; font-size: .85rem; margin-bottom: .55rem; }
-  .doc-lens .lens h4 { margin: 0 0 .35rem; font-size: 1em; line-height: 1.25; }
-  .doc-lens .lens p { margin: 0; font-size: .92em; }
-  .doc-lens .lens .secc { align-self: flex-start; margin-top: auto; padding: .14rem .55rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-size: .74em; font-weight: 600; }
-  .doc-lens .lens p + .secc { margin-top: .7rem; }
-  .md-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; align-items: stretch; }
-  .md-demo .md-label { font-size: .78em; text-transform: uppercase; letter-spacing: .04em; opacity: .7; margin-bottom: .3rem; }
-  .md-rendered { border: 1px solid var(--border); border-radius: 12px; padding: .2rem 1rem 1rem; background: var(--surface); }
-  .md-rendered h4 { margin: .8rem 0 .3rem; }
-  .md-rendered h5 { margin: .7rem 0 .3rem; font-size: 1em; }
-  .cm { margin: 1.2rem 0; }
-  .cm-lbl { font-size: .78em; text-transform: uppercase; letter-spacing: .04em; opacity: .7; margin: .8rem 0 .35rem; }
-  .cm-pool { display: flex; flex-wrap: wrap; gap: .5rem; padding: .8rem; border: 1px dashed var(--border); border-radius: 12px; background: var(--surface); min-height: 2.6rem; }
-  .cm-chip { display: inline-block; padding: .4rem .75rem; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-size: .88em; font-weight: 600; cursor: grab; user-select: none; touch-action: none; }
-  .cm-chip.dragging { opacity: .35; }
-  .cm-chip.sel { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .cm-drag-clone { position: fixed; z-index: 9999; padding: .4rem .75rem; border-radius: 999px; background: var(--accent); color: #fff; font-size: .88em; font-weight: 600; pointer-events: none; box-shadow: 0 6px 16px rgba(0,0,0,.22); }
-  .cm-map { display: flex; flex-direction: column; gap: 0; }
-  .cm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .cm-slot { min-height: 3rem; border: 2px dashed var(--border); border-radius: 12px; padding: .5rem; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface); }
-  .cm-slot.over { border-color: var(--accent); background: var(--accent-soft); }
-  .cm-slot.filled { border-style: solid; border-color: var(--accent); }
-  .cm-slot.ok { border-style: solid; border-color: var(--ok); }
-  .cm-slot.bad { border-style: solid; border-color: var(--warm); }
-  .cm-hint { font-size: .8em; opacity: .55; }
-  .cm-link { text-align: center; opacity: .8; font-size: .9em; padding: .35rem 0; }
-  .cm-fixed { border: 2px solid var(--accent); border-radius: 12px; padding: .7rem 1rem; text-align: center; font-weight: 700; background: var(--surface); margin-bottom: .3rem; }
-  .cm-branch { border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 12px; padding: .55rem .9rem .9rem; margin: .7rem 0; background: var(--surface); }
-  .cm-blabel { font-weight: 600; opacity: .88; margin: .2rem 0 .6rem; }
-  .cm-sub { margin: .3rem 0 .2rem; padding-left: .3rem; }
-  .cm-sublabel { font-size: .9em; opacity: .82; margin: .55rem 0 .3rem; }
-  .cm-row.c3 { grid-template-columns: 1fr 1fr 1fr; }
-  .cm-chip .crud, .cm-hint .crud { font-size: .82em; opacity: .8; }
-  .cm-note { font-size: .85em; opacity: .72; margin-top: .7rem; }
-  .cm-actions { display: flex; gap: .6rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
-  .cm-actions button { padding: .45rem .95rem; border: 1px solid var(--accent); border-radius: 8px; background: transparent; color: var(--accent-dark); font: inherit; cursor: pointer; }
-  .cm-actions button:hover { background: var(--accent-soft); }
-  #cmMsg { font-size: .95em; }
-  .cm-count { font-size: .85em; opacity: .72; }
-  @media (max-width: 640px) { .doc-lens, .md-demo, .cm-row, .cm-row.c3 { grid-template-columns: 1fr; } }
-</style>
+<link rel="stylesheet" href="../css/clase-06-teoria.css">
 </head>
 <body>
 
@@ -87,19 +36,19 @@
 
 <h2 id="s1">El sistema construido en las Clases 1 a 5</h2>
 
-<p>Un <strong>sistema informático</strong> recibe datos, los procesa y devuelve un resultado, trabajando sobre información que queda guardada. El que venís construyendo es un <strong>sistema web</strong>: el usuario interactúa desde el navegador —el <strong>cliente</strong>— y un programa en PHP responde desde el <strong>servidor</strong>.</p>
+<p>Un <strong>sistema informático</strong> recibe datos, los procesa y devuelve un resultado, trabajando sobre información que queda guardada. El sistema en el que venís trabajando funciona en la web: el usuario interactúa desde el navegador —el <strong>cliente</strong>— y un programa en PHP responde desde el <strong>servidor</strong>.</p>
 
-<p>Ese sistema se fue levantando de manera incremental, una capa sobre otra. En la <strong>Clase 2</strong> apareció la puerta de entrada, el login, y con ella la sesión y la protección de las páginas internas, además de la cabecera y el pie que se reutilizan en todo el sitio. La <strong>Clase 3</strong> agregó la navegación entre secciones y el control de versiones con Git, de modo que el proyecto quedara guardado y con historial. En la <strong>Clase 4</strong> los datos ganaron un lugar propio: se mudaron a <code>datos.php</code>, y desde ahí la cartelera se arma sola al recorrerlos con <code>foreach</code>, mientras la ficha localiza un elemento buscándolo por su clave. La <strong>Clase 5</strong>, por último, llevó esa información a una base de datos real en MySQL, con su tabla, sus tipos de dato y sus consultas.</p>
+<p>Ese sistema lo fuimos construyendo de manera progresiva, clase a clase: cada una sumó una capa sobre la anterior. En la <strong>Clase 2</strong> apareció la puerta de entrada, el login, y con ella la sesión y la protección de las páginas internas, además de la cabecera y el pie que se reutilizan en todo el sitio. La <strong>Clase 3</strong> agregó la navegación entre secciones y el control de versiones con Git, de modo que el proyecto quedara guardado y con historial. En la <strong>Clase 4</strong> los datos ganaron un lugar propio: se mudaron a <code>datos.php</code>, y desde ahí la cartelera se arma sola al recorrerlos con <code>foreach</code>, mientras la ficha localiza un elemento buscándolo por su clave. La <strong>Clase 5</strong>, por último, llevó esa información a una base de datos real en MySQL, con su tabla, sus tipos de dato y sus consultas.</p>
 
 <p>Lo que enhebra todo el recorrido es que cada paso <strong>reutiliza y ordena</strong> lo anterior: la protección se apoya en la sesión del login, la cartelera vive de los datos de <code>datos.php</code>, y la tabla de MySQL estructura la misma información que ya guardaba el array. Mirarlo así —como un solo sistema que fue creciendo— es justamente el trabajo de esta clase. El siguiente cuadro resume qué aportó cada una:</p>
 
 <table>
-  <tr><th>Clase</th><th>Qué se agregó</th><th>Concepto</th></tr>
-  <tr><td><strong>1</strong></td><td>Entorno de trabajo y primer PHP.</td><td>Qué es un sistema; flujo del dato cliente ↔ servidor.</td></tr>
-  <tr><td><strong>2</strong></td><td>Login, sesión, protección de páginas e <code>include</code> de cabecera/pie.</td><td>Autenticación y sesión; reutilizar partes comunes.</td></tr>
-  <tr><td><strong>3</strong></td><td>Navegación con <code>switch</code> y control de versiones con Git.</td><td>Decidir según un valor; versionar el proyecto.</td></tr>
-  <tr><td><strong>4</strong></td><td>Datos en <code>datos.php</code> (arrays), cartelera con <code>foreach</code> y ficha con lookup.</td><td>Array asociativo como registro; recorrer datos; buscar por clave.</td></tr>
-  <tr><td><strong>5</strong></td><td>Tabla en MySQL (<code>CREATE</code>, <code>INSERT</code>, <code>SELECT</code>).</td><td>Base de datos; tipos de dato; clave primaria; consultas.</td></tr>
+  <tr><th>Clase</th><th>Lo que se agregó</th><th>Concepto</th></tr>
+  <tr><td><strong>1</strong></td><td>Entorno de trabajo y primer PHP.</td><td>La noción de sistema y el flujo del dato entre cliente y servidor.</td></tr>
+  <tr><td><strong>2</strong></td><td>Login, sesión, protección de páginas e <code>include</code> de cabecera/pie.</td><td>La autenticación con sesión y la reutilización de partes comunes.</td></tr>
+  <tr><td><strong>3</strong></td><td>Navegación con <code>switch</code> y control de versiones con Git.</td><td>Las estructuras de decisión y el control de versiones.</td></tr>
+  <tr><td><strong>4</strong></td><td>Datos en <code>datos.php</code> (arrays), cartelera con <code>foreach</code> y ficha con lookup.</td><td>El array asociativo como registro, y cómo recorrerlo y buscar en él.</td></tr>
+  <tr><td><strong>5</strong></td><td>Tabla en MySQL (<code>CREATE</code>, <code>INSERT</code>, <code>SELECT</code>).</td><td>La base de datos: tabla, tipos de dato y consultas.</td></tr>
 </table>
 
 <h2 id="s2">Componentes de un sistema completo</h2>
@@ -300,7 +249,7 @@ las claves          = las COLUMNAS (campos)</code></pre>
 <p>En detalle, las seis secciones:</p>
 
 <table>
-  <tr><th>Sección</th><th>Qué se escribe</th><th>Para qué</th></tr>
+  <tr><th>Sección</th><th>Lo que se escribe</th><th>Para qué sirve</th></tr>
   <tr><td><strong>1. El sistema</strong></td><td>Nombre, qué problema resuelve, quiénes lo usan.</td><td>Ubica de qué se trata y para quién.</td></tr>
   <tr><td><strong>2. Entidades y datos</strong></td><td>La entidad principal y sus campos con el tipo.</td><td>Es la base del sistema: qué guarda y con qué estructura.</td></tr>
   <tr><td><strong>3. Archivos del proyecto</strong></td><td>Una línea por archivo diciendo para qué sirve.</td><td>Indica dónde está cada cosa.</td></tr>
@@ -309,7 +258,7 @@ las claves          = las COLUMNAS (campos)</code></pre>
   <tr><td><strong>6. Próximas etapas</strong></td><td>Lo que falta hacer.</td><td>Es la hoja de ruta.</td></tr>
 </table>
 
-<h3>Markdown: cómo escribirla para que se vea bien</h3>
+<h3>La documentación en Markdown</h3>
 <p>La documentación se guarda en un archivo de texto con extensión <code>.md</code>, <strong>dentro del repositorio</strong>, para que viaje con el código y quede versionada. Ese archivo se escribe en <strong>Markdown</strong>: un formato que da estilo con símbolos sencillos y que GitHub muestra prolijo de forma automática. A la izquierda, lo que escribís; a la derecha, cómo lo muestra GitHub:</p>
 
 <div class="md-demo">
@@ -513,175 +462,7 @@ Entidad principal: pelicula
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../js/estudiantes.js"></script>
-<script>
-(function () {
-  document.querySelectorAll('#ceval .ceval-q').forEach(function (q) {
-    var correct = q.dataset.correct;
-    var hint = q.dataset.hint || '';
-    var exp = q.dataset.exp || '';
-    var fb = q.querySelector('.ceval-feedback');
-    var opts = q.querySelectorAll('.ceval-opt');
-    var tries = 0, done = false;
-    opts.forEach(function (opt) {
-      opt.addEventListener('click', function () {
-        if (done || opt.disabled) return;
-        if (opt.dataset.opt === correct) {
-          done = true;
-          opt.classList.add('correct');
-          fb.textContent = '✓ ¡Correcto! ' + exp;
-          fb.style.color = 'var(--ok, #1a9e5e)';
-          opts.forEach(function (o) { o.disabled = true; });
-        } else {
-          tries++;
-          opt.classList.add('wrong');
-          opt.disabled = true;
-          if (tries >= 3) {
-            done = true;
-            var c = q.querySelector('.ceval-opt[data-opt="' + correct + '"]');
-            if (c) c.classList.add('correct');
-            fb.textContent = '✗ Respuesta: la opción ' + correct + '. ' + exp;
-            fb.style.color = 'var(--warm, #d1662b)';
-            opts.forEach(function (o) { o.disabled = true; });
-          } else {
-            fb.textContent = 'Intento ' + tries + ' de 3. ' + (hint ? 'Pista: ' + hint : 'Probá de nuevo.');
-            fb.style.color = 'var(--warm, #d1662b)';
-          }
-        }
-      });
-    });
-  });
-})();
-</script>
-<script>
-(function () {
-  var pool = document.getElementById('cmPool');
-  var map = document.getElementById('cmMap');
-  if (!pool || !map) return;
-  var slots = Array.prototype.slice.call(map.querySelectorAll('.cm-slot'));
-  var dragEl = null, clone = null, origin = null, startX = 0, startY = 0, dragging = false, selected = null;
-
-  var countEl = document.getElementById('cmCount');
-  function refresh(slot) {
-    var chip = slot.querySelector('.cm-chip');
-    var hint = slot.querySelector('.cm-hint');
-    if (hint) hint.style.display = chip ? 'none' : '';
-    slot.classList.toggle('filled', !!chip);
-  }
-  function updateCount() {
-    var placed = map.querySelectorAll('.cm-slot .cm-chip').length;
-    if (countEl) countEl.textContent = placed + ' / ' + slots.length + ' ubicados';
-  }
-  function clearOver() { slots.forEach(function (s) { s.classList.remove('over'); }); }
-  function slotUnder(x, y) {
-    var el = document.elementFromPoint(x, y);
-    return el ? el.closest('.cm-slot') : null;
-  }
-  function select(chip) {
-    if (selected) selected.classList.remove('sel');
-    selected = chip;
-    if (chip) chip.classList.add('sel');
-  }
-  function placeInto(chip, target) {
-    var existing = target.querySelector('.cm-chip');
-    if (existing && existing !== chip) pool.appendChild(existing);
-    var from = chip.parentNode;
-    target.appendChild(chip);
-    target.classList.remove('ok', 'bad');
-    refresh(target);
-    if (from && from.classList && from.classList.contains('cm-slot')) {
-      from.classList.remove('ok', 'bad');
-      refresh(from);
-    }
-    updateCount();
-  }
-  function startDrag() {
-    dragging = true;
-    select(null);
-    dragEl.classList.add('dragging');
-    clone = dragEl.cloneNode(true);
-    clone.className = 'cm-drag-clone';
-    document.body.appendChild(clone);
-  }
-  function onDown(e) {
-    var chip = e.target.closest('.cm-chip');
-    if (!chip) return;
-    dragEl = chip; origin = chip.parentNode;
-    startX = e.clientX; startY = e.clientY; dragging = false;
-    try { chip.setPointerCapture(e.pointerId); } catch (err) {}
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
-    e.preventDefault();
-  }
-  function onMove(e) {
-    if (!dragEl) return;
-    if (!dragging) {
-      if (Math.abs(e.clientX - startX) > 6 || Math.abs(e.clientY - startY) > 6) startDrag();
-      else return;
-    }
-    clone.style.left = (e.clientX - 24) + 'px';
-    clone.style.top = (e.clientY - 46) + 'px';
-    clearOver();
-    var s = slotUnder(e.clientX, e.clientY);
-    if (s) s.classList.add('over');
-    e.preventDefault();
-  }
-  function onUp(e) {
-    document.removeEventListener('pointermove', onMove);
-    document.removeEventListener('pointerup', onUp);
-    if (dragging) {
-      var target = slotUnder(e.clientX, e.clientY);
-      if (target) placeInto(dragEl, target);
-      else {
-        var from = dragEl.parentNode;
-        pool.appendChild(dragEl);
-        if (from && from.classList && from.classList.contains('cm-slot')) { from.classList.remove('ok', 'bad'); refresh(from); }
-      }
-      dragEl.classList.remove('dragging');
-      if (clone) { clone.remove(); clone = null; }
-      clearOver();
-      updateCount();
-    } else if (dragEl) {
-      if (selected === dragEl) select(null); else select(dragEl);
-    }
-    dragEl = null; dragging = false;
-  }
-  pool.addEventListener('pointerdown', onDown);
-  map.addEventListener('pointerdown', onDown);
-  slots.forEach(function (s) {
-    s.addEventListener('click', function (e) {
-      if (e.target.closest('.cm-chip')) return;
-      if (selected) { placeInto(selected, s); select(null); }
-    });
-  });
-  pool.addEventListener('click', function (e) {
-    if (selected && !e.target.closest('.cm-chip')) { pool.appendChild(selected); select(null); updateCount(); }
-  });
-
-  var msg = document.getElementById('cmMsg');
-  document.getElementById('cmCheck').addEventListener('click', function () {
-    var ok = 0, placed = 0, total = slots.length;
-    slots.forEach(function (s) {
-      s.classList.remove('ok', 'bad');
-      var chip = s.querySelector('.cm-chip');
-      if (!chip) return;
-      placed++;
-      if (chip.dataset.c === s.dataset.a) { s.classList.add('ok'); ok++; }
-      else s.classList.add('bad');
-    });
-    if (placed < total) { msg.textContent = 'Ubicá los ' + total + ' conceptos antes de verificar (' + placed + '/' + total + ').'; msg.style.color = 'var(--warm)'; }
-    else if (ok === total) { msg.textContent = '✓ ¡Mapa correcto! ' + ok + '/' + total + '.'; msg.style.color = 'var(--ok)'; }
-    else { msg.textContent = ok + '/' + total + ' bien ubicados. Revisá los marcados en naranja y reintentá.'; msg.style.color = 'var(--warm)'; }
-  });
-  document.getElementById('cmReset').addEventListener('click', function () {
-    select(null);
-    map.querySelectorAll('.cm-chip').forEach(function (c) { pool.appendChild(c); });
-    slots.forEach(function (s) { s.classList.remove('ok', 'bad', 'over'); refresh(s); });
-    msg.textContent = '';
-    updateCount();
-  });
-  updateCount();
-})();
-</script>
+<script src="../js/clase-06-teoria.js"></script>
 
 </body>
 </html>

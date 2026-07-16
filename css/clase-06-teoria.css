@@ -1,0 +1,58 @@
+/* Estilos específicos de la Teoría de Clase 6:
+   autoevaluación conceptual (.ceval), estructura de referencia (.doc-lens),
+   demo de Markdown (.md-demo) y actividad de mapa conceptual arrastrable (.cm). */
+
+.ceval-q { margin: 1.2rem 0; padding: 1rem 1.1rem; border: 1px solid var(--border, #d0d0d8); border-radius: 10px; }
+.ceval-prompt { margin: 0 0 .7rem; }
+.ceval-opts { display: flex; flex-direction: column; gap: .45rem; }
+.ceval-opt { text-align: left; padding: .55rem .8rem; border: 1px solid var(--border, #d0d0d8); border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.ceval-opt:hover:not(:disabled) { border-color: var(--accent, #4b5bd6); }
+.ceval-opt.correct { border-color: var(--ok, #1a9e5e); background: color-mix(in srgb, var(--ok, #1a9e5e) 14%, transparent); font-weight: 600; }
+.ceval-opt.wrong { border-color: var(--warm, #d1662b); opacity: .65; text-decoration: line-through; }
+.ceval-feedback { margin: .6rem 0 0; min-height: 1.2em; font-size: .95em; }
+
+.doc-lens { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; margin: 1.2rem 0; }
+.doc-lens .lens { display: flex; flex-direction: column; border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 12px; padding: 1rem 1.05rem 1.05rem; background: var(--surface); }
+.doc-lens .lens .n { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; font-size: .85rem; margin-bottom: .55rem; }
+.doc-lens .lens h4 { margin: 0 0 .35rem; font-size: 1em; line-height: 1.25; }
+.doc-lens .lens p { margin: 0; font-size: .92em; }
+.doc-lens .lens .secc { align-self: flex-start; margin-top: auto; padding: .14rem .55rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-size: .74em; font-weight: 600; }
+.doc-lens .lens p + .secc { margin-top: .7rem; }
+
+.md-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; align-items: stretch; }
+.md-demo .md-label { font-size: .78em; text-transform: uppercase; letter-spacing: .04em; opacity: .7; margin-bottom: .3rem; }
+.md-rendered { border: 1px solid var(--border); border-radius: 12px; padding: .2rem 1rem 1rem; background: var(--surface); }
+.md-rendered h4 { margin: .8rem 0 .3rem; }
+.md-rendered h5 { margin: .7rem 0 .3rem; font-size: 1em; }
+
+.cm { margin: 1.2rem 0; }
+.cm-lbl { font-size: .78em; text-transform: uppercase; letter-spacing: .04em; opacity: .7; margin: .8rem 0 .35rem; }
+.cm-pool { display: flex; flex-wrap: wrap; gap: .5rem; padding: .8rem; border: 1px dashed var(--border); border-radius: 12px; background: var(--surface); min-height: 2.6rem; }
+.cm-chip { display: inline-block; padding: .4rem .75rem; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-size: .88em; font-weight: 600; cursor: grab; user-select: none; touch-action: none; }
+.cm-chip.dragging { opacity: .35; }
+.cm-chip.sel { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cm-drag-clone { position: fixed; z-index: 9999; padding: .4rem .75rem; border-radius: 999px; background: var(--accent); color: #fff; font-size: .88em; font-weight: 600; pointer-events: none; box-shadow: 0 6px 16px rgba(0,0,0,.22); }
+.cm-map { display: flex; flex-direction: column; gap: 0; }
+.cm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.cm-slot { min-height: 3rem; border: 2px dashed var(--border); border-radius: 12px; padding: .5rem; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface); }
+.cm-slot.over { border-color: var(--accent); background: var(--accent-soft); }
+.cm-slot.filled { border-style: solid; border-color: var(--accent); }
+.cm-slot.ok { border-style: solid; border-color: var(--ok); }
+.cm-slot.bad { border-style: solid; border-color: var(--warm); }
+.cm-hint { font-size: .8em; opacity: .55; }
+.cm-link { text-align: center; opacity: .8; font-size: .9em; padding: .35rem 0; }
+.cm-fixed { border: 2px solid var(--accent); border-radius: 12px; padding: .7rem 1rem; text-align: center; font-weight: 700; background: var(--surface); margin-bottom: .3rem; }
+.cm-branch { border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 12px; padding: .55rem .9rem .9rem; margin: .7rem 0; background: var(--surface); }
+.cm-blabel { font-weight: 600; opacity: .88; margin: .2rem 0 .6rem; }
+.cm-sub { margin: .3rem 0 .2rem; padding-left: .3rem; }
+.cm-sublabel { font-size: .9em; opacity: .82; margin: .55rem 0 .3rem; }
+.cm-row.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.cm-chip .crud, .cm-hint .crud { font-size: .82em; opacity: .8; }
+.cm-note { font-size: .85em; opacity: .72; margin-top: .7rem; }
+.cm-actions { display: flex; gap: .6rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
+.cm-actions button { padding: .45rem .95rem; border: 1px solid var(--accent); border-radius: 8px; background: transparent; color: var(--accent-dark); font: inherit; cursor: pointer; }
+.cm-actions button:hover { background: var(--accent-soft); }
+#cmMsg { font-size: .95em; }
+.cm-count { font-size: .85em; opacity: .72; }
+
+@media (max-width: 640px) { .doc-lens, .md-demo, .cm-row, .cm-row.c3 { grid-template-columns: 1fr; } }
