@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teoría Clase 6 — Integrar y documentar tu sistema</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  .ceval-q { margin: 1.2rem 0; padding: 1rem 1.1rem; border: 1px solid var(--border, #d0d0d8); border-radius: 10px; }
+  .ceval-prompt { margin: 0 0 .7rem; }
+  .ceval-opts { display: flex; flex-direction: column; gap: .45rem; }
+  .ceval-opt { text-align: left; padding: .55rem .8rem; border: 1px solid var(--border, #d0d0d8); border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+  .ceval-opt:hover:not(:disabled) { border-color: var(--accent, #4b5bd6); }
+  .ceval-opt.correct { border-color: var(--ok, #1a9e5e); background: color-mix(in srgb, var(--ok, #1a9e5e) 14%, transparent); font-weight: 600; }
+  .ceval-opt.wrong { border-color: var(--warm, #d1662b); opacity: .65; text-decoration: line-through; }
+  .ceval-feedback { margin: .6rem 0 0; min-height: 1.2em; font-size: .95em; }
+  .doc-lens { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; margin: 1.2rem 0; }
+  .doc-lens .lens { display: flex; flex-direction: column; border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 12px; padding: 1rem 1.05rem 1.05rem; background: var(--surface); }
+  .doc-lens .lens .n { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; font-size: .85rem; margin-bottom: .55rem; }
+  .doc-lens .lens h4 { margin: 0 0 .35rem; font-size: 1em; line-height: 1.25; }
+  .doc-lens .lens p { margin: 0; font-size: .92em; }
+  .doc-lens .lens .secc { align-self: flex-start; margin-top: auto; padding: .14rem .55rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-size: .74em; font-weight: 600; }
+  .doc-lens .lens p + .secc { margin-top: .7rem; }
+  .md-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; align-items: stretch; }
+  .md-demo .md-label { font-size: .78em; text-transform: uppercase; letter-spacing: .04em; opacity: .7; margin-bottom: .3rem; }
+  .md-rendered { border: 1px solid var(--border); border-radius: 12px; padding: .2rem 1rem 1rem; background: var(--surface); }
+  .md-rendered h4 { margin: .8rem 0 .3rem; }
+  .md-rendered h5 { margin: .7rem 0 .3rem; font-size: 1em; }
+  .cm { margin: 1.2rem 0; }
+  .cm-lbl { font-size: .78em; text-transform: uppercase; letter-spacing: .04em; opacity: .7; margin: .8rem 0 .35rem; }
+  .cm-pool { display: flex; flex-wrap: wrap; gap: .5rem; padding: .8rem; border: 1px dashed var(--border); border-radius: 12px; background: var(--surface); min-height: 2.6rem; }
+  .cm-chip { display: inline-block; padding: .4rem .75rem; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-size: .88em; font-weight: 600; cursor: grab; user-select: none; touch-action: none; }
+  .cm-chip.dragging { opacity: .35; }
+  .cm-chip.sel { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cm-drag-clone { position: fixed; z-index: 9999; padding: .4rem .75rem; border-radius: 999px; background: var(--accent); color: #fff; font-size: .88em; font-weight: 600; pointer-events: none; box-shadow: 0 6px 16px rgba(0,0,0,.22); }
+  .cm-map { display: flex; flex-direction: column; gap: 0; }
+  .cm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .cm-slot { min-height: 3rem; border: 2px dashed var(--border); border-radius: 12px; padding: .5rem; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface); }
+  .cm-slot.over { border-color: var(--accent); background: var(--accent-soft); }
+  .cm-slot.filled { border-style: solid; border-color: var(--accent); }
+  .cm-slot.ok { border-style: solid; border-color: var(--ok); }
+  .cm-slot.bad { border-style: solid; border-color: var(--warm); }
+  .cm-hint { font-size: .8em; opacity: .55; }
+  .cm-link { text-align: center; opacity: .8; font-size: .9em; padding: .35rem 0; }
+  .cm-fixed { border: 2px solid var(--accent); border-radius: 12px; padding: .7rem 1rem; text-align: center; font-weight: 700; background: var(--surface); margin-bottom: .3rem; }
+  .cm-branch { border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 12px; padding: .55rem .9rem .9rem; margin: .7rem 0; background: var(--surface); }
+  .cm-blabel { font-weight: 600; opacity: .88; margin: .2rem 0 .6rem; }
+  .cm-sub { margin: .3rem 0 .2rem; padding-left: .3rem; }
+  .cm-sublabel { font-size: .9em; opacity: .82; margin: .55rem 0 .3rem; }
+  .cm-row.c3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cm-chip .crud, .cm-hint .crud { font-size: .82em; opacity: .8; }
+  .cm-note { font-size: .85em; opacity: .72; margin-top: .7rem; }
+  .cm-actions { display: flex; gap: .6rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
+  .cm-actions button { padding: .45rem .95rem; border: 1px solid var(--accent); border-radius: 8px; background: transparent; color: var(--accent-dark); font: inherit; cursor: pointer; }
+  .cm-actions button:hover { background: var(--accent-soft); }
+  #cmMsg { font-size: .95em; }
+  .cm-count { font-size: .85em; opacity: .72; }
+  @media (max-width: 640px) { .doc-lens, .md-demo, .cm-row, .cm-row.c3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Teoría · Clase 6 · Semana de intensificación</div>
+  <h1>Integrar y documentar tu sistema</h1>
+  <p class="sub">Lo construido en las Clases 1 a 5 es <strong>un solo sistema</strong>. Esta teoría ordena el recorrido, define qué debe contener el sistema y qué no puede fallar, y explica una herramienta nueva para dejarlo prolijo: la <strong>documentación</strong>.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Clase 6:</strong> teoría (esta página) + <a href="clase-06-actividad.html">actividad práctica</a>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Teoría y práctica</div>
+  Primero esta teoría y su autoevaluación conceptual; después la <a href="clase-06-actividad.html">actividad</a>, donde completás tu sistema, practicás consultas y creás tu documentación. Podés volver acá cuando lo necesites.
+</div>
+
+<h2 id="s1">El sistema construido en las Clases 1 a 5</h2>
+
+<p>Un <strong>sistema informático</strong> recibe datos, los procesa y devuelve un resultado, trabajando sobre información que queda guardada. El que venís construyendo es un <strong>sistema web</strong>: el usuario interactúa desde el navegador —el <strong>cliente</strong>— y un programa en PHP responde desde el <strong>servidor</strong>.</p>
+
+<p>Ese sistema se fue levantando de manera incremental, una capa sobre otra. En la <strong>Clase 2</strong> apareció la puerta de entrada, el login, y con ella la sesión y la protección de las páginas internas, además de la cabecera y el pie que se reutilizan en todo el sitio. La <strong>Clase 3</strong> agregó la navegación entre secciones y el control de versiones con Git, de modo que el proyecto quedara guardado y con historial. En la <strong>Clase 4</strong> los datos ganaron un lugar propio: se mudaron a <code>datos.php</code>, y desde ahí la cartelera se arma sola al recorrerlos con <code>foreach</code>, mientras la ficha localiza un elemento buscándolo por su clave. La <strong>Clase 5</strong>, por último, llevó esa información a una base de datos real en MySQL, con su tabla, sus tipos de dato y sus consultas.</p>
+
+<p>Lo que enhebra todo el recorrido es que cada paso <strong>reutiliza y ordena</strong> lo anterior: la protección se apoya en la sesión del login, la cartelera vive de los datos de <code>datos.php</code>, y la tabla de MySQL estructura la misma información que ya guardaba el array. Mirarlo así —como un solo sistema que fue creciendo— es justamente el trabajo de esta clase. El siguiente cuadro resume qué aportó cada una:</p>
+
+<table>
+  <tr><th>Clase</th><th>Qué se agregó</th><th>Concepto</th></tr>
+  <tr><td><strong>1</strong></td><td>Entorno de trabajo y primer PHP.</td><td>Qué es un sistema; flujo del dato cliente ↔ servidor.</td></tr>
+  <tr><td><strong>2</strong></td><td>Login, sesión, protección de páginas e <code>include</code> de cabecera/pie.</td><td>Autenticación y sesión; reutilizar partes comunes.</td></tr>
+  <tr><td><strong>3</strong></td><td>Navegación con <code>switch</code> y control de versiones con Git.</td><td>Decidir según un valor; versionar el proyecto.</td></tr>
+  <tr><td><strong>4</strong></td><td>Datos en <code>datos.php</code> (arrays), cartelera con <code>foreach</code> y ficha con lookup.</td><td>Array asociativo como registro; recorrer datos; buscar por clave.</td></tr>
+  <tr><td><strong>5</strong></td><td>Tabla en MySQL (<code>CREATE</code>, <code>INSERT</code>, <code>SELECT</code>).</td><td>Base de datos; tipos de dato; clave primaria; consultas.</td></tr>
+</table>
+
+<h2 id="s2">Componentes de un sistema completo</h2>
+
+<p>El sistema del proyecto tiene hoy <strong>dos componentes</strong>, y dentro de cada uno, partes que debe contener:</p>
+
+<table>
+  <tr><th>Componente</th><th>Debe contener</th></tr>
+  <tr><td><strong>Aplicación PHP</strong> (el sitio)</td><td>Login y sesión · protección de las páginas internas · cabecera y pie incluidos · navegación · cartelera generada con <code>foreach</code> · ficha con lookup.</td></tr>
+  <tr><td><strong>Base de datos MySQL</strong></td><td>Una tabla de la entidad con clave primaria · filas cargadas (<code>INSERT</code>) · consultas (<code>SELECT</code>, con <code>WHERE</code>) · el script <code>.sql</code> exportado.</td></tr>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">Dos componentes, aún separados</div>
+  Por ahora el sitio y la base funcionan por separado, y se van a unir más adelante (conexión PHP–MySQL). Que estén separados es parte del recorrido: unirlos es la etapa siguiente.
+</div>
+
+<h2 id="s3">Conceptos clave</h2>
+
+<p>Tres ideas atraviesan todo el sistema. Vale detenerse en ellas.</p>
+
+<h3>Entidad, registro y campo</h3>
+<ul>
+  <li><strong>Entidad:</strong> la "cosa" del mundo real sobre la que guardás datos (una película, un paciente, un producto). Es el sustantivo principal del proyecto.</li>
+  <li><strong>Registro (o fila):</strong> un caso concreto de esa entidad (la película <em>Matrix</em>).</li>
+  <li><strong>Campo (o columna):</strong> cada dato de ese registro (título, año, género), y cada campo tiene un <strong>tipo</strong> (número, texto…).</li>
+</ul>
+
+<h3>La misma entidad, en dos representaciones</h3>
+<p>La entidad aparece de dos formas equivalentes, una por componente:</p>
+
+<pre><code>en datos.php (PHP)                        en MySQL (tabla)
+-----------------------------             ------------------------------
+'matrix' =&gt; [                             id | titulo | anio | genero
+   'titulo' =&gt; 'Matrix',                  ---+--------+------+----------------
+   'anio'   =&gt; 1999,          =====&gt;       1 | Matrix | 1999 | Ciencia ficción
+   'genero' =&gt; 'Ciencia ficción'
+]
+un array asociativo = una FILA (registro)
+las claves          = las COLUMNAS (campos)</code></pre>
+
+<p>Un array asociativo es <strong>un registro</strong>; sus claves son <strong>los campos</strong>. Entender esto es ver que <code>datos.php</code> y la tabla hablan de lo mismo con distinta forma; es, además, la base sobre la que después los dos componentes se conectan.</p>
+
+<h3>Tipos de dato y clave primaria</h3>
+<ul>
+  <li><strong>Tipo de dato:</strong> cada campo guarda una clase de dato. <code>INT</code> para números (año, id); <code>VARCHAR(n)</code> para texto (título, género). Elegir el tipo es una decisión de diseño: un año guardado como texto no se ordena ni compara bien.</li>
+  <li><strong>Clave primaria:</strong> una columna que identifica cada fila <strong>sin repetirse</strong>. Se usa un <code>id</code> autonumerado (<code>AUTO_INCREMENT</code>), no el título, porque el título puede repetirse o cambiar y el <code>id</code> no.</li>
+</ul>
+
+<h2 id="mapa-actividad">Actividad: armá el mapa conceptual de la clase</h2>
+
+<p>Un <strong>mapa conceptual</strong> muestra cómo se relacionan las ideas de un tema. Se arma en tres pasos:</p>
+<ol>
+  <li><strong>Listá</strong> los conceptos principales del tema.</li>
+  <li><strong>Ordenálos</strong> del más general al más específico (numeralos).</li>
+  <li><strong>Ubicálos</strong> en el mapa —lo general arriba, lo particular abajo— y unilos con <strong>palabras enlace</strong> (se programa con, guarda los datos en, maneja los datos con…).</li>
+</ol>
+
+<p>Practicá con los conceptos de esta clase: <strong>arrastrá</strong> cada uno a su lugar en el mapa. También podés <strong>tocar un concepto y luego su lugar</strong>. Cuando termines, tocá <em>Verificar</em>.</p>
+
+<div class="cm">
+  <div class="cm-lbl">Conceptos — arrastralos (o tocá uno y luego su lugar)</div>
+  <div class="cm-pool" id="cmPool">
+    <span class="cm-chip" data-c="select">SELECT</span>
+    <span class="cm-chip" data-c="include">include</span>
+    <span class="cm-chip" data-c="post">POST</span>
+    <span class="cm-chip" data-c="tabla">tabla</span>
+    <span class="cm-chip" data-c="php">PHP</span>
+    <span class="cm-chip" data-c="exportar">exportar</span>
+    <span class="cm-chip" data-c="variables">variables</span>
+    <span class="cm-chip" data-c="delete">DELETE <span class="crud">· CRUD</span></span>
+    <span class="cm-chip" data-c="css">CSS</span>
+    <span class="cm-chip" data-c="sql">SQL</span>
+    <span class="cm-chip" data-c="get">GET</span>
+    <span class="cm-chip" data-c="insert">INSERT</span>
+    <span class="cm-chip" data-c="arrays">arrays</span>
+    <span class="cm-chip" data-c="importar">importar</span>
+    <span class="cm-chip" data-c="session">sesión</span>
+    <span class="cm-chip" data-c="create">CREATE</span>
+    <span class="cm-chip" data-c="update">UPDATE <span class="crud">· CRUD</span></span>
+  </div>
+
+  <div class="cm-lbl">El mapa</div>
+  <div class="cm-map" id="cmMap">
+    <div class="cm-fixed">Sistema web</div>
+
+    <div class="cm-branch">
+      <div class="cm-blabel">↓ se programa en el servidor con</div>
+      <div class="cm-slot" data-a="php"><span class="cm-hint">el lenguaje del servidor</span></div>
+      <div class="cm-sub">
+        <div class="cm-sublabel">maneja los datos con:</div>
+        <div class="cm-row">
+          <div class="cm-slot" data-a="variables"><span class="cm-hint">guardan un valor</span></div>
+          <div class="cm-slot" data-a="arrays"><span class="cm-hint">listas de datos (datos.php)</span></div>
+        </div>
+        <div class="cm-sublabel">reutiliza código con:</div>
+        <div class="cm-slot" data-a="include"><span class="cm-hint">cabecera / pie</span></div>
+        <div class="cm-sublabel">mantiene el login con:</div>
+        <div class="cm-slot" data-a="session"><span class="cm-hint">$_SESSION</span></div>
+      </div>
+    </div>
+
+    <div class="cm-branch">
+      <div class="cm-blabel">↓ del lado del cliente</div>
+      <div class="cm-sub">
+        <div class="cm-sublabel">se ve con:</div>
+        <div class="cm-slot" data-a="css"><span class="cm-hint">los estilos (estilos.css)</span></div>
+        <div class="cm-sublabel">recibe datos del cliente con dos métodos HTTP:</div>
+        <div class="cm-row">
+          <div class="cm-slot" data-a="get"><span class="cm-hint">método HTTP · por la URL (?clave=valor)</span></div>
+          <div class="cm-slot" data-a="post"><span class="cm-hint">método HTTP · por formularios (login)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cm-branch">
+      <div class="cm-blabel">↓ los datos se guardan y consultan con</div>
+      <div class="cm-slot" data-a="sql"><span class="cm-hint">el lenguaje de las bases de datos (la base es MySQL)</span></div>
+      <div class="cm-sub">
+        <div class="cm-sublabel">la base se organiza en:</div>
+        <div class="cm-slot" data-a="tabla"><span class="cm-hint">filas y columnas</span></div>
+        <div class="cm-sublabel">operaciones SQL:</div>
+        <div class="cm-row c3">
+          <div class="cm-slot" data-a="create"><span class="cm-hint">crear la tabla</span></div>
+          <div class="cm-slot" data-a="insert"><span class="cm-hint">cargar filas</span></div>
+          <div class="cm-slot" data-a="select"><span class="cm-hint">consultar</span></div>
+        </div>
+        <div class="cm-row">
+          <div class="cm-slot" data-a="update"><span class="cm-hint">modificar <span class="crud">· CRUD (próx.)</span></span></div>
+          <div class="cm-slot" data-a="delete"><span class="cm-hint">borrar <span class="crud">· CRUD (próx.)</span></span></div>
+        </div>
+        <div class="cm-sublabel">mover la base:</div>
+        <div class="cm-row">
+          <div class="cm-slot" data-a="importar"><span class="cm-hint">.sql → base</span></div>
+          <div class="cm-slot" data-a="exportar"><span class="cm-hint">base → .sql</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cm-actions">
+    <button id="cmCheck" type="button">Verificar</button>
+    <button id="cmReset" type="button">Reiniciar</button>
+    <span id="cmCount" class="cm-count"></span>
+    <span id="cmMsg" aria-live="polite"></span>
+  </div>
+  <p class="cm-note"><strong>UPDATE</strong> y <strong>DELETE</strong> completan las operaciones de una base de datos (el CRUD: crear, leer, actualizar, borrar). En la Clase 5 usamos <code>CREATE</code>, <code>INSERT</code> y <code>SELECT</code>; <code>UPDATE</code> y <code>DELETE</code> se profundizan más adelante.</p>
+</div>
+
+<h2 id="s4">Lo que no puede fallar</h2>
+
+<p>Sobre esa base, hay un <strong>núcleo</strong> que tiene que funcionar sí o sí para dar el sistema por completo. Si algo de esto falla, se arregla antes que cualquier detalle:</p>
+
+<ul>
+  <li><strong>Login y protección.</strong> Se entra con usuario y clave, y una página interna <strong>redirige al login si no hay sesión</strong>. Sin esto, cualquiera accede a todo: es la base de la seguridad del sistema.</li>
+  <li><strong>Cartelera con <code>foreach</code>.</strong> La lista se arma sola recorriendo <code>datos.php</code> con <code>foreach</code> (mínimo 4 elementos): ese es el mecanismo que se pide.</li>
+  <li><strong>Ficha con lookup.</strong> <code>$arr[$id] ?? null</code> muestra un elemento y <strong>avisa si no existe</strong> (no rompe con un id inválido).</li>
+  <li><strong>Tabla con datos y una consulta.</strong> La tabla existe con clave primaria, tiene filas y corre un <code>SELECT ... WHERE ...</code>.</li>
+  <li><strong>Todo versionado.</strong> El avance está en el repositorio: si no está en GitHub, para el proyecto no existe.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Errores que suelen romper el núcleo</div>
+  Olvidar <code>session_start()</code> (la protección no funciona) · <code>foreach</code> sobre la variable equivocada o falta de <code>return</code> en <code>datos.php</code> (cartelera vacía) · clave mal escrita en la ficha · comillas en valores numéricos en SQL.
+</div>
+
+<h2 id="s5">La documentación del sistema</h2>
+
+<p><strong>Documentar</strong> es dejar por escrito, en lenguaje claro, <strong>qué hace tu sistema, cómo está organizado y en qué estado está</strong>. Es una explicación del proyecto —aparte del código— pensada para que la lea una persona. Con un sistema documentado, alcanza con leer ese texto para entenderlo.</p>
+
+<h3>Propósito</h3>
+<p>La documentación cumple varias funciones a la vez. Permite que otra persona —el resto del grupo, la docente o quien retome el proyecto más adelante— comprenda el sistema con solo leerla. Funciona, además, como memoria del propio equipo: con el paso de las semanas, un texto claro conserva las decisiones que de otro modo se olvidan. A la hora de presentar el proyecto ordena lo que se muestra, porque deja a la vista qué se construyó y qué queda pendiente. Y mientras se escribe también ayuda a pensar el trabajo: al enunciar lo que falta, aparece con claridad el próximo paso.</p>
+
+<h3>Estructura de referencia</h3>
+<p>Una buena documentación de tu proyecto responde tres preguntas. Cada una se cubre con algunas de las seis secciones que vas a completar:</p>
+
+<div class="doc-lens">
+  <div class="lens">
+    <span class="n">1</span>
+    <h4>Qué sistema estás construyendo</h4>
+    <p>El nombre y para qué sirve, la entidad y sus datos, los archivos y cómo fluye un pedido.</p>
+    <span class="secc">Secciones 1 a 4</span>
+  </div>
+  <div class="lens">
+    <span class="n">2</span>
+    <h4>Qué ya tenés armado</h4>
+    <p>Las capas que hoy funcionan en tu sistema.</p>
+    <span class="secc">Sección 5</span>
+  </div>
+  <div class="lens">
+    <span class="n">3</span>
+    <h4>Qué querés agregar</h4>
+    <p>Lo que falta y viene en las próximas etapas.</p>
+    <span class="secc">Sección 6</span>
+  </div>
+</div>
+
+<p>En detalle, las seis secciones:</p>
+
+<table>
+  <tr><th>Sección</th><th>Qué se escribe</th><th>Para qué</th></tr>
+  <tr><td><strong>1. El sistema</strong></td><td>Nombre, qué problema resuelve, quiénes lo usan.</td><td>Ubica de qué se trata y para quién.</td></tr>
+  <tr><td><strong>2. Entidades y datos</strong></td><td>La entidad principal y sus campos con el tipo.</td><td>Es la base del sistema: qué guarda y con qué estructura.</td></tr>
+  <tr><td><strong>3. Archivos del proyecto</strong></td><td>Una línea por archivo diciendo para qué sirve.</td><td>Indica dónde está cada cosa.</td></tr>
+  <tr><td><strong>4. Mapa del flujo</strong></td><td>El recorrido de un pedido, de login a ficha.</td><td>Muestra cómo se conectan las partes.</td></tr>
+  <tr><td><strong>5. Estado actual</strong></td><td>Qué capas ya funcionan.</td><td>Deja claro qué está listo hoy.</td></tr>
+  <tr><td><strong>6. Próximas etapas</strong></td><td>Lo que falta hacer.</td><td>Es la hoja de ruta.</td></tr>
+</table>
+
+<h3>Markdown: cómo escribirla para que se vea bien</h3>
+<p>La documentación se guarda en un archivo de texto con extensión <code>.md</code>, <strong>dentro del repositorio</strong>, para que viaje con el código y quede versionada. Ese archivo se escribe en <strong>Markdown</strong>: un formato que da estilo con símbolos sencillos y que GitHub muestra prolijo de forma automática. A la izquierda, lo que escribís; a la derecha, cómo lo muestra GitHub:</p>
+
+<div class="md-demo">
+  <div class="md-col">
+    <div class="md-label">Lo que escribís</div>
+<pre><code class="language-markdown"># Documentación del sistema
+
+## 1. El sistema
+
+**Entidad:** pelicula
+
+- id (INT)
+- titulo (VARCHAR)
+
+| campo | tipo |
+|-------|------|
+| id    | INT  |
+| anio  | INT  |</code></pre>
+  </div>
+  <div class="md-col">
+    <div class="md-label">Cómo se ve</div>
+    <div class="md-rendered">
+      <h4>Documentación del sistema</h4>
+      <h5>1. El sistema</h5>
+      <p><strong>Entidad:</strong> pelicula</p>
+      <ul><li>id (INT)</li><li>titulo (VARCHAR)</li></ul>
+      <table>
+        <tr><th>campo</th><th>tipo</th></tr>
+        <tr><td>id</td><td>INT</td></tr>
+        <tr><td>anio</td><td>INT</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Vista previa mientras escribís</div>
+  En el editor de código (VS Code), con el archivo <code>.md</code> abierto, podés ver cómo va quedando el documento formateado, sin salir del editor:
+  <ul>
+    <li><strong>Ctrl + Shift + V</strong>: abre la vista previa en una pestaña nueva.</li>
+    <li><strong>Ctrl + K</strong> y luego <strong>V</strong>: abre la vista previa <strong>al costado</strong>, y se va actualizando a medida que escribís.</li>
+  </ul>
+  (En Mac es <strong>Cmd</strong> en lugar de Ctrl.) Además, cuando subís el archivo, GitHub lo muestra formateado automáticamente.
+</div>
+
+<p>Los símbolos más usados:</p>
+<pre><code class="language-markdown"># Título        ## Subtítulo        ### Sub-subtítulo
+**negrita**     *cursiva*           `código`
+- lista con guiones
+1. lista numerada
+
+| columna | columna |    &lt;- encabezado de la tabla
+|---------|---------|    &lt;- esta línea separa el encabezado
+| dato    | dato    |</code></pre>
+
+<p>Pautas para que quede clara:</p>
+<ul>
+  <li>Escribila <strong>clara y explicativa</strong>, pensada para alguien que no conoce el proyecto: que con leerla entienda de qué se trata y cómo funciona, sin que tengas que explicárselo. Desarrollá cada punto lo necesario para que se entienda.</li>
+  <li>Es un <strong>documento vivo</strong>: se empieza ahora y se actualiza en cada etapa.</li>
+  <li>Apoyate en lo que ya tenés: la sección de entidades sale de tu tabla MySQL; el mapa, del recorrido login → ficha.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Documentación clara y documentación vaga</div>
+  <p><strong>Vaga:</strong> "El sistema tiene login y muestra películas." (una frase general, que omite la entidad, los campos y la función de cada archivo).</p>
+  <p><strong>Clara:</strong> "Entidad <em>pelicula</em> con campos <code>id</code>, <code>titulo</code> (VARCHAR), <code>anio</code> (INT). <code>cartelera.php</code> recorre <code>datos.php</code> con <code>foreach</code> y arma la lista." Se entiende sin abrir el código.</p>
+</div>
+
+<p>Y así se ve un fragmento ya completado, aplicando todo lo anterior (el modelo entero y la plantilla para copiar están en la <a href="clase-06-actividad.html#parte-5">actividad</a>):</p>
+
+<pre><code class="language-markdown">## 1. El sistema
+- Nombre: Cartelera de Cine
+- Qué problema resuelve: mostrar la cartelera y la ficha de cada película.
+- Usuarios: personas que ingresan (con login) a consultar qué películas hay.
+
+## 2. Entidades y datos
+Entidad principal: pelicula
+
+| campo  | tipo (MySQL) | ejemplo |
+|--------|--------------|---------|
+| id     | INT PK       | 1       |
+| titulo | VARCHAR(100) | Matrix  |
+| anio   | INT          | 1999    |</code></pre>
+
+<h2 id="s6">El repositorio del proyecto</h2>
+
+<p>El <strong>repositorio</strong> (el proyecto en GitHub, con Git) es donde vive todo: el código, el script <code>.sql</code> y la documentación. <strong>Versionar</strong> es guardar los avances como una historia de cambios (cada <em>commit</em> es una foto del proyecto en un momento). Dos ideas: si algo no está en el repositorio, para el proyecto no existe; y la documentación va <strong>junto al código</strong>, en el mismo repositorio.</p>
+
+<h2 id="s7">El proyecto, por etapas</h2>
+
+<p>El sistema no termina en esta clase. La documentación deja anotado lo que sigue:</p>
+
+<ol>
+  <li><strong>Segunda entidad y relaciones:</strong> el proyecto tiene más de una entidad (película → director; turno → paciente). Se conectan con claves foráneas y se representan en un diagrama entidad-relación.</li>
+  <li><strong>Conexión PHP–MySQL:</strong> que la aplicación lea la tabla de la base. Ahí se unen los dos componentes.</li>
+  <li><strong>Login real y validaciones:</strong> usuarios guardados en la base y controles sobre los datos que se cargan.</li>
+  <li><strong>Pruebas y defensa:</strong> revisar que todo funcione y presentar el proyecto.</li>
+</ol>
+
+<h2 id="glosario">Glosario</h2>
+
+<table>
+  <tr><th>Término</th><th>Significado</th></tr>
+  <tr><td><strong>Sistema</strong></td><td>Conjunto de partes que trabajan juntas para recibir datos, procesarlos y dar un resultado.</td></tr>
+  <tr><td><strong>Componente</strong></td><td>Una parte del sistema con función propia (la aplicación PHP; la base de datos).</td></tr>
+  <tr><td><strong>Entidad</strong></td><td>La "cosa" del mundo real sobre la que se guardan datos (película, paciente…).</td></tr>
+  <tr><td><strong>Registro / fila</strong></td><td>Un caso concreto de una entidad.</td></tr>
+  <tr><td><strong>Campo / columna</strong></td><td>Cada dato de un registro, con su tipo.</td></tr>
+  <tr><td><strong>Clave primaria</strong></td><td>Columna que identifica sin repetir cada fila (el <code>id</code> autonumerado).</td></tr>
+  <tr><td><strong>Documentación</strong></td><td>Explicación escrita del sistema: qué hace, cómo está hecho y en qué estado está.</td></tr>
+  <tr><td><strong>Markdown</strong></td><td>Formato de texto simple (archivos <code>.md</code>) que GitHub muestra con formato.</td></tr>
+  <tr><td><strong>Repositorio</strong></td><td>El proyecto versionado en Git/GitHub: código, <code>.sql</code> y documentación.</td></tr>
+</table>
+
+<h2 id="autoevaluacion">Autoevaluación conceptual</h2>
+
+<p>Respondé cada pregunta. Tenés <strong>hasta tres intentos</strong> por pregunta: en cada intento fallido aparece una pista; al tercero se muestra la respuesta con la explicación.</p>
+
+<div id="ceval">
+
+  <div class="ceval-q" data-correct="b" data-hint="Pensá qué es cada película dentro de la tabla." data-exp="Cada array asociativo de datos.php equivale a una fila (un registro) de la tabla.">
+    <p class="ceval-prompt"><strong>1.</strong> Un array asociativo de <code>datos.php</code>, ¿a qué corresponde en la tabla MySQL?</p>
+    <div class="ceval-opts">
+      <button class="ceval-opt" data-opt="a">A una columna</button>
+      <button class="ceval-opt" data-opt="b">A una fila (registro)</button>
+      <button class="ceval-opt" data-opt="c">A la base de datos entera</button>
+    </div>
+    <p class="ceval-feedback" aria-live="polite"></p>
+  </div>
+
+  <div class="ceval-q" data-correct="b" data-hint="¿Cuál no se repite ni cambia nunca?" data-exp="El id autonumerado identifica sin repetirse; el título puede repetirse o cambiar.">
+    <p class="ceval-prompt"><strong>2.</strong> ¿Cuál conviene como clave primaria de la tabla?</p>
+    <div class="ceval-opts">
+      <button class="ceval-opt" data-opt="a">El título de la película</button>
+      <button class="ceval-opt" data-opt="b">Un id autonumerado</button>
+      <button class="ceval-opt" data-opt="c">El año</button>
+    </div>
+    <p class="ceval-feedback" aria-live="polite"></p>
+  </div>
+
+  <div class="ceval-q" data-correct="a" data-hint="foreach recorre TODOS los elementos; el lookup busca UNO." data-exp="foreach recorre datos.php y arma una tarjeta por cada elemento (la cartelera).">
+    <p class="ceval-prompt"><strong>3.</strong> ¿Qué hace el <code>foreach</code> de la cartelera?</p>
+    <div class="ceval-opts">
+      <button class="ceval-opt" data-opt="a">Recorre los datos y arma una tarjeta por cada elemento</button>
+      <button class="ceval-opt" data-opt="b">Busca un solo elemento por su id</button>
+      <button class="ceval-opt" data-opt="c">Crea la tabla en MySQL</button>
+    </div>
+    <p class="ceval-feedback" aria-live="polite"></p>
+  </div>
+
+  <div class="ceval-q" data-correct="c" data-hint="Pensá en la seguridad y en la sesión del usuario." data-exp="La protección redirige al login si no hay sesión iniciada; evita que se acceda sin autenticarse.">
+    <p class="ceval-prompt"><strong>4.</strong> ¿Para qué sirve proteger una página interna?</p>
+    <div class="ceval-opts">
+      <button class="ceval-opt" data-opt="a">Para que la página cargue más rápido</button>
+      <button class="ceval-opt" data-opt="b">Para ordenar los datos de la tabla</button>
+      <button class="ceval-opt" data-opt="c">Para redirigir al login si no hay sesión</button>
+    </div>
+    <p class="ceval-feedback" aria-live="polite"></p>
+  </div>
+
+  <div class="ceval-q" data-correct="a" data-hint="Tiene que viajar con el código y quedar versionada." data-exp="La documentación se guarda en un archivo .md dentro del repositorio, junto al código.">
+    <p class="ceval-prompt"><strong>5.</strong> ¿Dónde se guarda la documentación del proyecto?</p>
+    <div class="ceval-opts">
+      <button class="ceval-opt" data-opt="a">En un archivo .md dentro del repositorio</button>
+      <button class="ceval-opt" data-opt="b">Dentro de la base de datos MySQL</button>
+      <button class="ceval-opt" data-opt="c">En la carpeta de imágenes del sitio</button>
+    </div>
+    <p class="ceval-feedback" aria-live="polite"></p>
+  </div>
+
+  <div class="ceval-q" data-correct="a" data-hint="Lo que ya vimos y tiene que andar, no lo de la próxima etapa." data-exp="El núcleo es: login+protección, cartelera con foreach, tabla con datos y todo versionado. Las relaciones y la conexión PHP-MySQL son etapas siguientes.">
+    <p class="ceval-prompt"><strong>6.</strong> ¿Cuál es el núcleo que no puede fallar para dar el sistema por completo?</p>
+    <div class="ceval-opts">
+      <button class="ceval-opt" data-opt="a">Login+protección, cartelera con foreach, tabla con datos y todo en el repo</button>
+      <button class="ceval-opt" data-opt="b">Tener la segunda entidad y las relaciones listas</button>
+      <button class="ceval-opt" data-opt="c">Que el sitio ya lea la base de datos</button>
+    </div>
+    <p class="ceval-feedback" aria-live="polite"></p>
+  </div>
+
+</div>
+
+<h2 id="sintesis">Síntesis</h2>
+
+<ul>
+  <li>Lo construido en las Clases 1 a 5 es <strong>un solo sistema</strong>, hecho por capas, con dos componentes (aplicación PHP y base MySQL).</li>
+  <li>El sistema completo <strong>debe contener</strong> login, protección, includes, navegación, cartelera y ficha (PHP), y tabla con datos y consultas (MySQL).</li>
+  <li>El <strong>núcleo que no puede fallar</strong>: login+protección, cartelera con <code>foreach</code>, ficha con lookup, tabla con datos y una consulta, y todo versionado.</li>
+  <li>La misma entidad se representa como <strong>array</strong> (un registro) y como <strong>fila</strong> de la tabla; las claves son los campos/columnas.</li>
+  <li><strong>Documentar</strong> es explicar el sistema por escrito, en Markdown, dentro del repositorio, en un documento vivo.</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">Continúa en la práctica</div>
+  Con esto claro, pasá a la <a href="clase-06-actividad.html">actividad</a>: vas a completar tu sistema, practicar consultas y crear tu <code>documentacion.md</code>.
+</div>
+
+<div class="nav">
+  <a href="clase-06-actividad.html">Ir a la actividad práctica →</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+<script>
+(function () {
+  document.querySelectorAll('#ceval .ceval-q').forEach(function (q) {
+    var correct = q.dataset.correct;
+    var hint = q.dataset.hint || '';
+    var exp = q.dataset.exp || '';
+    var fb = q.querySelector('.ceval-feedback');
+    var opts = q.querySelectorAll('.ceval-opt');
+    var tries = 0, done = false;
+    opts.forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        if (done || opt.disabled) return;
+        if (opt.dataset.opt === correct) {
+          done = true;
+          opt.classList.add('correct');
+          fb.textContent = '✓ ¡Correcto! ' + exp;
+          fb.style.color = 'var(--ok, #1a9e5e)';
+          opts.forEach(function (o) { o.disabled = true; });
+        } else {
+          tries++;
+          opt.classList.add('wrong');
+          opt.disabled = true;
+          if (tries >= 3) {
+            done = true;
+            var c = q.querySelector('.ceval-opt[data-opt="' + correct + '"]');
+            if (c) c.classList.add('correct');
+            fb.textContent = '✗ Respuesta: la opción ' + correct + '. ' + exp;
+            fb.style.color = 'var(--warm, #d1662b)';
+            opts.forEach(function (o) { o.disabled = true; });
+          } else {
+            fb.textContent = 'Intento ' + tries + ' de 3. ' + (hint ? 'Pista: ' + hint : 'Probá de nuevo.');
+            fb.style.color = 'var(--warm, #d1662b)';
+          }
+        }
+      });
+    });
+  });
+})();
+</script>
+<script>
+(function () {
+  var pool = document.getElementById('cmPool');
+  var map = document.getElementById('cmMap');
+  if (!pool || !map) return;
+  var slots = Array.prototype.slice.call(map.querySelectorAll('.cm-slot'));
+  var dragEl = null, clone = null, origin = null, startX = 0, startY = 0, dragging = false, selected = null;
+
+  var countEl = document.getElementById('cmCount');
+  function refresh(slot) {
+    var chip = slot.querySelector('.cm-chip');
+    var hint = slot.querySelector('.cm-hint');
+    if (hint) hint.style.display = chip ? 'none' : '';
+    slot.classList.toggle('filled', !!chip);
+  }
+  function updateCount() {
+    var placed = map.querySelectorAll('.cm-slot .cm-chip').length;
+    if (countEl) countEl.textContent = placed + ' / ' + slots.length + ' ubicados';
+  }
+  function clearOver() { slots.forEach(function (s) { s.classList.remove('over'); }); }
+  function slotUnder(x, y) {
+    var el = document.elementFromPoint(x, y);
+    return el ? el.closest('.cm-slot') : null;
+  }
+  function select(chip) {
+    if (selected) selected.classList.remove('sel');
+    selected = chip;
+    if (chip) chip.classList.add('sel');
+  }
+  function placeInto(chip, target) {
+    var existing = target.querySelector('.cm-chip');
+    if (existing && existing !== chip) pool.appendChild(existing);
+    var from = chip.parentNode;
+    target.appendChild(chip);
+    target.classList.remove('ok', 'bad');
+    refresh(target);
+    if (from && from.classList && from.classList.contains('cm-slot')) {
+      from.classList.remove('ok', 'bad');
+      refresh(from);
+    }
+    updateCount();
+  }
+  function startDrag() {
+    dragging = true;
+    select(null);
+    dragEl.classList.add('dragging');
+    clone = dragEl.cloneNode(true);
+    clone.className = 'cm-drag-clone';
+    document.body.appendChild(clone);
+  }
+  function onDown(e) {
+    var chip = e.target.closest('.cm-chip');
+    if (!chip) return;
+    dragEl = chip; origin = chip.parentNode;
+    startX = e.clientX; startY = e.clientY; dragging = false;
+    try { chip.setPointerCapture(e.pointerId); } catch (err) {}
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragEl) return;
+    if (!dragging) {
+      if (Math.abs(e.clientX - startX) > 6 || Math.abs(e.clientY - startY) > 6) startDrag();
+      else return;
+    }
+    clone.style.left = (e.clientX - 24) + 'px';
+    clone.style.top = (e.clientY - 46) + 'px';
+    clearOver();
+    var s = slotUnder(e.clientX, e.clientY);
+    if (s) s.classList.add('over');
+    e.preventDefault();
+  }
+  function onUp(e) {
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    if (dragging) {
+      var target = slotUnder(e.clientX, e.clientY);
+      if (target) placeInto(dragEl, target);
+      else {
+        var from = dragEl.parentNode;
+        pool.appendChild(dragEl);
+        if (from && from.classList && from.classList.contains('cm-slot')) { from.classList.remove('ok', 'bad'); refresh(from); }
+      }
+      dragEl.classList.remove('dragging');
+      if (clone) { clone.remove(); clone = null; }
+      clearOver();
+      updateCount();
+    } else if (dragEl) {
+      if (selected === dragEl) select(null); else select(dragEl);
+    }
+    dragEl = null; dragging = false;
+  }
+  pool.addEventListener('pointerdown', onDown);
+  map.addEventListener('pointerdown', onDown);
+  slots.forEach(function (s) {
+    s.addEventListener('click', function (e) {
+      if (e.target.closest('.cm-chip')) return;
+      if (selected) { placeInto(selected, s); select(null); }
+    });
+  });
+  pool.addEventListener('click', function (e) {
+    if (selected && !e.target.closest('.cm-chip')) { pool.appendChild(selected); select(null); updateCount(); }
+  });
+
+  var msg = document.getElementById('cmMsg');
+  document.getElementById('cmCheck').addEventListener('click', function () {
+    var ok = 0, placed = 0, total = slots.length;
+    slots.forEach(function (s) {
+      s.classList.remove('ok', 'bad');
+      var chip = s.querySelector('.cm-chip');
+      if (!chip) return;
+      placed++;
+      if (chip.dataset.c === s.dataset.a) { s.classList.add('ok'); ok++; }
+      else s.classList.add('bad');
+    });
+    if (placed < total) { msg.textContent = 'Ubicá los ' + total + ' conceptos antes de verificar (' + placed + '/' + total + ').'; msg.style.color = 'var(--warm)'; }
+    else if (ok === total) { msg.textContent = '✓ ¡Mapa correcto! ' + ok + '/' + total + '.'; msg.style.color = 'var(--ok)'; }
+    else { msg.textContent = ok + '/' + total + ' bien ubicados. Revisá los marcados en naranja y reintentá.'; msg.style.color = 'var(--warm)'; }
+  });
+  document.getElementById('cmReset').addEventListener('click', function () {
+    select(null);
+    map.querySelectorAll('.cm-chip').forEach(function (c) { pool.appendChild(c); });
+    slots.forEach(function (s) { s.classList.remove('ok', 'bad', 'over'); refresh(s); });
+    msg.textContent = '';
+    updateCount();
+  });
+  updateCount();
+})();
+</script>
+
+</body>
+</html>

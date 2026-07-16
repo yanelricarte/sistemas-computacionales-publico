@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Actividad Clase 6 — Tu sistema completo</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Actividad de integración · Clase 6 · Semana de intensificación</div>
+  <h1>Tu sistema completo</h1>
+  <p class="sub">Todo lo que hiciste desde la Clase 1 es <strong>un solo sistema</strong>, construido por capas. En esta clase, junto con tu grupo, vas a <strong>completarlo</strong>, practicar consultas, <strong>documentarlo</strong> y <strong>subirlo a GitHub</strong>. Es una clase de integración: se resuelve con todo lo de las Clases 1 a 5.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Modalidad:</strong> trabajo en grupo, con esta guía como hoja de ruta<br>
+  <strong>Entorno:</strong> tu proyecto + XAMPP (Apache + MySQL) · phpMyAdmin en <code>http://localhost/phpmyadmin</code><br>
+  <strong>Teoría de la clase:</strong> <a href="clase-06-teoria.html">Integrar y documentar tu sistema</a> (leela antes de empezar)
+</div>
+
+<h2 id="objetivo">Objetivo</h2>
+
+<p>Dejar tu proyecto como <strong>un solo sistema</strong> con sus dos componentes funcionando: el <strong>sitio PHP</strong> (login, navegación, cartelera y ficha) y la <strong>base de datos MySQL</strong> (tu tabla con datos). Practicar consultas, <strong>documentar el sistema</strong> en un archivo que vas a completar en cada etapa, y dejar todo versionado. Al terminar, otra persona debería poder abrir tu repositorio y entender qué hace tu sistema.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Las películas son un ejemplo</div>
+  Los ejemplos usan la cartelera de películas, pero trabajá con <strong>la entidad de tu proyecto</strong> (libros, juegos, productos, turnos…). Lo que se evalúa es que la estructura esté completa, no el tema.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Línea base: cuándo tu proyecto está completo</div>
+  Tu sistema llega a la <strong>línea base</strong> (lo mínimo para darlo por completo) cuando:
+  <ul>
+    <li>el <strong>login</strong> funciona y una página interna <strong>redirige al login</strong> si no hay sesión;</li>
+    <li>la <strong>cartelera</strong> se arma sola con <code>foreach</code> (mínimo 4 elementos) y la <strong>ficha</strong> muestra uno por su id (y avisa si no existe);</li>
+    <li>la <strong>tabla MySQL</strong> existe con datos y corre un <code>SELECT ... WHERE ...</code>;</li>
+    <li>creaste el <strong><code>documentacion.md</code></strong> y <strong>todo está subido</strong> al repositorio.</li>
+  </ul>
+  Esa es la meta de hoy. Si ya la alcanzaste, seguí con las <a href="#extensiones">extensiones</a>.
+</div>
+
+<h2 id="como">Modalidad de trabajo</h2>
+
+<p>Esta guía es la <strong>hoja de ruta</strong> del grupo. Avanzá por las Partes 1 a 6, en orden.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Antes de pedir ayuda</div>
+  <ol>
+    <li>Revisá el <strong>material de apoyo</strong>: <a href="../clase_4/clase-04-tp-datos.html">TP de Clase 4</a> (arrays y <code>datos.php</code>), <a href="../clase_5/clase-05-tp.html">TP de Clase 5</a> (MySQL) y el <a href="../repaso-fundamentos/">repaso de fundamentos</a>.</li>
+    <li>Usá la <strong>autoevaluación</strong> del final para medir vos mismo qué capas están completas.</li>
+    <li>Si vas demorado: dejá primero el <strong>sitio en pie</strong> (login + cartelera) y después la <strong>tabla</strong>, de modo que quede una <strong>implementación completa</strong>, aunque sea acotada.</li>
+  </ol>
+</div>
+
+<h2 id="parte-1">Parte 1 — Auditá tu sistema</h2>
+
+<p>Abrí el proyecto y revisá <strong>capa por capa</strong>. Tildá lo que ya funciona: lo que quede sin tildar es la lista de trabajo de hoy. Se guarda en este navegador, así podés volver a chequearlo.</p>
+
+<div class="selfcheck" data-key="clase6-auditoria">
+  <div class="selfcheck-head">
+    <span>Auditoría de mi sistema</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="aud-1"><label for="aud-1"><strong>Entorno:</strong> XAMPP encendido y el proyecto abre en el navegador.</label></li>
+    <li><input type="checkbox" id="aud-2"><label for="aud-2"><strong>Login:</strong> entro con usuario y clave.</label></li>
+    <li><input type="checkbox" id="aud-3"><label for="aud-3"><strong>Sesión:</strong> hay <code>session_start()</code> y se guarda algo en <code>$_SESSION</code>.</label></li>
+    <li><input type="checkbox" id="aud-4"><label for="aud-4"><strong>Protección:</strong> una página interna me manda al login si no inicié sesión.</label></li>
+    <li><input type="checkbox" id="aud-5"><label for="aud-5"><strong>Includes:</strong> <code>cabecera.php</code> y <code>pie.php</code> están en todas las páginas.</label></li>
+    <li><input type="checkbox" id="aud-6"><label for="aud-6"><strong>Navegación:</strong> el menú funciona y me lleva de una página a otra.</label></li>
+    <li><input type="checkbox" id="aud-7"><label for="aud-7"><strong>Cartelera:</strong> un <code>foreach</code> sobre <code>datos.php</code> arma la lista sola (mínimo 4).</label></li>
+    <li><input type="checkbox" id="aud-8"><label for="aud-8"><strong>Ficha:</strong> el lookup <code>$arr[$id] ?? null</code> muestra un elemento y avisa si no existe.</label></li>
+    <li><input type="checkbox" id="aud-9"><label for="aud-9"><strong>Tabla MySQL:</strong> mi tabla existe con <code>CREATE</code> e <code>INSERT</code> (mínimo 4 filas).</label></li>
+    <li><input type="checkbox" id="aud-10"><label for="aud-10"><strong>Consultas:</strong> corren <code>SELECT *</code> y al menos un <code>SELECT ... WHERE ...</code>.</label></li>
+    <li><input type="checkbox" id="aud-11"><label for="aud-11"><strong>Repositorio:</strong> los archivos y el <code>.sql</code> están en GitHub.</label></li>
+  </ul>
+</div>
+
+<h2 id="parte-2">Parte 2 — Completá el sitio PHP</h2>
+
+<p>Completá lo que te quedó sin tildar, en este orden de prioridad:</p>
+
+<ol>
+  <li><strong>Login, sesión y protección:</strong> que puedas entrar y que una página interna te mande al login si no hay sesión.</li>
+  <li><strong>Includes y menú:</strong> <code>cabecera.php</code> y <code>pie.php</code> incluidos en todas las páginas.</li>
+  <li><strong>Cartelera con <code>foreach</code></strong> (la lista se arma sola):</li>
+</ol>
+
+<pre><code class="language-php">$items = require 'datos.php';
+foreach ($items as $id =&gt; $it) {
+    // una tarjeta por elemento + enlace a ficha.php?id=&lt;?= $id ?&gt;
+}</code></pre>
+
+<ol start="4">
+  <li><strong>Ficha con lookup</strong> (buscar uno por su clave):</li>
+</ol>
+
+<pre><code class="language-php">$id = $_GET['id'] ?? '';
+$it = $items[$id] ?? null;
+if ($it === null) { echo "No existe."; exit; }</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Si vas muy demorado</div>
+  Partí del <a href="../clase_4/clase-04-tp-datos.html">ejemplo de la Clase 4</a> para tener el sitio en pie y ponele tus datos.
+</div>
+
+<h2 id="parte-3">Parte 3 — Completá la base MySQL</h2>
+
+<ol>
+  <li><strong>Base y tabla</strong> (si no la tenés). Base con cotejamiento <code>utf8mb4_unicode_ci</code>; tabla con <code>id</code> como clave primaria autonumerada:</li>
+</ol>
+
+<pre><code class="language-sql">CREATE TABLE peliculas (
+    id      INT AUTO_INCREMENT PRIMARY KEY,
+    titulo  VARCHAR(100) NOT NULL,
+    anio    INT,
+    genero  VARCHAR(50)
+);</code></pre>
+
+<ol start="2">
+  <li><strong><code>INSERT</code></strong> de mínimo 4 filas (no escribas el <code>id</code>; el texto va entre comillas simples).</li>
+  <li><strong>Consultas:</strong> <code>SELECT *</code>, un <code>SELECT</code> de columnas y al menos un filtro con <code>WHERE</code>.</li>
+  <li><strong>Exportá</strong> el script (pestaña <em>Exportar</em> → SQL) y dejá el <code>.sql</code> en la carpeta del proyecto.</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">Sin XAMPP</div>
+  Usá <a href="https://www.db-fiddle.com/" target="_blank" rel="noopener">DB Fiddle</a> (elegí MySQL) para crear y consultar sin instalar nada.
+</div>
+
+<h2 id="parte-4">Parte 4 — Práctica de consultas (cartelera común)</h2>
+
+<p>Esta parte la hace <strong>todo el curso con los mismos datos</strong>, tengas tu proyecto avanzado o no. Sirve para afianzar <code>SELECT</code> y <code>WHERE</code>. Creá una tabla de práctica y cargá estos datos (en tu base, en una base nueva o en <a href="https://www.db-fiddle.com/" target="_blank" rel="noopener">DB Fiddle</a>):</p>
+
+<pre><code class="language-sql">CREATE TABLE cartelera (
+    id        INT AUTO_INCREMENT PRIMARY KEY,
+    titulo    VARCHAR(100) NOT NULL,
+    anio      INT,
+    genero    VARCHAR(50),
+    duracion  INT               -- en minutos
+);
+
+INSERT INTO cartelera (titulo, anio, genero, duracion) VALUES
+    ('Matrix',              1999, 'Ciencia ficción', 136),
+    ('Coco',                2017, 'Animación',        105),
+    ('Duna',                2021, 'Ciencia ficción', 155),
+    ('El Rey León',         1994, 'Animación',         88),
+    ('Interestelar',        2014, 'Ciencia ficción', 169),
+    ('Intensa-Mente',       2015, 'Animación',         95),
+    ('Titanic',             1997, 'Drama',            195),
+    ('El Padrino',          1972, 'Drama',            175),
+    ('Toy Story',           1995, 'Animación',         81),
+    ('Blade Runner 2049',   2017, 'Ciencia ficción', 164),
+    ('Parasite',            2019, 'Drama',            132),
+    ('Wall-E',              2008, 'Animación',         98);</code></pre>
+
+<p>Ahora resolvé estas consultas y <strong>anotá el resultado</strong> (cuántas filas trae cada una) en tu carpeta:</p>
+
+<ol>
+  <li>Todas las películas ordenadas por año, de la más nueva a la más vieja. <em>(pista: <code>ORDER BY anio DESC</code>)</em></li>
+  <li>Solo <code>titulo</code> y <code>anio</code> de las estrenadas <strong>en 2015 o después</strong>.</li>
+  <li>Todas las de género <strong>Animación</strong>.</li>
+  <li>Las que duran <strong>más de 150 minutos</strong>, ordenadas de la más larga a la más corta.</li>
+  <li>Las de <strong>Ciencia ficción anteriores a 2010</strong> <em>(pista: dos condiciones con <code>AND</code>)</em>.</li>
+  <li>Las de <strong>Drama o Animación</strong> <em>(pista: <code>OR</code>, o <code>IN</code>)</em>.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Preguntas para responder (con una consulta)</div>
+  <ol>
+    <li>¿Cuál es la película <strong>más larga</strong> de la cartelera?</li>
+    <li>¿<strong>Cuántas</strong> películas de Animación hay? <em>(pista: <code>SELECT COUNT(*) ...</code>)</em></li>
+    <li>¿Qué películas se estrenaron <strong>entre 1990 y 2000</strong>? <em>(pista: <code>BETWEEN</code>)</em></li>
+  </ol>
+</div>
+
+<p><strong>Y en PHP</strong>, sobre tu propio proyecto: agregá <strong>2 elementos nuevos</strong> a <code>datos.php</code> y verificá que aparecen solos en la cartelera; sumá un <strong>campo nuevo</strong> (por ejemplo <code>duracion</code>) al array y mostralo en la ficha; probá abrir una ficha con un <code>?id=</code> que no existe y comprobá que avisa.</p>
+
+<h2 id="parte-5">Parte 5 — Documentá tu sistema</h2>
+
+<p>En la <a href="clase-06-teoria.html#s5">teoría de la clase</a> está explicado qué significa documentar un sistema, qué incluye y para qué sirve. Acá lo vas a <strong>hacer</strong>: creá un archivo <code>documentacion.md</code> en tu proyecto y completá sus seis secciones con los datos reales del tuyo (el sistema; entidades y datos; archivos; mapa del flujo; estado actual; próximas etapas). Es un <strong>documento vivo</strong>: lo vas a ampliar en cada etapa.</p>
+
+<p>Así se ve una documentación <strong>ya completada</strong> (ejemplo con una cartelera de cine). Usala de <strong>modelo</strong> para la tuya:</p>
+
+<pre><code class="language-markdown"># Documentación del sistema
+
+## 1. El sistema
+- Nombre: Cartelera de Cine
+- Qué problema resuelve: mostrar la cartelera de películas y la ficha de cada una.
+- Usuarios: personas que ingresan (con login) a consultar qué películas hay.
+
+## 2. Entidades y datos
+Entidad principal: pelicula
+
+| campo  | tipo (MySQL)          | ejemplo         |
+|--------|-----------------------|-----------------|
+| id     | INT PK AUTO_INCREMENT | 1               |
+| titulo | VARCHAR(100)          | Matrix          |
+| anio   | INT                   | 1999            |
+| genero | VARCHAR(50)           | Ciencia ficción |
+
+(En datos.php cada película es un array: las claves 'titulo', 'anio'... = estas columnas.)
+
+## 3. Archivos del proyecto
+| archivo       | para qué sirve                                |
+|---------------|-----------------------------------------------|
+| index.php     | login: pide usuario y clave                   |
+| cabecera.php  | menú y encabezado, incluido en cada página    |
+| pie.php       | pie de página, incluido en cada página        |
+| datos.php     | array con todas las películas                 |
+| cartelera.php | recorre datos.php con foreach y arma la lista |
+| ficha.php     | muestra una película por su id (lookup)       |
+| db.sql        | script para crear la tabla y cargar datos     |
+
+## 4. Mapa del flujo
+login -&gt; sesion -&gt; pagina protegida -&gt; include cabecera -&gt;
+cartelera (foreach sobre datos.php) -&gt; click -&gt; ficha (lookup)
+
+## 5. Estado actual
+- [x] Login + sesion + proteccion
+- [x] Includes + navegacion
+- [x] Cartelera (foreach)
+- [x] Ficha (lookup)
+- [x] Tabla MySQL (CREATE + INSERT + SELECT)
+- [x] Repositorio actualizado
+
+## 6. Proximas etapas
+- [ ] Segunda entidad: director (relacion pelicula -&gt; director)
+- [ ] Conexion PHP-MySQL: que la cartelera lea la tabla
+- [ ] Login real (usuarios en la base) y validaciones
+- [ ] Pruebas y documentacion final + defensa</code></pre>
+
+<p>Y esta es la <strong>plantilla en blanco</strong>: copiala a tu <code>documentacion.md</code> y completala con tu proyecto.</p>
+
+<pre><code class="language-markdown"># Documentación del sistema
+
+&gt; Documento vivo: se completa y actualiza en cada etapa del proyecto.
+
+## 1. El sistema
+- Nombre:
+- Qué problema resuelve:
+- Usuarios (quién lo usa y para qué):
+
+## 2. Entidades y datos
+Entidad principal: ____________
+
+| campo   | tipo (MySQL)          | ejemplo |
+|---------|-----------------------|---------|
+| id      | INT PK AUTO_INCREMENT | 1       |
+|         |                       |         |
+
+(En datos.php la misma entidad es un array: las claves = estas columnas.)
+
+## 3. Archivos del proyecto
+| archivo                | para qué sirve |
+|------------------------|----------------|
+| index.php / login      |                |
+| cabecera.php / pie.php |                |
+| datos.php              |                |
+| cartelera.php          |                |
+| ficha.php              |                |
+| db.sql                 |                |
+
+## 4. Mapa del flujo
+login -&gt; sesion -&gt; pagina protegida -&gt; include cabecera -&gt;
+cartelera (foreach sobre datos.php) -&gt; click -&gt; ficha (lookup)
+
+## 5. Estado actual
+- [ ] Login + sesion + proteccion
+- [ ] Includes + navegacion
+- [ ] Cartelera (foreach)
+- [ ] Ficha (lookup)
+- [ ] Tabla MySQL (CREATE + INSERT + SELECT)
+- [ ] Repositorio actualizado
+
+## 6. Proximas etapas
+- [ ] Segunda entidad y su relacion (claves foraneas + diagrama ER)
+- [ ] Conexion PHP-MySQL: leer la tabla desde el sitio (CRUD)
+- [ ] Login real (usuarios en la base) y validaciones
+- [ ] Pruebas y documentacion final + defensa</code></pre>
+
+<h2 id="parte-6">Parte 6 — Dejá el repositorio ordenado</h2>
+
+<pre><code class="language-bash">git add .
+git commit -m "Sistema completo + documentacion del proyecto"
+git push</code></pre>
+
+<p>Verificá en GitHub que estén: <code>datos.php</code>, <code>cartelera.php</code>, <code>ficha.php</code>, <code>cabecera.php</code>/<code>pie.php</code>, <code>estilos.css</code>, el <code>.sql</code> y tu nuevo <code>documentacion.md</code>.</p>
+
+<h2 id="extensiones">Extensiones (si ya llegaste a la línea base)</h2>
+
+<p>Si tu grupo ya tiene todo el núcleo funcionando y subido, seguí con estas mejoras. Se resuelven con lo que ya sabés y suman al proyecto:</p>
+
+<ol>
+  <li><strong>Más datos y un campo nuevo.</strong> Llevá tu <code>datos.php</code> a 8 o más elementos y agregá un campo (por ejemplo <code>imagen</code> o <code>duracion</code>); mostralo en la cartelera y en la ficha. Sumá la misma columna a tu tabla MySQL.</li>
+  <li><strong>Más consultas sobre tu tabla.</strong> Escribí tres <code>SELECT</code> nuevos con <code>ORDER BY</code>, un filtro con <code>AND</code>/<code>OR</code> y un <code>COUNT</code>. Anotá para qué sirve cada uno en tu <code>documentacion.md</code>.</li>
+  <li><strong>Ficha más completa.</strong> Mostrá todos los campos del elemento y agregá un enlace "volver a la cartelera".</li>
+  <li><strong>Estilo por categoría.</strong> Con CSS (como en la Clase 3), dale un color o una clase distinta a las tarjetas según una categoría (género, tipo…).</li>
+  <li><strong>Adelantá la próxima etapa.</strong> Anotá en <code>documentacion.md</code> una <strong>segunda entidad</strong> con sus campos y tipos, y con qué entidad se relaciona. Si querés, dejá su estructura empezada en <code>datos.php</code>.</li>
+  <li><strong>Documentación al día.</strong> Completá la sección 6 (próximas etapas) con detalle y revisá que las secciones 1 a 5 describan tu proyecto real.</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">El proyecto sigue creciendo</div>
+  Siempre hay una mejora posible: más datos, más consultas, mejor estilo o más documentación. La meta mínima es la línea base; a partir de ahí, el proyecto sigue creciendo.
+</div>
+
+<h2 id="autoevaluacion">Autoevaluación</h2>
+
+<p>Tildá lo que quedó logrado. <strong>Base</strong> es el mínimo para dar tu sistema por completo; <strong>consolidación</strong> es haberlo dejado entero, practicado y documentado.</p>
+
+<div class="selfcheck" data-key="clase6-autoeval">
+  <div class="selfcheck-head">
+    <span>Autoevaluación · Clase 6</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="ae-1"><label for="ae-1"><strong>Base:</strong> el login entra y una página interna está protegida.</label></li>
+    <li><input type="checkbox" id="ae-2"><label for="ae-2"><strong>Base:</strong> la cartelera se arma sola con <code>foreach</code> (mínimo 4).</label></li>
+    <li><input type="checkbox" id="ae-3"><label for="ae-3"><strong>Base:</strong> la ficha muestra un elemento y avisa si no existe.</label></li>
+    <li><input type="checkbox" id="ae-4"><label for="ae-4"><strong>Base:</strong> la tabla MySQL existe con datos y corre un <code>SELECT ... WHERE ...</code>.</label></li>
+    <li><input type="checkbox" id="ae-5"><label for="ae-5"><strong>Base:</strong> resolví las 6 consultas de la práctica y anoté los resultados.</label></li>
+    <li><input type="checkbox" id="ae-6"><label for="ae-6"><strong>Base:</strong> creé <code>documentacion.md</code> con las secciones 1 a 5 completas.</label></li>
+    <li><input type="checkbox" id="ae-7"><label for="ae-7"><strong>Base:</strong> todo está subido al repositorio (sitio + <code>.sql</code> + documentación).</label></li>
+    <li><input type="checkbox" id="ae-8"><label for="ae-8"><strong>Consolidación:</strong> respondí las 3 preguntas de la práctica.</label></li>
+    <li><input type="checkbox" id="ae-9"><label for="ae-9"><strong>Consolidación:</strong> completé la sección <strong>6. Próximas etapas</strong> de la documentación.</label></li>
+    <li><input type="checkbox" id="ae-10"><label for="ae-10"><strong>Consolidación:</strong> el repositorio quedó ordenado (mensajes de commit claros).</label></li>
+  </ul>
+</div>
+
+<h2 id="errores">Errores comunes</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td>La cartelera sale vacía</td><td>Falta <code>return</code> en <code>datos.php</code>, o el <code>foreach</code> recorre la variable equivocada.</td></tr>
+  <tr><td>La ficha no muestra nada</td><td>Clave mal escrita (<code>$it['titlo']</code>) o el <code>?id=</code> no coincide con una clave.</td></tr>
+  <tr><td>La página interna no protege</td><td>Falta <code>session_start()</code> o el chequeo con <code>header('Location: ...')</code>.</td></tr>
+  <tr><td>SQL: "error in your SQL syntax"</td><td>Falta <code>;</code>, coma entre columnas o paréntesis.</td></tr>
+  <tr><td>El texto SQL da error</td><td>Va entre <strong>comillas simples</strong>; los números, sin comillas.</td></tr>
+  <tr><td>El <code>WHERE</code> no filtra bien</td><td>Revisá el operador (<code>&gt;=</code>, <code>=</code>) y que el texto vaya entre comillas simples.</td></tr>
+</table>
+
+<h2 id="tarea">Para pensar (tarea de cierre)</h2>
+
+<p>Tu proyecto va a tener <strong>más de una entidad</strong> relacionadas (película → director; turno → paciente; producto → categoría). Anotá en tu <code>documentacion.md</code> una <strong>segunda entidad</strong> con sus columnas y tipos, y cómo se <strong>relaciona</strong> con la primera. Lo usamos en la próxima clase (claves foráneas y diagrama entidad-relación).</p>
+
+<div class="nav">
+  <a href="clase-06-teoria.html">← Volver a la teoría de Clase 6</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>
