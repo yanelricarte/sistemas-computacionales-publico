@@ -217,26 +217,26 @@ id │ nombre       │ pelicula_1 │ pelicula_2 │ pelicula_3 │ pelicula_4 
 
 <p>La <code>N</code> representa <em>"una cantidad cualquiera"</em>, y se usa justamente porque esa cantidad varía de una fila a otra. Poner un <code>1</code> de un lado y una <code>N</code> del otro es la forma abreviada de decir que a cada fila de la primera tabla le pueden corresponder muchas de la segunda, y que a cada una de esas le corresponde una sola de la primera. Se lee siempre en los dos sentidos, como cuando armaste la frase en castellano.</p>
 
-<p>Cómo se arma, paso a paso:</p>
+<p>Todo diagrama ER, lo dibuje quien lo dibuje, tiene estas cinco piezas:</p>
 
 <ol>
   <li><strong>Una caja por entidad.</strong> Arriba el nombre de la tabla, adentro las columnas.</li>
-  <li><strong>Marcá la clave primaria</strong> de cada caja con <code>(PK)</code>.</li>
+  <li><strong>La clave primaria marcada</strong> en cada caja.</li>
   <li><strong>Una línea</strong> que une las dos cajas.</li>
-  <li><strong>El 1 y la N en las puntas.</strong> El <code>1</code> del lado del uno (director), la <code>N</code> del lado de los muchos (películas).</li>
-  <li><strong>Marcá la clave foránea</strong> con <code>(FK)</code>, del lado de la <code>N</code>, y anotá a qué apunta.</li>
+  <li><strong>La cardinalidad en las puntas.</strong> El lado del uno (director) y el lado de los muchos (películas), cada uno con su marca.</li>
+  <li><strong>La clave foránea marcada</strong>, del lado de los muchos, indicando a qué apunta.</li>
 </ol>
 
 <div class="callout callout-tip">
-  <div class="callout-title">El dibujo en papel, antes de escribir SQL</div>
-  El diagrama se traza <strong>antes</strong> de escribir SQL, a mano, en la carpeta. Corregirlo con lápiz y goma lleva segundos; corregirlo cuando las tablas ya están creadas y cargadas implica rehacerlas. Ese es el orden de trabajo habitual en el desarrollo profesional, y por la misma razón.
+  <div class="callout-title">El diagrama va antes que el SQL</div>
+  El diagrama se arma <strong>antes</strong> de escribir la primera línea de SQL. Corregirlo mientras es un diagrama lleva segundos; corregirlo cuando las tablas ya están creadas y cargadas implica rehacerlas. Ese es el orden de trabajo habitual en el desarrollo profesional, y por la misma razón.
 </div>
 
-<h3>Una herramienta para pasarlo en limpio</h3>
+<h3>La herramienta con la que vas a armarlo</h3>
 
-<p>Para obtener una versión prolija destinada al repositorio hay una página que lo dibuja automáticamente: <strong><a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a></strong>. Funciona directamente en el navegador: abrís la dirección y empezás a editar.</p>
+<p>Vas a usar <strong><a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a></strong>. Funciona directamente en el navegador, sin registrarte ni instalar nada: abrís la dirección y empezás a trabajar.</p>
 
-<p>Se opera escribiendo: describís tus tablas en el panel de la izquierda y el diagrama se dibuja a la derecha. La sintaxis se parece bastante a la de un <code>CREATE TABLE</code>, así que vas a reconocerla. Para la cartelera queda así:</p>
+<p>Se opera escribiendo: describís tus tablas en el panel de la izquierda y el diagrama se dibuja solo a la derecha. La sintaxis se parece bastante a la de un <code>CREATE TABLE</code>, así que vas a reconocerla — y eso juega a favor, porque lo que escribas acá es prácticamente el SQL que vas a escribir después. Para la cartelera queda así:</p>
 
 <pre><code>Table directores {
   id integer [pk]
@@ -263,7 +263,12 @@ ref: peliculas.director_id &gt; directores.id</code></pre>
 
 <div class="callout callout-tip">
   <div class="callout-title">La descarga de la imagen</div>
-  Botón <strong>Export</strong>, arriba a la derecha. La imagen que te descargás es la que va al repositorio, en <code>docs/modelo-er.png</code>. La página también anda sin internet una vez que la abriste, así que si la conexión se corta podés seguir trabajando.
+  Botón <strong>Export</strong>, arriba a la derecha. La imagen que te descargás es la que va al repositorio, en <code>docs/modelo-er.png</code>. La página también funciona sin conexión una vez que la abriste, así que si se corta internet podés seguir trabajando.
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">La que vas a encontrar trabajando</div>
+  <strong>Lucidchart</strong> es la herramienta de diagramas más difundida en el ámbito profesional, y también hace diagramas ER. Trabaja de otra manera —arrastrando cajas en vez de escribir— y su plan gratuito pide registrarse y limita a 3 documentos con 60 objetos cada uno, así que para la clase no nos sirve. Vale que sepas que existe: los conceptos que estás aprendiendo acá son los mismos que vas a aplicar ahí.
 </div>
 
 
@@ -559,7 +564,7 @@ FOREIGN KEY (director_id) REFERENCES directores(id)</code></pre>
 <ul>
   <li>El nombre de cada director está escrito <strong>una sola vez</strong> en toda la base. Ese era el problema con el que arrancamos.</li>
   <li>Cada número de <code>director_id</code> <strong>existe</strong> en la otra tabla. De esa verificación se encarga la regla que declaraste.</li>
-  <li>El diagrama que dibujaste en papel y estas dos tablas <strong>describen la misma estructura</strong>. Ante cualquier diferencia entre ambos, conviene determinar cuál de los dos hay que corregir antes de seguir construyendo sobre el modelo.</li>
+  <li>El diagrama que armaste al principio y estas dos tablas <strong>describen la misma estructura</strong>. Ante cualquier diferencia entre ambos, conviene determinar cuál de los dos hay que corregir antes de seguir construyendo sobre el modelo.</li>
 </ul>
 
 <h2 id="s8">

@@ -26,7 +26,7 @@
 <div class="meta">
   <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
   <strong>Entorno:</strong> XAMPP (Apache + MySQL) · phpMyAdmin en <code>http://localhost/phpmyadmin</code><br>
-  <strong>Necesitás también:</strong> la carpeta y una lapicera — las partes 1 y 7 se hacen en papel
+  <strong>Herramienta para el diagrama:</strong> <a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a> — sin registro, se abre y se usa
 </div>
 
 <h2>Objetivo</h2>
@@ -45,23 +45,41 @@
 
 <h2>Consigna</h2>
 
-<h3>Parte 1 — Dibujá tu diagrama ER (en papel)</h3>
+<h3>Parte 1 — Armá tu diagrama ER</h3>
 
-<p>Esta parte se hace <strong>sin computadora</strong>. Es la más importante del TP: un error acá cuesta un minuto de goma, y el mismo error después de crear las tablas cuesta rehacerlas.</p>
+<p>El diagrama es el plano de tu base, y se hace <strong>antes</strong> de escribir SQL. Cuando esté bien armado, el <code>CREATE TABLE</code> de la Parte 2 sale casi copiado de acá.</p>
+
+<p>Entrá a <strong><a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a></strong>. Se abre con un ejemplo ya cargado: borralo y escribí el tuyo. Vas a notar que la herramienta se usa <strong>escribiendo</strong>: describís las tablas en el panel izquierdo y el diagrama se dibuja solo en el derecho.</p>
 
 <ol>
-  <li><strong>Escribí la relación en castellano</strong>, en los dos sentidos:
-    <pre><code>cada ______________ tiene un/una ______________
-cada ______________ tiene ¿cuántos/as? ______________</code></pre>
-    Ejemplo: <em>cada película tiene un director</em> / <em>cada director tiene muchas películas</em>.
+  <li><strong>Empezá por la relación, en castellano.</strong> Escribila arriba de todo como comentario, en los dos sentidos. Decidir esto antes de escribir las tablas es lo que evita el error más caro del TP.
+    <pre><code>// cada película tiene un director
+// cada director tiene muchas películas</code></pre>
   </li>
-  <li><strong>Dibujá una caja por entidad</strong>, con el nombre de la tabla arriba y las columnas adentro (mínimo 3 columnas en la tabla nueva, además del <code>id</code>).</li>
-  <li><strong>Marcá la clave primaria</strong> de cada caja con <code>(PK)</code>.</li>
-  <li><strong>Uní las cajas con una línea</strong> y escribí el <code>1</code> y la <code>N</code> en las puntas: el <code>1</code> del lado del uno, la <code>N</code> del lado de los muchos.</li>
-  <li><strong>Agregá la clave foránea</strong> del lado de la <code>N</code>, marcala con <code>(FK)</code> y anotá a qué apunta.</li>
+  <li><strong>Una <code>Table</code> por entidad</strong>, con sus columnas y el tipo de cada una. Marcá la clave primaria con <code>[pk]</code>. Mínimo 3 columnas en la tabla nueva, además del <code>id</code>.
+    <pre><code>Table directores {
+  id integer [pk]
+  nombre varchar(100)
+  nacionalidad varchar(50)
+  anio_nac integer
+}
+
+Table peliculas {
+  id integer [pk]
+  titulo varchar(100)
+  anio integer
+  genero varchar(50)
+  director_id integer
+}</code></pre>
+  </li>
+  <li><strong>La relación, en una línea.</strong> El <code>&gt;</code> significa <em>muchos a uno</em> y se escribe desde el lado de los <strong>muchos</strong> hacia el lado del <strong>uno</strong>:
+    <pre><code>ref: peliculas.director_id &gt; directores.id</code></pre>
+  </li>
+  <li><strong>Mirá el diagrama que apareció a la derecha</strong> y ubicá en él las dos puntas de la línea. De un lado vas a ver una patita de tres trazos: ese es el lado de los <strong>muchos</strong>, el que en la teoría marcamos con la <code>N</code>. Del otro, un trazo simple: el lado del <strong>uno</strong>. Comprobá que coincidan con la frase que escribiste en el paso 1.</li>
+  <li><strong>Descargá la imagen</strong> con el botón <strong>Export</strong>, arriba a la derecha. Guardala como <code>docs/modelo-er.png</code> dentro de tu proyecto: en la Parte 6 la vas a subir al repositorio.</li>
 </ol>
 
-<p>Te tiene que quedar algo así:</p>
+<p>Te tiene que quedar un diagrama con esta información, dibujado por la herramienta:</p>
 
 <pre><code>    DIRECTORES                              PELICULAS
  ┌──────────────────┐                 ┌──────────────────────┐
@@ -70,11 +88,19 @@ cada ______________ tiene ¿cuántos/as? ______________</code></pre>
  │ nacionalidad     │                 │ anio                 │
  │ anio_nac         │                 │ genero               │
  └──────────────────┘                 │ director_id  (FK) ───┼──► directores.id
-                                      └──────────────────────┘</code></pre>
+                                      └──────────────────────┘
+
+  el diagrama de la herramienta muestra lo mismo con otra notación:
+  donde acá dice N, allá vas a ver la patita de tres trazos</code></pre>
 
 <div class="callout callout-warn">
   <div class="callout-title">✓ Checkpoint Parte 1</div>
-  Antes de seguir, respondé esto mirando tu dibujo: <strong>¿de qué lado quedó la FK?</strong> Tiene que estar del lado de la <code>N</code> (el de los muchos). Si la pusiste del otro lado, esa tabla necesitaría una columna por cada fila relacionada — imposible. Corregilo ahora. <strong>Mostrale el diagrama a la docente antes de pasar a la Parte 2.</strong>
+  Mirando tu diagrama: <strong>¿de qué lado quedó la clave foránea?</strong> Tiene que estar en la tabla del lado de los <strong>muchos</strong> (la de la patita de tres trazos). Si te quedó al revés, esa tabla necesitaría una columna por cada fila relacionada — imposible. Se corrige dando vuelta la línea <code>ref:</code>, y el diagrama se redibuja solo. <strong>Mostrale el diagrama a la docente antes de pasar a la Parte 2.</strong>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Si se corta internet</div>
+  Una vez que abriste la página, sigue funcionando sin conexión. Si directamente no pudiste entrar, armá el diagrama a mano en la carpeta con la misma información — cajas, columnas, la línea, el <code>1</code> y la <code>N</code>, y la FK marcada — y sacale una foto para el repositorio. Lo que se evalúa es el modelo, no la herramienta.
 </div>
 
 <h3>Parte 2 — Creá las dos tablas (CREATE TABLE con FOREIGN KEY)</h3>
@@ -209,7 +235,7 @@ SELECT titulo FROM peliculas WHERE director_id = 3;</code></pre>
 <ol>
   <li>phpMyAdmin → seleccioná tu <strong>base</strong> (no una tabla) → pestaña <strong>Exportar</strong> → SQL → <strong>Continuar</strong>. Ahora el archivo trae <strong>las dos tablas y la relación</strong>.</li>
   <li>Renombralo a <code>db.sql</code> y reemplazá el de la Clase 5 en tu proyecto.</li>
-  <li>Poné el diagrama ER de la Parte 1 en <code>docs/modelo-er.png</code>. Sirve <strong>una foto de la carpeta</strong>, o la versión digital si preferís hacerla con la herramienta (ver el recuadro de abajo).</li>
+  <li>Verificá que el <code>docs/modelo-er.png</code> que exportaste en la Parte 1 esté en la carpeta de tu proyecto.</li>
   <li>Commiteá:
     <pre><code>git add db.sql docs/modelo-er.png
 git commit -m "Modelo de datos: segunda entidad y relacion con clave foranea"
@@ -217,25 +243,9 @@ git push</code></pre>
   </li>
 </ol>
 
-<div class="callout callout-info">
-  <div class="callout-title">El diagrama en versión digital</div>
-  <p>Entrá a <strong><a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a></strong>. Funciona directamente en el navegador: abrís la dirección y empezás a escribir. Describís tus tablas en el panel izquierdo, el diagrama se dibuja en el derecho y con <strong>Export</strong> descargás la imagen.</p>
-  <pre><code>Table directores {
-  id integer [pk]
-  nombre varchar(100)
-  nacionalidad varchar(50)
-}
-
-Table peliculas {
-  id integer [pk]
-  titulo varchar(100)
-  anio integer
-  director_id integer
-}
-
-ref: peliculas.director_id &gt; directores.id</code></pre>
-  <p>La última línea expresa la relación: el <code>&gt;</code> va desde el lado de los <strong>muchos</strong> hacia el lado del <strong>uno</strong>. Reemplazá los nombres por los de tus tablas. La foto de la carpeta sigue siendo una entrega válida; esta alternativa está para quien quiera una versión más prolija.</p>
-  <p><strong>La herramienta usa otra notación:</strong> marca la cardinalidad con símbolos en las puntas de la línea (una patita de tres trazos del lado de los muchos) en lugar del <code>1</code> y la <code>N</code>. Ambas notaciones expresan lo mismo y vas a encontrar las dos en la bibliografía.</p>
+<div class="callout callout-tip">
+  <div class="callout-title">Si perdiste la imagen del diagrama</div>
+  Volvé a <a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a>, reescribí tus tablas (son pocas líneas) y exportá de nuevo. Es más rápido que buscar dónde quedó el archivo.
 </div>
 
 <div class="callout callout-tip">
@@ -375,15 +385,15 @@ INSERT INTO peliculas (titulo, anio, genero, director_id) VALUES
     <span class="selfcheck-count"></span>
   </div>
   <ul>
-    <li><input type="checkbox" id="tpc7-1"><label for="tpc7-1">Dibujé el <strong>diagrama ER</strong> en la carpeta, con las dos cajas, la línea, el <code>1</code> y la <code>N</code>.</label></li>
-    <li><input type="checkbox" id="tpc7-2"><label for="tpc7-2">La <strong>clave foránea está del lado de los muchos</strong> y marqué a qué apunta.</label></li>
+    <li><input type="checkbox" id="tpc7-1"><label for="tpc7-1">Armé el <strong>diagrama ER</strong> con la herramienta: las dos tablas, sus columnas y la línea <code>ref:</code> de la relación.</label></li>
+    <li><input type="checkbox" id="tpc7-2"><label for="tpc7-2">La <strong>clave foránea quedó del lado de los muchos</strong> (verifiqué en el diagrama de qué lado está la patita de tres trazos).</label></li>
     <li><input type="checkbox" id="tpc7-3"><label for="tpc7-3">Creé la segunda tabla <strong>antes</strong> que la que apunta.</label></li>
     <li><input type="checkbox" id="tpc7-4"><label for="tpc7-4">La tabla que apunta tiene la columna FK y la línea <code>FOREIGN KEY ... REFERENCES ...</code>.</label></li>
     <li><input type="checkbox" id="tpc7-5"><label for="tpc7-5">La relación figura en <strong>Estructura → Vista de relaciones</strong>.</label></li>
     <li><input type="checkbox" id="tpc7-6"><label for="tpc7-6">Cargué mínimo 3 filas en la tabla nueva y 5 en la primera, con la FK cargada con ids reales.</label></li>
     <li><input type="checkbox" id="tpc7-7"><label for="tpc7-7">Probé el <code>INSERT</code> con un id inexistente y anoté el error (Parte 4).</label></li>
     <li><input type="checkbox" id="tpc7-8"><label for="tpc7-8">Corrí las consultas de la Parte 5, incluida una que filtra por la clave foránea.</label></li>
-    <li><input type="checkbox" id="tpc7-9"><label for="tpc7-9">Exporté el <code>db.sql</code> con las <strong>dos tablas</strong> y lo subí al repo junto con el diagrama.</label></li>
+    <li><input type="checkbox" id="tpc7-9"><label for="tpc7-9">Exporté el <code>db.sql</code> con las <strong>dos tablas</strong> y lo subí al repo junto con el <code>modelo-er.png</code>.</label></li>
     <li><input type="checkbox" id="tpc7-10"><label for="tpc7-10">Actualicé el <code>documentacion.md</code> con las entidades y la relación.</label></li>
     <li><input type="checkbox" id="tpc7-11"><label for="tpc7-11"><em>(Extensión)</em> Resolví la práctica de consultas de la <strong>Parte 8</strong> y anoté los resultados.</label></li>
   </ul>
