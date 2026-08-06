@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TP Clase 7 — Tu modelo de datos: dos tablas relacionadas</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 7</div>
+  <h1>Tu modelo de datos: dos tablas relacionadas</h1>
+  <p class="sub">Vas a agregarle a tu proyecto una <strong>segunda entidad</strong>, dibujar el <strong>diagrama ER</strong> del modelo y conectar las dos tablas con una <strong>clave foránea</strong>. Al terminar, tu base deja de ser una tabla suelta y pasa a ser un modelo de datos, con el diagrama y el script versionados en el repo.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Entorno:</strong> XAMPP (Apache + MySQL) · phpMyAdmin en <code>http://localhost/phpmyadmin</code><br>
+  <strong>Necesitás también:</strong> la carpeta y una lapicera — las partes 1 y 7 se hacen en papel
+</div>
+
+<h2>Objetivo</h2>
+
+<p>Partir en dos la información de tu proyecto: la entidad que ya tenías de la Clase 5 y una <strong>segunda entidad</strong> relacionada con ella. Modelar esa relación en un <strong>diagrama entidad-relación</strong>, implementarla en MySQL con <code>FOREIGN KEY</code> y dejar el modelo documentado. Con esto cerrás la Etapa 2 del proyecto.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Las películas son un ejemplo</div>
+  Todo el TP usa la cartelera (<code>peliculas</code> + <code>directores</code>) para explicar, pero hacelo con <strong>tu</strong> proyecto: <code>turnos</code> + <code>pacientes</code>, <code>productos</code> + <code>categorias</code>, <code>prestamos</code> + <code>libros</code>, lo que sea. La evaluación recae sobre el modelo: la relación identificada y la clave foránea ubicada del lado correcto.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Antes de empezar</div>
+  Abrí XAMPP, encendé <strong>Apache</strong> y <strong>MySQL</strong>, y entrá a <code>http://localhost/phpmyadmin</code>. Si perdiste la base de la Clase 5, importá tu <code>.sql</code> desde el repositorio (por eso lo subimos). Repaso de conceptos en la <a href="clase-07-teoria.html">teoría de Clase 7</a>.
+</div>
+
+<h2>Consigna</h2>
+
+<h3>Parte 1 — Dibujá tu diagrama ER (en papel)</h3>
+
+<p>Esta parte se hace <strong>sin computadora</strong>. Es la más importante del TP: un error acá cuesta un minuto de goma, y el mismo error después de crear las tablas cuesta rehacerlas.</p>
+
+<ol>
+  <li><strong>Escribí la relación en castellano</strong>, en los dos sentidos:
+    <pre><code>cada ______________ tiene un/una ______________
+cada ______________ tiene ¿cuántos/as? ______________</code></pre>
+    Ejemplo: <em>cada película tiene un director</em> / <em>cada director tiene muchas películas</em>.
+  </li>
+  <li><strong>Dibujá una caja por entidad</strong>, con el nombre de la tabla arriba y las columnas adentro (mínimo 3 columnas en la tabla nueva, además del <code>id</code>).</li>
+  <li><strong>Marcá la clave primaria</strong> de cada caja con <code>(PK)</code>.</li>
+  <li><strong>Uní las cajas con una línea</strong> y escribí el <code>1</code> y la <code>N</code> en las puntas: el <code>1</code> del lado del uno, la <code>N</code> del lado de los muchos.</li>
+  <li><strong>Agregá la clave foránea</strong> del lado de la <code>N</code>, marcala con <code>(FK)</code> y anotá a qué apunta.</li>
+</ol>
+
+<p>Te tiene que quedar algo así:</p>
+
+<pre><code>    DIRECTORES                              PELICULAS
+ ┌──────────────────┐                 ┌──────────────────────┐
+ │ id  (PK)         │1              N │ id       (PK)        │
+ │ nombre           ├─────────────────┤ titulo               │
+ │ nacionalidad     │                 │ anio                 │
+ │ anio_nac         │                 │ genero               │
+ └──────────────────┘                 │ director_id  (FK) ───┼──► directores.id
+                                      └──────────────────────┘</code></pre>
+
+<div class="callout callout-warn">
+  <div class="callout-title">✓ Checkpoint Parte 1</div>
+  Antes de seguir, respondé esto mirando tu dibujo: <strong>¿de qué lado quedó la FK?</strong> Tiene que estar del lado de la <code>N</code> (el de los muchos). Si la pusiste del otro lado, esa tabla necesitaría una columna por cada fila relacionada — imposible. Corregilo ahora. <strong>Mostrale el diagrama a la docente antes de pasar a la Parte 2.</strong>
+</div>
+
+<h3>Parte 2 — Creá las dos tablas (CREATE TABLE con FOREIGN KEY)</h3>
+
+<p>Ahora sí, phpMyAdmin, pestaña <strong>SQL</strong>. Acordate del orden: <strong>primero la tabla apuntada</strong> (la del lado del uno), porque la otra necesita que exista.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Advertencia: se eliminan las filas de la Clase 5</div>
+  <p>Para incorporar la columna nueva, el paso 2 comienza con un <code>DROP TABLE</code>, que <strong>elimina la tabla junto con todas las filas cargadas</strong>. Está contemplado en la consigna: en la Parte 3 las vas a cargar de nuevo, y son pocas. Conviene que lo sepas antes de ejecutarlo.</p>
+  <p>Un sistema en producción se modifica con <code>ALTER TABLE</code>, que incorpora la columna <strong>conservando los datos existentes</strong>. Vas a necesitar ese recurso cuando tu proyecto tenga información que deba preservarse. Con cinco filas de prueba, en cambio, rehacer la tabla resulta más simple y deja el <code>CREATE TABLE</code> completo a la vista.</p>
+</div>
+
+<ol>
+  <li>Creá la <strong>tabla nueva</strong> (la del lado del uno):
+    <pre><code>CREATE TABLE directores (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    nombre       VARCHAR(100) NOT NULL,
+    nacionalidad VARCHAR(50),
+    anio_nac     INT
+);</code></pre>
+  </li>
+  <li>Rehacé tu tabla de la Clase 5 agregándole <strong>dos líneas</strong>: la columna FK y la regla.
+    <pre><code>DROP TABLE IF EXISTS peliculas;
+
+CREATE TABLE peliculas (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    titulo      VARCHAR(100) NOT NULL,
+    anio        INT,
+    genero      VARCHAR(50),
+    director_id INT NOT NULL,                              -- la columna
+    FOREIGN KEY (director_id) REFERENCES directores(id)    -- la regla
+);</code></pre>
+  </li>
+  <li>Cambiá los nombres de tablas y columnas por los de <strong>tu</strong> proyecto.</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">Cómo nombrar tu columna FK</div>
+  <p>Usá la convención: <strong>el nombre de la tabla apuntada, en singular, más <code>_id</code></strong>. Si tu tabla nueva se llama <code>pacientes</code>, la columna va a ser <code>paciente_id</code>; si es <code>categorias</code>, va a ser <code>categoria_id</code>.</p>
+  <p>Dos cosas más: <strong>las dos columnas que se conectan tienen que ser del mismo tipo</strong> (si el <code>id</code> de tu tabla nueva es <code>INT</code>, tu columna FK también, o MySQL rechaza el <code>CREATE TABLE</code>); y el <code>NOT NULL</code> va si la relación es <strong>obligatoria</strong> en tu proyecto (toda película tiene director, todo turno tiene paciente). Si en tu proyecto ese vínculo puede quedar pendiente de manera legítima — un producto todavía sin categoría asignada —, dejá la columna sin <code>NOT NULL</code>: ahí <code>NULL</code> significa "dato pendiente".</p>
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 2</div>
+  Las dos tablas aparecen en el panel izquierdo. Verificá que la relación quedó registrada: entrá a la tabla que apunta → pestaña <strong>Estructura</strong> → abajo, <strong>Vista de relaciones</strong>. Ahí tiene que figurar tu clave foránea apuntando a la otra tabla.
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Verificación visual con el Diseñador</div>
+  Situate en tu <strong>base</strong> (a nivel de base, no de tabla) y abrí la pestaña <strong>Diseñador</strong>. Vas a ver tus dos tablas con la línea de la relación dibujada entre ellas. Lo útil es esto: <strong>la línea aparece solamente si la clave foránea está declarada de verdad</strong>. Si las tablas te aparecen sueltas, pusiste la columna <code>director_id</code> pero te falta la línea del <code>FOREIGN KEY</code>.
+</div>
+
+<h3>Parte 3 — Cargá los datos (en orden)</h3>
+
+<p>Mismo orden que al crear: primero las filas de la tabla apuntada. Una película no puede apuntar a un director que todavía no existe.</p>
+
+<ol>
+  <li>Cargá <strong>mínimo 3 filas</strong> en la tabla nueva. No escribas el <code>id</code>: lo pone la base.
+    <pre><code>INSERT INTO directores (nombre, nacionalidad, anio_nac) VALUES
+    ('Lana Wachowski',   'Estados Unidos', 1965),
+    ('Lee Unkrich',      'Estados Unidos', 1967),
+    ('Pete Docter',      'Estados Unidos', 1968),
+    ('Bong Joon-ho',     'Corea del Sur',  1969),
+    ('Denis Villeneuve', 'Canadá',         1967);</code></pre>
+  </li>
+  <li>Averiguá qué <code>id</code> le tocó a cada una:
+    <pre><code>SELECT * FROM directores;</code></pre>
+    <strong>Verificá los valores reales en pantalla y anotalos.</strong> Van a ser 1, 2, 3… únicamente si la tabla estaba vacía; si ya tenías filas, si ejecutaste el <code>INSERT</code> dos veces o si borraste alguna, el contador de <code>AUTO_INCREMENT</code> sigue avanzando y los números asignados son otros.
+  </li>
+  <li>Cargá <strong>mínimo 5 filas</strong> en la primera tabla, poniendo en la FK el <strong>número</strong> que corresponde:
+    <pre><code>INSERT INTO peliculas (titulo, anio, genero, director_id) VALUES
+    ('Matrix',       1999, 'Ciencia ficción', 1),
+    ('Coco',         2017, 'Animación',       2),
+    ('Intensamente', 2015, 'Animación',       3),
+    ('Parásitos',    2019, 'Drama',           4),
+    ('Duna',         2021, 'Ciencia ficción', 5);</code></pre>
+  </li>
+</ol>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El número que va en la clave foránea</div>
+  En <code>director_id</code> se escribe el <strong>id</strong> del director. Poner ahí <code>'Lee Unkrich'</code> es el error más frecuente de esta clase: la columna está declarada <code>INT</code> y el vínculo con la otra tabla se establece a través del identificador.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 3</div>
+  <code>SELECT * FROM peliculas;</code> muestra tus filas y ninguna tiene la FK vacía ni en <code>0</code>. Todos los números que ves ahí existen en la otra tabla.
+</div>
+
+<h3>Parte 4 — Probá qué pasa con un id que no existe</h3>
+
+<p>El objetivo de este paso es <strong>observar en funcionamiento</strong> la regla que escribiste. Intentá cargar una fila que apunte a un id inexistente:</p>
+
+<pre><code>INSERT INTO peliculas (titulo, anio, director_id) VALUES ('Peli fantasma', 2024, 99);</code></pre>
+
+<p>Anotá en la carpeta:</p>
+
+<ol>
+  <li><strong>a)</strong> El mensaje de error, copiado tal cual aparece.</li>
+  <li><strong>b)</strong> Con tus palabras: ¿por qué la base se niega a guardar esa fila?</li>
+  <li><strong>c)</strong> ¿Qué habría pasado en la Clase 5, cuando el director era una columna de texto común?</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 4</div>
+  Te tiene que aparecer <code>Cannot add or update a child row: a foreign key constraint fails</code>. Si en cambio la fila <strong>se guardó</strong>, falta declarar la regla: revisá que el <code>CREATE TABLE</code> incluya la línea <code>FOREIGN KEY ... REFERENCES ...</code> y volvé a la Parte 2.
+</div>
+
+<h3>Parte 5 — Consultá por la clave foránea</h3>
+
+<p>Escribí y ejecutá estas consultas sobre <strong>tu</strong> base. Anotá cada una y cuántas filas devolvió.</p>
+
+<ol>
+  <li>Todas las filas de la tabla nueva.</li>
+  <li>Todas las filas de la primera tabla. Observá que la columna FK muestra el identificador numérico.</li>
+  <li>Filtrando <strong>por la clave foránea</strong>: todas las filas que apuntan a un id determinado.
+    <pre><code>SELECT titulo, anio FROM peliculas WHERE director_id = 3;</code></pre>
+  </li>
+  <li>El camino en dos pasos: buscá el id por el nombre y después usalo para filtrar.
+    <pre><code>SELECT id FROM directores WHERE nombre = 'Pete Docter';
+SELECT titulo FROM peliculas WHERE director_id = 3;</code></pre>
+  </li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 5</div>
+  Podés explicar qué devuelve cada una. Y ya identificaste el límite: el listado muestra <code>3</code> donde te interesaría leer <em>"Pete Docter"</em>. Combinar las dos tablas en una sola consulta se resuelve con <code>JOIN</code> — está en el recuadro de la <a href="clase-07-teoria.html#s7">teoría §7</a> si querés probarlo.
+</div>
+
+<h3>Parte 6 — Exportá y subí al repositorio</h3>
+
+<ol>
+  <li>phpMyAdmin → seleccioná tu <strong>base</strong> (no una tabla) → pestaña <strong>Exportar</strong> → SQL → <strong>Continuar</strong>. Ahora el archivo trae <strong>las dos tablas y la relación</strong>.</li>
+  <li>Renombralo a <code>db.sql</code> y reemplazá el de la Clase 5 en tu proyecto.</li>
+  <li>Poné el diagrama ER de la Parte 1 en <code>docs/modelo-er.png</code>. Sirve <strong>una foto de la carpeta</strong>, o la versión digital si preferís hacerla con la herramienta (ver el recuadro de abajo).</li>
+  <li>Commiteá:
+    <pre><code>git add db.sql docs/modelo-er.png
+git commit -m "Modelo de datos: segunda entidad y relacion con clave foranea"
+git push</code></pre>
+  </li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">El diagrama en versión digital</div>
+  <p>Entrá a <strong><a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a></strong>. Funciona directamente en el navegador: abrís la dirección y empezás a escribir. Describís tus tablas en el panel izquierdo, el diagrama se dibuja en el derecho y con <strong>Export</strong> descargás la imagen.</p>
+  <pre><code>Table directores {
+  id integer [pk]
+  nombre varchar(100)
+  nacionalidad varchar(50)
+}
+
+Table peliculas {
+  id integer [pk]
+  titulo varchar(100)
+  anio integer
+  director_id integer
+}
+
+ref: peliculas.director_id &gt; directores.id</code></pre>
+  <p>La última línea expresa la relación: el <code>&gt;</code> va desde el lado de los <strong>muchos</strong> hacia el lado del <strong>uno</strong>. Reemplazá los nombres por los de tus tablas. La foto de la carpeta sigue siendo una entrega válida; esta alternativa está para quien quiera una versión más prolija.</p>
+  <p><strong>La herramienta usa otra notación:</strong> marca la cardinalidad con símbolos en las puntas de la línea (una patita de tres trazos del lado de los muchos) en lugar del <code>1</code> y la <code>N</code>. Ambas notaciones expresan lo mismo y vas a encontrar las dos en la bibliografía.</p>
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 6</div>
+  Entrá a tu repositorio en GitHub desde el navegador. Tenés que ver el <code>db.sql</code> actualizado y la imagen del diagrama. Si abrís el <code>.sql</code> ahí, tiene que aparecer la línea del <code>FOREIGN KEY</code>.
+</div>
+
+<h3>Parte 7 — Documentá el modelo</h3>
+
+<p>Abrí el <code>documentacion.md</code> que empezaste en la Clase 6 y agregale una sección con el modelo de datos, redactada en prosa:</p>
+
+<ol>
+  <li>Las <strong>dos entidades</strong> y qué guarda cada una, en una línea por entidad.</li>
+  <li>La <strong>relación</strong>, escrita como frase: <em>"cada película tiene un director; un director puede tener muchas películas"</em>.</li>
+  <li><strong>Dónde está la clave foránea</strong> y a qué apunta.</li>
+  <li>El <strong>diagrama</strong>, enlazado o embebido: <code>![Modelo ER](docs/modelo-er.png)</code>.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 7</div>
+  Alguien que no conoce tu proyecto lee esa sección y entiende cómo están organizados tus datos, sin abrir el SQL. Ese es el criterio.
+</div>
+
+<h3>Parte 8 — Práctica de consultas <span style="font-weight:400">(extensión)</span></h3>
+
+<div class="callout callout-info">
+  <div class="callout-title">Esta parte es optativa en clase</div>
+  Las Partes 1 a 7 son el núcleo del TP y se resuelven durante la clase. Esta última es para <strong>quien haya terminado todo</strong> y le sobre tiempo; el resto la hace <strong>de tarea</strong>. Practica consultas sobre una base más grande que la tuya, con datos ya cargados.
+</div>
+
+<p>Creá una base aparte llamada <code>practica7</code>, pegá esto en la pestaña SQL y ejecutalo:</p>
+
+<pre><code>CREATE DATABASE IF NOT EXISTS practica7
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE practica7;
+
+CREATE TABLE directores (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    nombre       VARCHAR(100) NOT NULL,
+    nacionalidad VARCHAR(50)
+);
+
+CREATE TABLE peliculas (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    titulo      VARCHAR(100) NOT NULL,
+    anio        INT,
+    genero      VARCHAR(50),
+    director_id INT NOT NULL,
+    FOREIGN KEY (director_id) REFERENCES directores(id)
+);
+
+INSERT INTO directores (nombre, nacionalidad) VALUES
+    ('Lana Wachowski',   'Estados Unidos'),
+    ('Lee Unkrich',      'Estados Unidos'),
+    ('Pete Docter',      'Estados Unidos'),
+    ('Bong Joon-ho',     'Corea del Sur'),
+    ('Denis Villeneuve', 'Canadá'),
+    ('Hayao Miyazaki',   'Japón');
+
+INSERT INTO peliculas (titulo, anio, genero, director_id) VALUES
+    ('Matrix',                 1999, 'Ciencia ficción', 1),
+    ('Coco',                   2017, 'Animación',       2),
+    ('Toy Story 3',            2010, 'Animación',       2),
+    ('Intensamente',           2015, 'Animación',       3),
+    ('Up',                     2009, 'Animación',       3),
+    ('Monsters Inc.',          2001, 'Animación',       3),
+    ('Parásitos',              2019, 'Drama',           4),
+    ('Okja',                   2017, 'Drama',           4),
+    ('Duna',                   2021, 'Ciencia ficción', 5),
+    ('La llegada',             2016, 'Ciencia ficción', 5),
+    ('Blade Runner 2049',      2017, 'Ciencia ficción', 5),
+    ('El viaje de Chihiro',    2001, 'Animación',       6),
+    ('La princesa Mononoke',   1997, 'Animación',       6);</code></pre>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">Paso 1 — Leé antes de correr</p>
+  <p>Sin ejecutar nada, respondé mirando los <code>INSERT</code> de arriba:</p>
+  <ol>
+    <li><strong>a)</strong> ¿Qué <code>id</code> le tocó a Denis Villeneuve? ¿Cómo lo sabés si no está escrito?</li>
+    <li><strong>b)</strong> ¿Cuántas películas tiene cargadas Pete Docter?</li>
+    <li><strong>c)</strong> ¿Cuántas veces está escrito el texto <code>'Hayao Miyazaki'</code> en toda la base? ¿Y cuántas películas suyas hay?</li>
+  </ol>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">Paso 2 — Corré y comprobá</p>
+  <p>Ahora sí, ejecutá y verificá si acertaste:</p>
+  <ol>
+    <li><strong>a)</strong> <code>SELECT * FROM directores;</code> — ¿coincide el id de Villeneuve con lo que dijiste?</li>
+    <li><strong>b)</strong> <code>SELECT titulo, anio FROM peliculas WHERE director_id = 3;</code> — ¿cuántas filas devolvió?</li>
+    <li><strong>c)</strong> <code>SELECT titulo FROM peliculas WHERE director_id = 6 ORDER BY anio;</code> — ¿cuál es la más vieja?</li>
+  </ol>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">Paso 3 — Armá tus propias consultas</p>
+  <p>Escribí la consulta que responde cada pregunta. Anotá la consulta y el resultado.</p>
+  <ol>
+    <li><strong>a)</strong> ¿Qué películas dirigió Bong Joon-ho? (necesitás dos consultas: primero conseguir su id).</li>
+    <li><strong>b)</strong> ¿Cuántas películas tiene cargadas el director 5? Usá <code>COUNT(*)</code>.</li>
+    <li><strong>c)</strong> ¿Qué películas de animación hay, ordenadas de la más nueva a la más vieja?</li>
+    <li><strong>d)</strong> ¿Qué directores son de fuera de Estados Unidos?</li>
+    <li><strong>e)</strong> ¿Hay algún director cargado que <strong>no</strong> tenga películas? ¿Cómo te diste cuenta?</li>
+  </ol>
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">Paso 4 — Para pensar</p>
+  <ol>
+    <li><strong>a)</strong> Corré <code>DROP TABLE directores;</code>. MySQL no te deja. Copiá el mensaje y explicá por qué se niega.</li>
+    <li><strong>b)</strong> Si quisieras corregir la nacionalidad de Miyazaki, ¿cuántas filas tendrías que tocar en este modelo? ¿Y si el dato estuviera repetido en cada película?</li>
+    <li><strong>c)</strong> Una película puede tener <strong>dos</strong> directores (pasa seguido). ¿Este modelo lo permite? ¿Por qué?</li>
+  </ol>
+</div>
+
+<h2>Errores comunes</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td><code>Cannot add foreign key constraint</code></td><td>Creaste las tablas en el orden equivocado (la apuntada va primero), o los tipos no coinciden: la PK y la FK tienen que ser las dos <code>INT</code>.</td></tr>
+  <tr><td><code>Cannot add or update a child row: a foreign key constraint fails</code></td><td>Estás cargando una fila con un id que no existe en la otra tabla. Corré un <code>SELECT</code> a la tabla apuntada y usá un id real.</td></tr>
+  <tr><td><code>Cannot delete or update a parent row</code></td><td>Querés borrar una tabla o una fila a la que otras están apuntando. Borrá primero las que apuntan.</td></tr>
+  <tr><td>La FK quedó en <code>0</code> o en <code>NULL</code></td><td>Escribiste el nombre en vez del número, o te olvidaste la columna en el <code>INSERT</code>.</td></tr>
+  <tr><td><code>Field 'director_id' doesn't have a default value</code></td><td>Hiciste el <code>INSERT</code> sin incluir la columna de la clave foránea, y la declaraste <code>NOT NULL</code>. Agregala a la lista de columnas, con un id que exista.</td></tr>
+  <tr><td><code>You have an error in your SQL syntax</code> cerca del <code>FOREIGN KEY</code></td><td>Falta la coma después de la última columna. El <code>FOREIGN KEY</code> va adentro del paréntesis grande, como una línea más.</td></tr>
+  <tr><td>La relación no aparece en <em>Vista de relaciones</em></td><td>Declaraste la columna pero no la regla. Te falta la línea <code>FOREIGN KEY (...) REFERENCES ...</code>.</td></tr>
+  <tr><td>Perdiste la base de la Clase 5</td><td>Importá tu <code>.sql</code> desde el repositorio: phpMyAdmin → <em>Importar</em>.</td></tr>
+</table>
+
+<h2>¿Terminaste? Verificá lo que tenés</h2>
+
+<p>Tildá lo que ya tengas hecho. Se guarda solo en este navegador, así podés volver a chequearlo.</p>
+
+<div class="selfcheck" data-key="tp-clase7">
+  <div class="selfcheck-head">
+    <span>Checklist del TP de Clase 7</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="tpc7-1"><label for="tpc7-1">Dibujé el <strong>diagrama ER</strong> en la carpeta, con las dos cajas, la línea, el <code>1</code> y la <code>N</code>.</label></li>
+    <li><input type="checkbox" id="tpc7-2"><label for="tpc7-2">La <strong>clave foránea está del lado de los muchos</strong> y marqué a qué apunta.</label></li>
+    <li><input type="checkbox" id="tpc7-3"><label for="tpc7-3">Creé la segunda tabla <strong>antes</strong> que la que apunta.</label></li>
+    <li><input type="checkbox" id="tpc7-4"><label for="tpc7-4">La tabla que apunta tiene la columna FK y la línea <code>FOREIGN KEY ... REFERENCES ...</code>.</label></li>
+    <li><input type="checkbox" id="tpc7-5"><label for="tpc7-5">La relación figura en <strong>Estructura → Vista de relaciones</strong>.</label></li>
+    <li><input type="checkbox" id="tpc7-6"><label for="tpc7-6">Cargué mínimo 3 filas en la tabla nueva y 5 en la primera, con la FK cargada con ids reales.</label></li>
+    <li><input type="checkbox" id="tpc7-7"><label for="tpc7-7">Probé el <code>INSERT</code> con un id inexistente y anoté el error (Parte 4).</label></li>
+    <li><input type="checkbox" id="tpc7-8"><label for="tpc7-8">Corrí las consultas de la Parte 5, incluida una que filtra por la clave foránea.</label></li>
+    <li><input type="checkbox" id="tpc7-9"><label for="tpc7-9">Exporté el <code>db.sql</code> con las <strong>dos tablas</strong> y lo subí al repo junto con el diagrama.</label></li>
+    <li><input type="checkbox" id="tpc7-10"><label for="tpc7-10">Actualicé el <code>documentacion.md</code> con las entidades y la relación.</label></li>
+    <li><input type="checkbox" id="tpc7-11"><label for="tpc7-11"><em>(Extensión)</em> Resolví la práctica de consultas de la <strong>Parte 8</strong> y anoté los resultados.</label></li>
+  </ul>
+</div>
+
+<h2>Para pensar (tarea de cierre)</h2>
+
+<p>Tu modelo de datos quedó terminado. Falta que <strong>la aplicación web lo utilice</strong>: por ahora tu sitio lee <code>datos.php</code> y tu base funciona aparte, en phpMyAdmin. La próxima clase conecta las dos partes.</p>
+
+<ol>
+  <li>Dejá en el repositorio el <code>db.sql</code> con las dos tablas y el diagrama ER.</li>
+  <li>Actualizá el <code>documentacion.md</code> con la segunda entidad y la relación.</li>
+  <li>Anotá los datos de acceso a tu MySQL local: <strong>usuario</strong> y <strong>host</strong>. En XAMPP suelen ser usuario <code>root</code>, host <code>localhost</code>, sin contraseña. <strong>No los subas al repositorio</strong> — los usamos en clase, y ese va a ser justamente el primer tema: qué archivos nunca se suben a GitHub.</li>
+</ol>
+
+<div class="nav">
+  <a href="clase-07-teoria.html">← Volver a la teoría de Clase 7</a>
+</div>
+
+<p class="mat-links">
+  <a href="../">Inicio</a> ·
+  <a href="../clase_5/clase-05-tp.html">TP de Clase 5</a> ·
+  <a href="../repaso-fundamentos/">Repaso de fundamentos</a>
+</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>

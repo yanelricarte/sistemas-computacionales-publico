@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 7 — Segunda entidad y relaciones: claves foráneas y diagrama ER</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 7 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Segunda entidad y relaciones: claves foráneas y diagrama ER</h1>
+  <p class="sub">En la Clase 5 hiciste <strong>una</strong> tabla. Pero tu proyecto tiene más de una cosa que guardar, y esas cosas están conectadas: una película tiene un director, un turno es de un paciente, un producto tiene una categoría. En esta clase vas a repartir esa información en <strong>dos tablas relacionadas</strong>, representar tu modelo de datos en un <strong>diagrama</strong> y expresar la relación en SQL mediante una <strong>clave foránea</strong>.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s0">De dónde venimos: una tabla sola</a></li>
+    <li><a href="#s1">El problema: el dato que se repite</a></li>
+    <li><a href="#s2">La relación uno-a-muchos</a></li>
+    <li><a href="#s3">El diagrama entidad-relación</a></li>
+    <li><a href="#s4">Clave primaria y clave foránea</a></li>
+    <li><a href="#s5">CREATE TABLE con FOREIGN KEY</a></li>
+    <li><a href="#s6">INSERT: cargar respetando la relación</a></li>
+    <li><a href="#s7">SELECT: consultar por la clave foránea</a></li>
+    <li><a href="#cierre">El estado final de tu base</a></li>
+    <li><a href="#s8">Errores frecuentes</a></li>
+    <li><a href="#s9">Glosario</a></li>
+    <li><a href="#quiz">Práctica</a></li>
+    <li><a href="#s10">Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<h2 id="s0">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+  0. De dónde venimos: una tabla sola
+</h2>
+
+<p>En la Clase 5 pasaste tus datos de <code>datos.php</code> a una tabla de MySQL. Aprendiste tres operaciones que siguen vigentes sin cambios:</p>
+
+<ul>
+  <li><code>CREATE TABLE</code> — define la <strong>estructura</strong>: qué columnas hay y de qué tipo es cada una.</li>
+  <li><code>INSERT</code> — carga <strong>filas</strong>.</li>
+  <li><code>SELECT</code> / <code>WHERE</code> — <strong>consulta</strong> y filtra.</li>
+</ul>
+
+<p>Y una columna especial: el <code>id</code>, la <strong>clave primaria</strong>, que identifica cada fila sin repetirse y la numera sola la base.</p>
+
+<pre><code>CREATE TABLE peliculas (
+    id      INT AUTO_INCREMENT PRIMARY KEY,
+    titulo  VARCHAR(100) NOT NULL,
+    anio    INT,
+    genero  VARCHAR(50)
+);</code></pre>
+
+<p>Todo eso funciona. El problema aparece cuando querés guardar algo <strong>más</strong> que las películas.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">De una tabla a un modelo</div>
+  Hasta acá trabajaste con <strong>una tabla</strong>. A partir de esta clase vas a trabajar con un <strong>modelo</strong>: varias tablas que se conocen entre sí. El agregado de sintaxis es mínimo, dos líneas de SQL. La exigencia está en el <strong>diseño</strong>, porque tenés que decidir qué información corresponde a cada tabla.
+</div>
+
+<h2 id="s1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+  1. El problema: el dato que se repite
+</h2>
+
+<p>Supongamos que ahora querés guardar también el <strong>director</strong> de cada película: su nombre y su nacionalidad. La solución más rápida consiste en agregar dos columnas a la tabla que ya tenés:</p>
+
+<pre><code>peliculas
+titulo          │ anio │ genero    │ director     │ nacionalidad
+────────────────┼──────┼───────────┼──────────────┼────────────────
+Coco            │ 2017 │ Animación │ Lee Unkrich  │ Estados Unidos
+Toy Story 3     │ 2010 │ Animación │ Lee Unkrich  │ Estados Unidos
+Buscando a Nemo │ 2003 │ Animación │ Lee Unkrinch │ Estados Unidos
+                                     ▲
+                                     el mismo dato, escrito 3 veces
+                                     (y la tercera, mal)</code></pre>
+
+<p>Esa tabla resuelve el pedido inicial y funciona mientras los datos sean pocos. A medida que el sistema crece, arrastra tres problemas que ya están presentes en esas tres filas:</p>
+
+<h3>1. Variantes del mismo dato escritas distinto</h3>
+
+<p><code>Lee Unkrich</code>, <code>Lee Unkrinch</code>, <code>lee unkrich</code>. Para vos son la misma persona; para la base son <strong>tres directores distintos</strong>. Si buscás <code>WHERE director = 'Lee Unkrich'</code>, la tercera película no aparece. Y no hay ningún error: la base guardó exactamente lo que le pediste.</p>
+
+<h3>2. Corrección de un dato repetido en muchas filas</h3>
+
+<p>Corregir un dato mal escrito obliga a recorrer <strong>cada una de las filas</strong> donde aparece. Con tres películas la tarea es tediosa; con trescientas, la probabilidad de omitir alguna es alta. Y una sola fila omitida deja a la base contradiciéndose a sí misma: el mismo director figura de dos maneras distintas según dónde se lo consulte.</p>
+
+<h3>3. Datos del director sin lugar propio</h3>
+
+<p>Con esta estructura, el director existe únicamente <em>adentro</em> de una película: para registrarlo tenés que cargar antes alguna película suya. Y si quisieras guardar su fecha de nacimiento, su biografía o su foto, esos datos quedarían repetidos en cada una de sus filas.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Cuándo un dato pide su propia tabla</div>
+  Si un dato <strong>se repite fila tras fila</strong> y <strong>tiene datos propios</strong>, dejó de ser una columna: es una <strong>entidad</strong> y necesita su propia tabla.
+</div>
+
+<p>El recurso para resolver los tres problemas ya lo conocés. En la Clase 5 aprendiste que cada fila lleva un <code>id</code> que la identifica de manera única, y esa es exactamente la pieza que falta acá: los directores pasan a su propia tabla, cada uno con su <code>id</code>, y en la tabla de películas queda <strong>únicamente ese número</strong>.</p>
+
+<pre><code>directores                              peliculas
+id │ nombre       │ nacionalidad        titulo           │ director_id
+───┼──────────────┼───────────────      ─────────────────┼─────────────
+ 2 │ Lee Unkrich  │ Estados Unidos      Coco             │      2
+                                        Toy Story 3      │      2
+   ▲                                    Buscando a Nemo  │      2
+   escrito UNA sola vez                                        ▲
+                                                    todas apuntan al mismo id</code></pre>
+
+<p>Ahora el nombre está escrito <strong>una vez</strong>. Si estaba mal, se corrige <strong>una vez</strong> y las tres películas quedan bien automáticamente, porque ninguna guarda el nombre: guardan el número.</p>
+
+<h3>Por qué el género se queda como columna</h3>
+
+<p>Antes de avanzar conviene atender una objeción razonable, porque la regla parece aplicarse de manera despareja: en la tabla de arriba, <code>genero</code> también se repite. "Animación" aparece en un montón de películas. ¿Por qué el director se va a otra tabla y el género no?</p>
+
+<p>La respuesta está en que la regla tiene <strong>dos condiciones</strong> y ambas deben cumplirse. Del género guardás únicamente su nombre; del director guardás nacionalidad, año de nacimiento y, eventualmente, una foto y una biografía. Ese conjunto de atributos propios es lo que convierte al director en una entidad.</p>
+
+<pre><code>              ¿se repite?   ¿tiene datos propios?      ¿tabla aparte?
+──────────────────────────────────────────────────────────────────────
+director          sí        sí (nacionalidad, año…)         SÍ
+genero            sí        no (solo el nombre)             no, por ahora
+titulo            no        —                               no</code></pre>
+
+<p>Reparemos en ese <em>"por ahora"</em>. Si más adelante tu proyecto necesitara guardar del género una descripción, un color o un ícono, el género pasaría a ser una entidad y tendría su propia tabla. <strong>La decisión se toma en función de lo que tu sistema necesite guardar sobre ese dato.</strong> Por eso hablamos de <em>diseño</em>: hay un criterio que aplicar, y la respuesta puede ser distinta en tu proyecto que en el de tu compañero.</p>
+
+<p>Con el criterio resuelto y la segunda entidad identificada, queda por definir cómo se vinculan ambas tablas. De eso trata la sección siguiente.</p>
+
+<h2 id="s2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+  2. La relación uno-a-muchos
+</h2>
+
+<p>Antes de escribir SQL hay que entender <strong>cómo</strong> se relacionan las dos entidades. Y eso se descubre diciéndolo en voz alta, en castellano, en los <strong>dos sentidos</strong>:</p>
+
+<pre><code>¿Cuántas películas puede tener un director?   →  MUCHAS
+¿Cuántos directores puede tener una película?  →  UNA sola</code></pre>
+
+<p>Esa asimetría tiene nombre: es una relación <strong>uno-a-muchos</strong>, que se escribe <strong>1:N</strong>. Y es la relación más común de todas: la vas a encontrar en casi cualquier proyecto.</p>
+
+<table>
+  <tr><th>Del lado del <strong>uno</strong></th><th>Del lado de los <strong>muchos</strong></th></tr>
+  <tr><td>un director</td><td>muchas películas</td></tr>
+  <tr><td>un paciente</td><td>muchos turnos</td></tr>
+  <tr><td>una categoría</td><td>muchos productos</td></tr>
+  <tr><td>un libro</td><td>muchos préstamos</td></tr>
+  <tr><td>un país</td><td>muchas ciudades</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <div class="callout-title">La relación de tu proyecto</div>
+  Armá la frase <em>"cada ______ tiene un ______"</em>. Si te sale natural, ya tenés la relación. Después probá darla vuelta: <em>"cada ______ tiene una sola ______"</em>. Si esa segunda frase te suena mal, es porque el lado de los muchos está al revés.
+</div>
+
+<h3>La ubicación del dato que conecta</h3>
+
+<p>Ahora la pregunta importante: la columna que conecta las dos tablas, ¿en cuál de las dos va?</p>
+
+<p>Probemos al revés, para ver por qué no funciona. Si la conexión estuviera en <code>directores</code>, esa tabla necesitaría una columna por cada película:</p>
+
+<pre><code>directores  (así NO)
+id │ nombre       │ pelicula_1 │ pelicula_2 │ pelicula_3 │ pelicula_4 │ ...
+───┼──────────────┼────────────┼────────────┼────────────┼────────────┼────
+ 2 │ Lee Unkrich  │     7      │     12     │     15     │   (vacío)  │ ...
+                       └──────────┴──────────┘
+                       el id de cada una de sus películas
+
+    ¿y si dirige 40 películas? ¿agregamos 40 columnas?</code></pre>
+
+<p>Imposible: no sabés de antemano cuántas van a ser. Un director puede tener una sola película o cuarenta, así que la tabla tendría que estar preparada para el peor caso, con casi todas las columnas vacías la mayor parte del tiempo.</p>
+
+<p>Del otro lado, en cambio, el problema desaparece. Y vale la pena entender por qué, porque es lo que va a decidir todos los modelos que armes de acá en adelante: <strong>del lado de los muchos, la cantidad siempre es uno</strong>. Cada película tiene exactamente un director, y un dato del que sabés de antemano que va a ser uno solo se resuelve con una sola columna.</p>
+
+<pre><code>lado del UNO (directores)          lado de los MUCHOS (peliculas)
+¿cuántas películas guarda?         ¿cuántos directores guarda?
+   1, 5, 40… no se sabe    ✗          siempre 1               ✓
+   → cantidad variable                → cantidad fija</code></pre>
+
+<p>Por eso la columna va donde la cantidad es <strong>fija</strong>.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El lado de la tabla donde va la clave foránea</div>
+  La columna que conecta va <strong>siempre del lado de los muchos</strong>: <code>director_id</code> pertenece a <code>peliculas</code>. De acá en adelante vas a leer también otro par de nombres para las mismas dos tablas: la del lado del uno es la <strong>tabla apuntada</strong> (recibe la referencia) y la del lado de los muchos es la <strong>tabla que apunta</strong> (la contiene). Son dos maneras de nombrar lo mismo.
+</div>
+
+<h2 id="s3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M10 6.5h4a3 3 0 0 1 3 3v4"/></svg>
+  3. El diagrama entidad-relación
+</h2>
+
+<p>Todo lo anterior se dibuja. El <strong>diagrama entidad-relación</strong> (o <strong>diagrama ER</strong>) es el plano de tu base de datos: una caja por tabla, las columnas adentro, y una línea entre las cajas que muestra cómo se conectan.</p>
+
+<pre><code>    DIRECTORES                              PELICULAS
+ ┌──────────────────┐                 ┌──────────────────────┐
+ │ id  (PK)         │1              N │ id       (PK)        │
+ │ nombre           ├─────────────────┤ titulo               │
+ │ nacionalidad     │                 │ anio                 │
+ │ anio_nac         │                 │ genero               │
+ └──────────────────┘                 │ director_id  (FK) ───┼──► directores.id
+                                      └──────────────────────┘
+
+   el 1 y la N se leen así:
+   "un director  ──1:N──►  muchas películas"
+   "una película ────────►  un solo director"</code></pre>
+
+<p>La <code>N</code> representa <em>"una cantidad cualquiera"</em>, y se usa justamente porque esa cantidad varía de una fila a otra. Poner un <code>1</code> de un lado y una <code>N</code> del otro es la forma abreviada de decir que a cada fila de la primera tabla le pueden corresponder muchas de la segunda, y que a cada una de esas le corresponde una sola de la primera. Se lee siempre en los dos sentidos, como cuando armaste la frase en castellano.</p>
+
+<p>Cómo se arma, paso a paso:</p>
+
+<ol>
+  <li><strong>Una caja por entidad.</strong> Arriba el nombre de la tabla, adentro las columnas.</li>
+  <li><strong>Marcá la clave primaria</strong> de cada caja con <code>(PK)</code>.</li>
+  <li><strong>Una línea</strong> que une las dos cajas.</li>
+  <li><strong>El 1 y la N en las puntas.</strong> El <code>1</code> del lado del uno (director), la <code>N</code> del lado de los muchos (películas).</li>
+  <li><strong>Marcá la clave foránea</strong> con <code>(FK)</code>, del lado de la <code>N</code>, y anotá a qué apunta.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">El dibujo en papel, antes de escribir SQL</div>
+  El diagrama se traza <strong>antes</strong> de escribir SQL, a mano, en la carpeta. Corregirlo con lápiz y goma lleva segundos; corregirlo cuando las tablas ya están creadas y cargadas implica rehacerlas. Ese es el orden de trabajo habitual en el desarrollo profesional, y por la misma razón.
+</div>
+
+<h3>Una herramienta para pasarlo en limpio</h3>
+
+<p>Para obtener una versión prolija destinada al repositorio hay una página que lo dibuja automáticamente: <strong><a href="https://databasediagram.com/app" target="_blank" rel="noopener">databasediagram.com</a></strong>. Funciona directamente en el navegador: abrís la dirección y empezás a editar.</p>
+
+<p>Se opera escribiendo: describís tus tablas en el panel de la izquierda y el diagrama se dibuja a la derecha. La sintaxis se parece bastante a la de un <code>CREATE TABLE</code>, así que vas a reconocerla. Para la cartelera queda así:</p>
+
+<pre><code>Table directores {
+  id integer [pk]
+  nombre varchar(100)
+  nacionalidad varchar(50)
+}
+
+Table peliculas {
+  id integer [pk]
+  titulo varchar(100)
+  anio integer
+  genero varchar(50)
+  director_id integer
+}
+
+ref: peliculas.director_id &gt; directores.id</code></pre>
+
+<p>La última línea es la relación. El símbolo <code>&gt;</code> significa <em>muchos a uno</em> y apunta desde el lado de los muchos hacia el lado del uno: <strong>muchas películas → un director</strong>. Si lo escribís al revés, el diagrama te va a salir invertido, y eso mismo te avisa que la FK está del lado equivocado.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">La herramienta usa otra notación</div>
+  El dibujo que obtengas va a diferir del de tu carpeta. La herramienta marca la cardinalidad con símbolos en las puntas de la línea: del lado de los muchos, una patita de tres trazos, llamada <em>pata de gallo</em>; del lado del uno, un trazo simple. <strong>Expresa exactamente lo mismo</strong> que tu <code>1───N</code>. Son dos notaciones equivalentes para la misma idea, y vas a encontrar las dos en la bibliografía y en las herramientas profesionales.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">La descarga de la imagen</div>
+  Botón <strong>Export</strong>, arriba a la derecha. La imagen que te descargás es la que va al repositorio, en <code>docs/modelo-er.png</code>. La página también anda sin internet una vez que la abriste, así que si la conexión se corta podés seguir trabajando.
+</div>
+
+
+
+<h2 id="s4">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+  4. Clave primaria y clave foránea
+</h2>
+
+<p>Llegado este punto conviene distinguir con precisión los dos tipos de clave que ya venís usando. La <strong>clave primaria</strong> y la <strong>clave foránea</strong> son ambas columnas de tipo <code>INT</code> y ambas guardan un número; la diferencia está en <strong>a quién identifican</strong>:</p>
+
+<table>
+  <tr><th></th><th>Clave primaria (PK)</th><th>Clave foránea (FK)</th></tr>
+  <tr><td><strong>Qué hace</strong></td><td>Identifica la fila <strong>en su propia tabla</strong></td><td><strong>Apunta</strong> a una fila de <strong>otra</strong> tabla</td></tr>
+  <tr><td><strong>Se repite</strong></td><td>Nunca: cada fila tiene la suya</td><td>Sí: muchas películas pueden tener el mismo director</td></tr>
+  <tr><td><strong>Quién la pone</strong></td><td>La base, con <code>AUTO_INCREMENT</code></td><td>Vos, al cargar la fila</td></tr>
+  <tr><td><strong>Ejemplo</strong></td><td><code>peliculas.id</code>, <code>directores.id</code></td><td><code>peliculas.director_id</code></td></tr>
+</table>
+
+<p>Una misma tabla puede tener las dos: <code>peliculas</code> tiene su <code>id</code> (PK, la identifica a ella) y además <code>director_id</code> (FK, apunta a otra tabla).</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">De dónde sale la palabra "foránea"</div>
+  <em>Foráneo</em> significa <em>de afuera</em>, ajeno. Se llama así porque la clave que guarda esa columna <strong>no le pertenece</strong>: es la clave primaria de otra tabla, prestada. Por eso el <code>3</code> que ves en <code>director_id</code> cobra sentido únicamente al consultar la fila con <code>id = 3</code> de <code>directores</code>: por sí mismo, dentro de <code>peliculas</code>, es apenas un número.
+</div>
+
+<h3>El nombre de la clave foránea</h3>
+
+<p>La columna se puede llamar como quieras, pero hay una convención que se usa en todos lados y te conviene respetar: <strong>el nombre de la tabla apuntada, en singular, más <code>_id</code></strong>.</p>
+
+<pre><code>tabla apuntada          columna de la clave foránea
+────────────────        ───────────────────────────
+directores        →     director_id
+pacientes         →     paciente_id
+categorias        →     categoria_id
+libros            →     libro_id</code></pre>
+
+<p>La convención tiene una finalidad práctica: permite interpretar de un vistazo un modelo escrito por otra persona. Si en una tabla ves una columna terminada en <code>_id</code> que no es la clave primaria, casi seguro es una clave foránea, y el propio nombre te está diciendo a qué tabla apunta. Es lo que vas a usar en la actividad de acá abajo.</p>
+
+<h3>Practicá: ¿PK, FK o columna común?</h3>
+
+<p>Arrastrá cada columna a su casillero. También podés tocar una tarjeta y después el casillero, o usar Enter con el teclado.</p>
+
+<div class="drag-activity" data-key="clase7-pkfk">
+  <div class="drag-pool" aria-label="Columnas para clasificar">
+    <div class="drag-chip" data-id="c1" data-target="pk" data-why="Es el id de la propia tabla peliculas: identifica cada película." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>peliculas.id</div>
+    <div class="drag-chip" data-id="c2" data-target="fk" data-why="Guarda el id de una fila de directores: apunta a otra tabla." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>peliculas.director_id</div>
+    <div class="drag-chip" data-id="c3" data-target="pk" data-why="Es el id de la propia tabla directores: identifica cada director." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>directores.id</div>
+    <div class="drag-chip" data-id="c4" data-target="comun" data-why="Es un dato más de la película. No identifica ni apunta a nada." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>peliculas.titulo</div>
+    <div class="drag-chip" data-id="c5" data-target="fk" data-why="Guarda el id de un paciente: es la clave foránea del turno." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>turnos.paciente_id</div>
+    <div class="drag-chip" data-id="c6" data-target="comun" data-why="Es un dato más del director: guarda un texto, no el id de otra tabla. Fijate que el nombre no termina en _id." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>directores.nacionalidad</div>
+    <div class="drag-chip" data-id="c7" data-target="fk" data-why="Guarda el id de una categoría: el producto apunta a la tabla categorias." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>productos.categoria_id</div>
+  </div>
+  <div class="drag-zones">
+    <div class="drop-zone" data-zone="pk" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en clave primaria">
+      <h4>Clave primaria (PK)</h4>
+      <p class="hint">identifica la fila en su propia tabla</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="fk" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en clave foránea">
+      <h4>Clave foránea (FK)</h4>
+      <p class="hint">apunta a una fila de otra tabla</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="comun" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en columna común">
+      <h4>Columna común</h4>
+      <p class="hint">un dato más, sin rol especial</p>
+      <div class="zone-items"></div>
+    </div>
+  </div>
+  <button type="button" class="btn drag-check">Verificar</button>
+  <button type="button" class="drag-reset">Reiniciar</button>
+  <div class="drag-feedback" role="status" aria-live="polite"></div>
+</div>
+
+<h2 id="s5">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+  5. CREATE TABLE con FOREIGN KEY
+</h2>
+
+<p>Con el diagrama hecho, escribir el SQL es casi copiar. Pero hay una cosa nueva que importa mucho: <strong>el orden</strong>.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El orden de creación de las tablas</div>
+  La tabla que <strong>recibe</strong> el apuntamiento (<code>directores</code>) tiene que existir <strong>antes</strong> que la que apunta (<code>peliculas</code>). Si lo hacés al revés, MySQL da error: no puede armar una referencia hacia una tabla que todavía no existe.
+</div>
+
+<pre><code>-- 1) PRIMERO la tabla apuntada (el lado del "uno")
+CREATE TABLE directores (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    nombre       VARCHAR(100) NOT NULL,
+    nacionalidad VARCHAR(50)
+);
+
+-- 2) DESPUÉS la que apunta (el lado de los "muchos")
+CREATE TABLE peliculas (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    titulo      VARCHAR(100) NOT NULL,
+    anio        INT,
+    director_id INT NOT NULL,                              -- la columna
+    FOREIGN KEY (director_id) REFERENCES directores(id)    -- la regla
+);</code></pre>
+
+<p>Comparalo con el <code>CREATE TABLE</code> de la Clase 5: es el mismo, más <strong>dos líneas</strong>.</p>
+
+<ul>
+  <li><code>director_id INT NOT NULL</code> — la <strong>columna</strong> donde va a vivir el número.</li>
+  <li><code>FOREIGN KEY (director_id) REFERENCES directores(id)</code> — la <strong>regla</strong> que la convierte en clave foránea.</li>
+</ul>
+
+<p>Esa segunda línea es la que hace el trabajo de verdad. Leída en partes:</p>
+
+<pre><code>FOREIGN KEY ( director_id )  REFERENCES  directores ( id )
+     │             │              │           │        └── a qué columna apunta
+     │             │              │           └── a qué tabla apunta
+     │             │              └── "apunta a"
+     │             └── qué columna de ESTA tabla
+     └── "esta columna es una clave foránea"</code></pre>
+
+<p>Para que MySQL acepte la regla, las dos columnas que se conectan tienen que ser <strong>del mismo tipo</strong>: si <code>directores.id</code> es <code>INT</code>, entonces <code>peliculas.director_id</code> también tiene que ser <code>INT</code>. Tiene sentido, porque una guarda una copia del valor de la otra: un texto no puede guardar un número. Si los tipos no coinciden, MySQL rechaza el <code>CREATE TABLE</code> entero.</p>
+
+<h3>La garantía que agrega esa línea</h3>
+
+<p>A partir de ahí, MySQL <strong>controla</strong> la relación por vos. Si alguien intenta guardar una película con un <code>director_id</code> que no existe, la base <strong>no lo deja</strong>. Eso se llama <strong>integridad referencial</strong>: la garantía de que ningún <code>director_id</code> apunta a una fila inexistente.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">El riesgo de declarar la columna sin la regla</div>
+  Podrías guardar el número en <code>director_id</code> sin declarar el <code>FOREIGN KEY</code>, y funcionaría. Pero nada impediría cargar un <code>director_id = 99</code> con un director 99 que no existe, y esa película quedaría apuntando a la nada para siempre. La regla convierte ese error en un <strong>rechazo explícito</strong> de la base: en lugar de guardarse en silencio, la operación se detiene y MySQL avisa.
+</div>
+
+<h3>Para qué está ese NOT NULL</h3>
+
+<p>La cláusula anterior cubre un hueco; queda un segundo, de otra naturaleza. Corresponde hacer la precisión porque es la vía por la que se filtran datos incompletos. La clave foránea verifica <strong>los números que escribís</strong>; la obligación de escribir alguno depende del <code>NOT NULL</code>. Sin esa cláusula, la siguiente sentencia se ejecuta correctamente:</p>
+
+<pre><code>INSERT INTO peliculas (titulo, anio) VALUES ('Peli huérfana', 2024);
+-- se guarda, con director_id en NULL: una película sin ningún director</code></pre>
+
+<p>Dicho de otro modo: la clave foránea garantiza que todo id escrito corresponde a una fila real, y el <code>NOT NULL</code> garantiza que ese id esté siempre presente. Las dos cláusulas combinadas expresan una única afirmación sobre tus datos: <strong>toda película tiene un director, y ese director existe</strong>.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Cuándo conviene dejarla sin NOT NULL</div>
+  Se trata de una decisión de diseño que tomás según tu proyecto. Poné <code>NOT NULL</code> cuando la relación sea <strong>obligatoria</strong> (toda película tiene director; todo turno tiene paciente). Dejala sin <code>NOT NULL</code> cuando pueda faltar legítimamente — por ejemplo, si un producto puede estar <em>todavía sin categoría asignada</em>. En ese caso, <code>NULL</code> significa "acá falta el dato", que es distinto de un dato equivocado.
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Cómo comprobar que la relación quedó declarada</div>
+  Una vez ejecutados los dos <code>CREATE TABLE</code>, entrá a tu base en phpMyAdmin y abrí la pestaña <strong>Diseñador</strong>. Vas a ver tus dos tablas unidas por la línea de la relación. Lo valioso de esta vista es que <strong>la línea se dibuja únicamente cuando la clave foránea está declarada</strong>: si las tablas aparecen sueltas, la columna existe pero la regla falta.
+</div>
+
+<h3>El orden inverso para borrar las tablas</h3>
+
+<p>Si necesitás rehacer las tablas, el orden se invierte: primero se borra la que <strong>apunta</strong>.</p>
+
+<pre><code>DROP TABLE IF EXISTS peliculas;    -- primero la que apunta
+DROP TABLE IF EXISTS directores;   -- después la apuntada</code></pre>
+
+<p>Con el orden al revés MySQL se niega, y tiene razón: quedarían películas apuntando a directores borrados.</p>
+
+<h2 id="s6">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+  6. INSERT: cargar respetando la relación
+</h2>
+
+<p>Mismo orden que al crear: <strong>primero las filas de la tabla apuntada</strong>. Una película no puede apuntar a un director que todavía no cargaste.</p>
+
+<pre><code>-- 1) PRIMERO los directores. No escribimos el id: lo pone la base.
+INSERT INTO directores (nombre, nacionalidad) VALUES
+    ('Lana Wachowski',  'Estados Unidos'),   -- va a quedar con id = 1
+    ('Lee Unkrich',     'Estados Unidos'),   --                  id = 2
+    ('Pete Docter',     'Estados Unidos');   --                  id = 3
+
+-- 2) DESPUÉS las películas. En director_id va el ID, no el nombre.
+INSERT INTO peliculas (titulo, anio, director_id) VALUES
+    ('Matrix',       1999, 1),
+    ('Coco',         2017, 2),
+    ('Intensamente', 2015, 3);</code></pre>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El número que va en la clave foránea</div>
+  En <code>director_id</code> se escribe el <strong>id</strong> del director. Poner ahí <code>'Lee Unkrich'</code> es el error más frecuente de esta clase, y tiene una explicación razonable: el nombre es el dato que tenés presente mientras cargás. La columna, sin embargo, está declarada <code>INT</code>, y el vínculo con la otra tabla se establece a través del identificador.
+</div>
+
+<p>¿Y cómo sabés qué id le tocó a cada director? Preguntándole a la base:</p>
+
+<pre><code>SELECT * FROM directores;
+
+id │ nombre           │ nacionalidad
+───┼──────────────────┼────────────────
+ 1 │ Lana Wachowski   │ Estados Unidos
+ 2 │ Lee Unkrich      │ Estados Unidos
+ 3 │ Pete Docter      │ Estados Unidos</code></pre>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Los ids no siempre arrancan en 1</div>
+  Acá quedaron 1, 2 y 3 porque la tabla estaba recién creada y vacía. <code>AUTO_INCREMENT</code> lleva su propio contador y sigue avanzando: si ya tenías filas cargadas, si ejecutaste el <code>INSERT</code> dos veces o si borraste alguna fila, los números asignados van a ser otros. <strong>Consultá siempre el valor real con un <code>SELECT</code></strong> antes de escribirlo en la clave foránea.
+</div>
+
+<h3>Probá que la regla existe</h3>
+
+<p>Conviene forzar el error una vez, de manera deliberada, para ver la regla en acción. Intentá cargar una película cuyo <code>director_id</code> no corresponda a ningún director cargado:</p>
+
+<pre><code>INSERT INTO peliculas (titulo, anio, director_id) VALUES ('Peli fantasma', 2024, 99);</code></pre>
+
+<p>MySQL responde algo así:</p>
+
+<pre><code>ERROR 1452: Cannot add or update a child row:
+a foreign key constraint fails</code></pre>
+
+<p>Ese mensaje es la clave foránea funcionando: la base verificó si existía el director 99, comprobó que no, y rechazó la operación. Con el director guardado como texto suelto, tal como estaba en la Clase 5, esa misma fila se habría guardado sin observaciones y el error habría quedado latente en los datos.</p>
+
+<h2 id="s7">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  7. SELECT: consultar por la clave foránea
+</h2>
+
+<p>Todo lo que sabés de la Clase 5 sigue funcionando igual. Lo nuevo es que ahora podés <strong>filtrar por la clave foránea</strong>, y eso responde una pregunta que antes no podías hacer: <em>"¿qué películas dirigió esta persona?"</em></p>
+
+<pre><code>-- Cada tabla por separado
+SELECT * FROM directores;
+SELECT * FROM peliculas;      -- en director_id vas a ver el NÚMERO
+
+-- Filtrar POR la clave foránea: las películas de un director
+SELECT titulo, anio FROM peliculas WHERE director_id = 3;</code></pre>
+
+<p>Si no te acordás el id y sí el nombre, se hace en dos pasos:</p>
+
+<pre><code>-- Paso 1: conseguir el id
+SELECT id FROM directores WHERE nombre = 'Pete Docter';
+   -->  en esta base me devolvió 3 (en la tuya puede ser otro)
+
+-- Paso 2: usar ESE número para filtrar
+SELECT titulo, anio FROM peliculas WHERE director_id = 3;</code></pre>
+
+<p>El paso 1 es el que te da el número verdadero. Como vimos al cargar los datos, los ids dependen del historial de tu tabla, de modo que el <code>3</code> de este ejemplo probablemente corresponda a otro director en tu base.</p>
+
+<h3>El límite de consultar una tabla por vez</h3>
+
+<p>Cuando listás la cartelera, en la pantalla aparece esto:</p>
+
+<pre><code>titulo        │ anio │ director_id
+──────────────┼──────┼─────────────
+Intensamente  │ 2015 │      3          ← un número, no un nombre</code></pre>
+
+<p>Y lo que querrías ver es esto:</p>
+
+<pre><code>titulo        │ anio │ director
+──────────────┼──────┼──────────────
+Intensamente  │ 2015 │ Pete Docter</code></pre>
+
+<p>Traer las dos tablas combinadas en <strong>una sola</strong> consulta se resuelve con <code>JOIN</code>, que vamos a abordar cuando el proyecto lo requiera. Por ahora es suficiente con consultar cada tabla por separado. La prioridad de esta clase está en que el <strong>modelo</strong> quede bien construido, porque corregirlo más adelante resulta mucho más costoso.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Ampliación: las dos tablas en una sola consulta</div>
+  Ejecutá esta sentencia y observá el resultado:
+  <pre><code>SELECT peliculas.titulo, directores.nombre
+FROM peliculas
+JOIN directores ON peliculas.director_id = directores.id;</code></pre>
+  Esa sentencia combina las dos tablas. Leída en castellano: "traé el título de <code>peliculas</code> y el nombre de <code>directores</code>, uniendo aquellas filas donde el <code>director_id</code> coincide con el <code>id</code>".
+</div>
+
+
+
+<h2 id="cierre">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  El estado final de tu base
+</h2>
+
+<p>Con las dos tablas creadas, cargadas y consultadas, el modelo está terminado. Antes de pasar a documentarlo, revisá el resultado completo. Este es el estado que tiene que tener tu base en phpMyAdmin:</p>
+
+<pre><code>BASE: cartelera
+
+┌─ TABLA directores ──────────────────────────────┐
+│ id │ nombre           │ nacionalidad   │ anio_nac│
+│  1 │ Lana Wachowski   │ Estados Unidos │ 1965    │
+│  2 │ Lee Unkrich      │ Estados Unidos │ 1967    │
+│  3 │ Pete Docter      │ Estados Unidos │ 1968    │
+└─────────────────────────────────────────────────┘
+      ▲
+      │  cada número de acá abajo apunta a un id de acá arriba
+      │
+┌─────┴───── TABLA peliculas ─────────────────────┐
+│ id │ titulo       │ anio │ genero    │director_id│
+│  1 │ Matrix       │ 1999 │ Ciencia f.│     1     │
+│  2 │ Coco         │ 2017 │ Animación │     2     │
+│  3 │ Intensamente │ 2015 │ Animación │     3     │
+└─────────────────────────────────────────────────┘
+
+y una regla, invisible en los datos pero activa todo el tiempo:
+FOREIGN KEY (director_id) REFERENCES directores(id)</code></pre>
+
+<p>Tres cosas para chequear antes de dar la clase por cerrada:</p>
+
+<ul>
+  <li>El nombre de cada director está escrito <strong>una sola vez</strong> en toda la base. Ese era el problema con el que arrancamos.</li>
+  <li>Cada número de <code>director_id</code> <strong>existe</strong> en la otra tabla. De esa verificación se encarga la regla que declaraste.</li>
+  <li>El diagrama que dibujaste en papel y estas dos tablas <strong>describen la misma estructura</strong>. Ante cualquier diferencia entre ambos, conviene determinar cuál de los dos hay que corregir antes de seguir construyendo sobre el modelo.</li>
+</ul>
+
+<h2 id="s8">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  8. Errores frecuentes
+</h2>
+
+<table>
+  <tr><th>Mensaje / síntoma</th><th>Qué pasó</th><th>Cómo se arregla</th></tr>
+  <tr>
+    <td><code>Cannot add or update a child row: a foreign key constraint fails</code></td>
+    <td>Estás cargando una fila con un id que no existe en la otra tabla.</td>
+    <td>Correr <code>SELECT * FROM</code> la tabla apuntada y usar un id real. O cargar primero esa fila.</td>
+  </tr>
+  <tr>
+    <td><code>Cannot add foreign key constraint</code></td>
+    <td>Creaste las tablas en el orden equivocado, o los tipos no coinciden.</td>
+    <td>Crear primero la tabla apuntada. Y verificar que la PK y la FK sean del <strong>mismo tipo</strong> (las dos <code>INT</code>).</td>
+  </tr>
+  <tr>
+    <td><code>Cannot delete or update a parent row</code></td>
+    <td>Querés borrar una tabla o una fila a la que otras están apuntando.</td>
+    <td>Borrar primero la tabla (o las filas) que apuntan.</td>
+  </tr>
+  <tr>
+    <td><code>Field 'director_id' doesn't have a default value</code></td>
+    <td>Hiciste un <code>INSERT</code> sin incluir la columna de la clave foránea, y la declaraste <code>NOT NULL</code>.</td>
+    <td>Agregar <code>director_id</code> a la lista de columnas del <code>INSERT</code>, con un id que exista.</td>
+  </tr>
+  <tr>
+    <td>Guardaste el nombre en <code>director_id</code></td>
+    <td>La columna es <code>INT</code>: MySQL guarda un <code>0</code> o rechaza el dato.</td>
+    <td>En la FK va el <strong>número</strong>. Buscar el id con un <code>SELECT</code> a la otra tabla.</td>
+  </tr>
+  <tr>
+    <td>La FK quedó en la tabla equivocada</td>
+    <td>Pusiste <code>pelicula_id</code> en <code>directores</code>.</td>
+    <td>Volver al diagrama: la FK va <strong>del lado de los muchos</strong>. Rehacer las tablas.</td>
+  </tr>
+  <tr>
+    <td><code>You have an error in your SQL syntax</code></td>
+    <td>Falta la coma antes del <code>FOREIGN KEY</code>, o un paréntesis.</td>
+    <td>El <code>FOREIGN KEY</code> va después de la última columna, separado por coma, adentro del paréntesis grande.</td>
+  </tr>
+</table>
+
+<h2 id="s9">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  9. Glosario
+</h2>
+
+<table>
+  <tr><th>Término</th><th>Qué significa</th></tr>
+  <tr><td><strong>Entidad</strong></td><td>La "cosa" del mundo real sobre la que guardás datos (película, director, paciente). Cada entidad es una tabla.</td></tr>
+  <tr><td><strong>Relación</strong></td><td>El vínculo entre dos entidades: <em>"cada película tiene un director"</em>.</td></tr>
+  <tr><td><strong>Cardinalidad</strong></td><td>Cuántos de un lado se corresponden con cuántos del otro. La que trabajamos acá es <strong>uno-a-muchos (1:N)</strong>.</td></tr>
+  <tr><td><strong>Clave primaria (PK)</strong></td><td>La columna que identifica cada fila en su propia tabla. Nunca se repite. Es el <code>id</code>.</td></tr>
+  <tr><td><strong>Clave foránea (FK)</strong></td><td>Una columna que guarda el id de una fila de <strong>otra</strong> tabla. Sí se repite.</td></tr>
+  <tr><td><strong>Integridad referencial</strong></td><td>La garantía de que toda clave foránea apunta a una fila que existe de verdad. La hace cumplir MySQL.</td></tr>
+  <tr><td><strong>Redundancia</strong></td><td>El mismo dato escrito muchas veces. Es lo que venimos a eliminar.</td></tr>
+  <tr><td><strong>Diagrama ER</strong></td><td>El dibujo del modelo: una caja por tabla, líneas para las relaciones, PK y FK marcadas.</td></tr>
+  <tr><td><strong>Modelo de datos</strong></td><td>El conjunto de todas las tablas de tu sistema y cómo se relacionan entre sí.</td></tr>
+</table>
+
+<h2 id="quiz">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Práctica
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p class="quiz-intro">Ejercicios para repasar los conceptos de la clase y analizar SQL. Leé con atención y resolvé en base a lo abordado.</p>
+
+  <div class="quiz-q" data-correct="b" data-explanation="La clave foránea va del lado de los muchos. Un paciente tiene muchos turnos, así que la columna paciente_id va en turnos. Si fuera al revés, pacientes necesitaría una columna por cada turno.">
+    <p><strong>1.</strong> Un paciente puede tener muchos turnos; cada turno es de un solo paciente. ¿Dónde va la clave foránea?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Una columna <code>turno_id</code> en la tabla <code>pacientes</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Una columna <code>paciente_id</code> en la tabla <code>turnos</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) En las dos, para poder consultarlas desde cualquier lado</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">leé el CREATE</p>
+  <pre><code>CREATE TABLE prestamos (
+    id        INT AUTO_INCREMENT PRIMARY KEY,
+    fecha     DATE,
+    libro_id  INT,
+    FOREIGN KEY (libro_id) REFERENCES libros(id)
+);</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="libros tiene que existir antes: la línea FOREIGN KEY hace referencia a ella. Si se crea después, MySQL responde 'Cannot add foreign key constraint'.">
+    <p><strong>2.</strong> ¿Qué tuvo que pasar <strong>antes</strong> de que esta sentencia funcione?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Tienen que estar cargados todos los préstamos</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Nada: el orden de creación no importa</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La tabla <code>libros</code> ya tiene que existir</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="En la columna FK va el id numérico de la fila de la otra tabla. El nombre queda escrito una sola vez, en directores, y las películas guardan solo el número.">
+    <p><strong>3.</strong> ¿Qué se guarda en la columna <code>director_id</code> de una película?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) El <code>id</code> de la fila del director en la tabla <code>directores</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) El nombre completo del director</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Una copia de toda la fila del director</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="Es la integridad referencial funcionando: no existe el director 99, y la base se niega a guardar una fila que apunte a la nada. El error es la señal de que la regla está bien puesta.">
+    <p><strong>4.</strong> Corrés <code>INSERT INTO peliculas (titulo, director_id) VALUES ('Duna', 99);</code> y MySQL responde <em>"a foreign key constraint fails"</em>. ¿Qué significa?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Que la tabla <code>peliculas</code> está llena y no entran más filas</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Que faltan comillas alrededor del <code>99</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Que no existe ningún director con <code>id = 99</code>, y la base no deja guardarlo</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="La PK identifica la fila en su propia tabla y nunca se repite; la FK apunta a otra tabla y sí puede repetirse (muchas películas del mismo director). Las dos son INT.">
+    <p><strong>5.</strong> ¿Cuál es la diferencia entre la clave primaria y la clave foránea?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La primaria es un número y la foránea es texto</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) La primaria identifica la fila en su propia tabla; la foránea apunta a una fila de otra tabla</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La primaria la escribís vos y la foránea la genera sola la base</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="Con el director en su propia tabla, el nombre está escrito una sola vez: se corrige ahí y todas las películas quedan bien, porque ninguna guarda el nombre.">
+    <p><strong>6.</strong> El nombre de un director estaba mal escrito y dirigió 12 películas. Con el modelo de dos tablas, ¿cuántas filas hay que corregir?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Una sola, en la tabla <code>directores</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Doce, una por película</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Trece: las doce películas y el director</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score"></p>
+  <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
+
+  <p class="quiz-intro" style="margin-top:32px"><strong>¿Ya terminaste?</strong> Pasá al <a href="clase-07-tp.html">TP de Clase 7</a> — ahí armás el diagrama ER de tu proyecto y lo implementás en tu base.</p>
+</div>
+
+<h2 id="s10">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+  10. Próximos pasos
+</h2>
+
+<p>Con esta clase cerrás la <strong>Etapa 2</strong> del proyecto: tu modelo de datos está diseñado (el diagrama ER), implementado (las tablas con la relación) y documentado (en el repositorio). Eso es lo que había que tener antes de empezar a construir.</p>
+
+<p>Lo que viene es el salto que venís esperando desde la Clase 6:</p>
+
+<ul>
+  <li><strong>Conectar PHP con MySQL.</strong> Hasta ahora tu sitio lee <code>datos.php</code> y tu base vive aparte, en phpMyAdmin. La próxima clase se juntan: la cartelera va a leer las tablas de verdad. El <code>foreach</code> que ya escribiste en la Clase 4 se queda casi igual — lo que cambia es de dónde vienen los datos.</li>
+  <li><strong>Cargar desde la web.</strong> Después, un formulario HTML que hace el <code>INSERT</code> sin abrir phpMyAdmin, y la película nueva aparece en la pantalla.</li>
+  <li><strong>Editar y borrar.</strong> Y al final, poder modificar y eliminar desde el sitio. Con eso el sistema queda completo: eso se llama <strong>CRUD</strong>.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Tarea para la próxima</div>
+  <ol>
+    <li>Dejá en el repositorio el <code>db.sql</code> con las <strong>dos tablas</strong> y el <strong>diagrama ER</strong>.</li>
+    <li>Actualizá el <code>documentacion.md</code>: agregá la segunda entidad y describí la relación en una línea.</li>
+    <li>Anotá los datos de acceso a tu MySQL local: usuario y host. En XAMPP suelen ser usuario <code>root</code>, host <code>localhost</code>, sin contraseña. <strong>No los subas al repositorio</strong> — los usamos en clase.</li>
+  </ol>
+</div>
+
+<p class="mat-links">
+  <a href="clase-07-tp.html"><strong>→ TP de Clase 7</strong></a> ·
+  <a href="../clase_5/clase-05-teoria.html"><strong>Teoría de Clase 5</strong></a> ·
+  <a href="../clase_6/clase-06-teoria.html"><strong>Teoría de Clase 6</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+<script>
+/* Clasificar: arrastre (mouse+touch) y, además, tap/teclado para colocar. Accesible. */
+(function () {
+  var activities = Array.prototype.slice.call(document.querySelectorAll('.drag-activity'));
+  if (!activities.length) return;
+  activities.forEach(function (act) {
+  var pool  = act.querySelector('.drag-pool');
+  var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
+  var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
+  var selected = null, dragging = null, placeholder = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var THRESH = 6;
+  var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
+
+  function save() {
+    try {
+      var st = {};
+      chips.forEach(function (c) { var z = c.closest('.drop-zone'); st[c.getAttribute('data-id')] = z ? z.getAttribute('data-zone') : 'pool'; });
+      localStorage.setItem(KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+  function restore() {
+    try {
+      var st = JSON.parse(localStorage.getItem(KEY) || '{}');
+      chips.forEach(function (c) {
+        var zoneName = st[c.getAttribute('data-id')];
+        if (!zoneName || zoneName === 'pool') return;
+        var z = zones.filter(function (zz) { return zz.getAttribute('data-zone') === zoneName; })[0];
+        if (z) z.querySelector('.zone-items').appendChild(c);
+      });
+    } catch (e) {}
+  }
+
+  function place(chip, zone) {
+    var dest = (zone && zone !== pool) ? zone.querySelector('.zone-items') : pool;
+    dest.appendChild(chip);
+    chip.classList.remove('ok', 'bad');
+    var m = chip.querySelector('.dz-mark'); if (m) m.textContent = '';
+    var w = chip.querySelector('.dz-why'); if (w) w.remove();
+    save();
+  }
+  function clearSel() { if (selected) selected.classList.remove('selected'); selected = null; act.classList.remove('has-selection'); }
+  function selectChip(chip) {
+    if (selected === chip) { clearSel(); return; }
+    clearSel(); selected = chip; chip.classList.add('selected'); act.classList.add('has-selection');
+  }
+  function zoneUnder(x, y) {
+    if (dragging) dragging.style.visibility = 'hidden';
+    var el = document.elementFromPoint(x, y);
+    if (dragging) dragging.style.visibility = '';
+    if (!el) return null;
+    return el.closest('.drop-zone') || (el.closest('.drag-pool') ? pool : null);
+  }
+  function endDrag(chip) {
+    chip.classList.remove('dragging');
+    chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+    placeholder = null;
+    zones.forEach(function (zz) { zz.classList.remove('over'); });
+    dragging = null;
+  }
+
+  /* En lugar de setPointerCapture (que causa problemas en táctil
+     al combinarlo con position:fixed), usamos listeners a nivel
+     document que se agregan al empezar el arrastre y se quitan
+     al soltar. Así el chip sigue al dedo/mouse en cualquier
+     dispositivo sin "escaparse". */
+  function onPointerMove(e) {
+    if (!moved && (Math.abs(e.clientX - sx) > THRESH || Math.abs(e.clientY - sy) > THRESH)) {
+      moved = true; dragging = chips.filter(function (c) { return c === e.target || c.contains(e.target); })[0];
+      if (!dragging) return;
+      var r = dragging.getBoundingClientRect();
+      ox = sx - r.left; oy = sy - r.top;
+      /* Reservar el lugar de la tarjeta con un placeholder del mismo tamaño:
+         al pasar a position:fixed sale del flujo y, sin esto, el pool se colapsa
+         y las zonas saltan hacia arriba en pleno arrastre (drop cae mal, sobre todo en mobile). */
+      placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.width = r.width + 'px'; placeholder.style.height = r.height + 'px';
+      dragging.parentNode.insertBefore(placeholder, dragging);
+      dragging.style.width = r.width + 'px'; dragging.style.position = 'fixed'; dragging.style.zIndex = '9999';
+      dragging.classList.add('dragging'); clearSel();
+    }
+    if (dragging) {
+      dragging.style.left = (e.clientX - ox) + 'px';
+      dragging.style.top  = (e.clientY - oy) + 'px';
+      var z = zoneUnder(e.clientX, e.clientY);
+      zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+    }
+  }
+  function onPointerUp(e) {
+    if (dragging) { var chip = dragging; var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('pointerdown', function (e) {
+      sx = e.clientX; sy = e.clientY; moved = false; dragging = null;
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    });
+    chip.addEventListener('pointercancel', function () {
+      if (dragging) endDrag(dragging);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+    });
+    chip.addEventListener('click', function (e) {
+      if (!moved) { e.stopPropagation(); selectChip(chip); }
+    });
+    chip.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectChip(chip); }
+    });
+  });
+
+  zones.concat([pool]).forEach(function (zone) {
+    zone.addEventListener('click', function (e) {
+      if (selected && !dragging) {
+        if (e.target.closest('.drag-chip')) return;
+        var s = selected; place(s, zone); clearSel(); s.focus();
+      }
+    });
+    if (zone !== pool) zone.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && selected) { e.preventDefault(); var s = selected; place(s, zone); clearSel(); s.focus(); }
+    });
+  });
+
+  var btn = act.querySelector('.drag-check');
+  var fb  = act.querySelector('.drag-feedback');
+  btn.addEventListener('click', function () {
+    var ok = 0;
+    chips.forEach(function (chip) {
+      var z = chip.closest('.drop-zone');
+      var good = z && z.getAttribute('data-zone') === chip.getAttribute('data-target');
+      chip.classList.toggle('ok', !!good);
+      chip.classList.toggle('bad', !good);
+      var m = chip.querySelector('.dz-mark'); if (m) m.textContent = good ? '✓ ' : '✗ ';
+      var targetZone = zones.filter(function (zz) { return zz.getAttribute('data-zone') === chip.getAttribute('data-target'); })[0];
+      var zoneName = targetZone ? targetZone.querySelector('h4').textContent : chip.getAttribute('data-target');
+      var why = chip.querySelector('.dz-why');
+      if (!why) { why = document.createElement('span'); why.className = 'dz-why'; chip.appendChild(why); }
+      why.textContent = good ? chip.getAttribute('data-why') : 'Va en ' + zoneName + '. ' + chip.getAttribute('data-why');
+      if (good) ok++;
+    });
+    var all = ok === chips.length;
+    fb.textContent = all
+      ? '¡Perfecto! ' + ok + '/' + chips.length + ' bien ubicadas.'
+      : ok + '/' + chips.length + ' bien. Revisá las marcadas con ✗ y volvé a moverlas.';
+    fb.className = 'drag-feedback ' + (all ? 'all-ok' : 'partial');
+  });
+
+  var resetBtn = act.querySelector('.drag-reset');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    clearSel();
+    chips.forEach(function (c) {
+      pool.appendChild(c);
+      c.classList.remove('ok', 'bad', 'selected');
+      var m = c.querySelector('.dz-mark'); if (m) m.textContent = '';
+      var w = c.querySelector('.dz-why'); if (w) w.remove();
+    });
+    fb.textContent = ''; fb.className = 'drag-feedback';
+    try { localStorage.removeItem(KEY); } catch (e) {}
+  });
+
+  restore();
+  });
+})();
+</script>
+
+</body>
+</html>
