@@ -553,8 +553,13 @@ JOIN directores ON peliculas.director_id = directores.id;</code></pre>
 │ id │ titulo       │ anio │ genero    │director_id│
 │  1 │ Matrix       │ 1999 │ Ciencia f.│     1     │
 │  2 │ Coco         │ 2017 │ Animación │     2     │
-│  3 │ Intensamente │ 2015 │ Animación │     3     │
+│  3 │ Toy Story 3  │ 2010 │ Animación │     2     │
+│  4 │ Intensamente │ 2015 │ Animación │     3     │
+│  5 │ Up           │ 2009 │ Animación │     3     │
 └─────────────────────────────────────────────────┘
+      ▲
+      dos directores repiten su id: eso es lo que hace
+      que la relación sea de uno a MUCHOS
 
 y una regla, invisible en los datos pero activa todo el tiempo:
 FOREIGN KEY (director_id) REFERENCES directores(id)</code></pre>
@@ -691,6 +696,31 @@ FOREIGN KEY (director_id) REFERENCES directores(id)</code></pre>
     <button type="button" class="quiz-opt" data-opt="a">a) Una sola, en la tabla <code>directores</code></button>
     <button type="button" class="quiz-opt" data-opt="b">b) Doce, una por película</button>
     <button type="button" class="quiz-opt" data-opt="c">c) Trece: las doce películas y el director</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+
+  <div class="quiz-q" data-correct="b" data-explanation="La regla tiene dos condiciones y hay que cumplir las dos: repetirse y tener datos propios. El estado se repite, pero de él solo guardás la palabra. Si mañana necesitaras guardarle una descripción o un color, ahí sí pasaría a ser una entidad con su tabla.">
+    <p><strong>7.</strong> En tu proyecto tenés una tabla <code>productos</code> con una columna <code>estado</code>, que se repite en casi todas las filas y guarda una sola palabra (<em>nuevo</em>, <em>usado</em>, <em>reparado</em>). ¿Le corresponde una tabla propia?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Sí: se repite en muchas filas, y con eso alcanza</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Por ahora no: se repite, pero no tiene datos propios</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) No: un dato que se repite siempre se deja como columna</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="La clave foránea verifica los ids que se escriben, pero no obliga a escribir alguno. Sin NOT NULL, un INSERT que omita director_id se guarda con NULL: una película sin ningún director, y sin ningún aviso. Por eso las dos cláusulas van juntas.">
+    <p><strong>8.</strong> La tabla <code>peliculas</code> tiene la clave foránea declarada, pero la columna <code>director_id</code> admite <code>NULL</code>. ¿Qué puede pasar?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Nada: la clave foránea ya impide cualquier fila sin director</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Se puede guardar una película sin ningún director</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) MySQL rechaza el <code>CREATE TABLE</code> mientras falte el <code>NOT NULL</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="Por la convención de nombres: una columna terminada en _id que no es la clave primaria de su tabla es casi seguro una clave foránea, y el nombre indica a qué tabla apunta (socio_id apunta a socios). La clave primaria de prestamos es id.">
+    <p><strong>9.</strong> Ves por primera vez una tabla <code>prestamos</code> con las columnas <code>id</code>, <code>fecha</code> y <code>socio_id</code>. ¿Qué podés deducir de <code>socio_id</code> sin preguntarle a nadie?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Que guarda el nombre del socio que se llevó el libro</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Que es la clave primaria de <code>prestamos</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Que es una clave foránea que apunta a la tabla <code>socios</code></button>
     <div class="quiz-feedback"></div>
   </div>
 

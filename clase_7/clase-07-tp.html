@@ -108,6 +108,11 @@ Table peliculas {
 <p>Ahora sí, phpMyAdmin, pestaña <strong>SQL</strong>. Acordate del orden: <strong>primero la tabla apuntada</strong> (la del lado del uno), porque la otra necesita que exista.</p>
 
 <div class="callout callout-warn">
+  <div class="callout-title">Acá se escribe SQL, no la sintaxis de la herramienta</div>
+  Lo que escribiste en la Parte 1 (<code>Table peliculas { … }</code> y <code>ref:</code>) es el lenguaje de databasediagram.com, y sirve para dibujar. phpMyAdmin entiende <strong>SQL</strong>: <code>CREATE TABLE</code> y <code>FOREIGN KEY</code>. Se parecen porque describen lo mismo, y por eso el diagrama te sirve de guía — pero son dos idiomas distintos y no se mezclan.
+</div>
+
+<div class="callout callout-warn">
   <div class="callout-title">Advertencia: se eliminan las filas de la Clase 5</div>
   <p>Para incorporar la columna nueva, el paso 2 comienza con un <code>DROP TABLE</code>, que <strong>elimina la tabla junto con todas las filas cargadas</strong>. Está contemplado en la consigna: en la Parte 3 las vas a cargar de nuevo, y son pocas. Conviene que lo sepas antes de ejecutarlo.</p>
   <p>Un sistema en producción se modifica con <code>ALTER TABLE</code>, que incorpora la columna <strong>conservando los datos existentes</strong>. Vas a necesitar ese recurso cuando tu proyecto tenga información que deba preservarse. Con cinco filas de prueba, en cambio, rehacer la tabla resulta más simple y deja el <code>CREATE TABLE</code> completo a la vista.</p>
