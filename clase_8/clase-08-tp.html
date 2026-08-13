@@ -68,6 +68,8 @@
 <ol>
   <li>Creá el archivo <code>conexion.php</code> en la raíz de tu proyecto, con <strong>tus</strong> 4 datos:
     <pre><code>&lt;?php
+mysqli_report(MYSQLI_REPORT_OFF);  // los errores los manejamos acá abajo
+
 // los 4 datos de TU base
 $host      = 'localhost';
 $usuario   = 'root';
@@ -136,12 +138,14 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 
 <div class="callout callout-warn">
   <div class="callout-title">El dato del usuario nunca va dentro de la consulta</div>
-  Pegar el dato del formulario entre comillas en el SQL — <code>'INSERT ... VALUES ("' . $_POST['titulo'] . '")'</code> — es un error: un apóstrofo en el título rompe la consulta, y lo peor, quien escribe podría escribir <strong>SQL</strong> en vez de un título. Ese ataque se llama <em>inyección SQL</em>. Se previene con una sola práctica, desde el principio: la sentencia preparada.
+  Pegar el dato del formulario dentro del SQL — <code>"INSERT ... VALUES ('" . $_POST['titulo'] . "')"</code> — es un error. Con un título como <code>Ocean's Eleven</code>, el apóstrofo cierra el texto antes de tiempo y rompe la consulta. Y lo más grave: quien completa el formulario podría escribir <strong>SQL</strong> en vez de un título, y esa instrucción correría tal cual. Ese ataque se llama <em>inyección SQL</em>, y se previene con una sola práctica, desde el principio: la sentencia preparada.
 </div>
 
 <ol>
-  <li>Creá el formulario de alta (podés reusar el de la Clase 1). El menú del director se llena <strong>desde la base</strong> — muestra nombres, envía ids:
-    <pre><code>&lt;form method="POST" action="procesar_pelicula.php"&gt;
+  <li>Creá el formulario de alta (podés reusar el de la Clase 1). Esta página <strong>también consulta la base</strong> —el menú se llena con un <code>SELECT</code>—, así que arriba de todo va el <code>require</code>. El menú muestra nombres y envía ids:
+    <pre><code>&lt;?php require 'conexion.php'; ?&gt;
+
+&lt;form method="POST" action="procesar_pelicula.php"&gt;
   &lt;label&gt;Título: &lt;input type="text" name="titulo" required&gt;&lt;/label&gt;
   &lt;label&gt;Año: &lt;input type="number" name="anio"&gt;&lt;/label&gt;
   &lt;label&gt;Director:
@@ -171,14 +175,19 @@ $director_id = $_POST['director_id'];
 $stmt = mysqli_prepare($conexion,
     'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)');
 mysqli_stmt_bind_param($stmt, 'sii', $titulo, $anio, $director_id);
-mysqli_stmt_execute($stmt);
+
+if (!mysqli_stmt_execute($stmt)) {
+    die('No se pudo guardar: ' . mysqli_stmt_error($stmt));
+}
 
 header('Location: cartelera.php');
 ?&gt;</code></pre>
     <p>En <code>'sii'</code> se describe cada lugar reservado: <code>s</code> = texto, <code>i</code> = entero. Adaptalo a las columnas de tu tabla.</p>
+    <p>La última línea <strong>vuelve al listado</strong>, y por un motivo concreto: si esta página se quedara mostrando "listo", cada <strong>F5</strong> reenviaría el formulario y guardaría la fila de nuevo. Al redirigir, lo que se recarga es el listado, que solo lee.</p>
   </li>
   <li>Cargá una fila por el formulario y verificá en el listado que aparece. Revisá la fila en phpMyAdmin: la FK trae el <strong>id</strong> del director, no su nombre.</li>
-  <li>Probá qué pasa si la FK no existe: enviá un <code>director_id</code> inexistente (editalo en el formulario) y anotá el mensaje de error. Es la integridad referencial de la Clase 7, ahora llegando desde la web.</li>
+  <li>Probá con un título que tenga <strong>apóstrofo</strong> (<code>Ocean's Eleven</code>, o cualquiera de tu tema con una comilla). Con la sentencia preparada se guarda entero: ese es el motivo de los <code>?</code>.</li>
+  <li>Probá qué pasa si la FK no existe: en el código del formulario, cambiá a mano el <code>value</code> de una <code>&lt;option&gt;</code> por un número que no exista (<code>value="99"</code>), guardá y enviá. Anotá el mensaje de error y después devolvé el <code>value</code> a su lugar. Es la integridad referencial de la Clase 7, ahora llegando desde la web.</li>
 </ol>
 
 <div class="callout callout-tip">
@@ -195,8 +204,9 @@ header('Location: cartelera.php');
       <li>La <strong>plantilla de <code>conexion.php</code></strong> completa (los 4 datos con espacios para completar), para poder recrearla en otra computadora. Lo que se comparte es la plantilla, nunca la llave.</li>
     </ul>
   </li>
-  <li>Commit y push:
-    <pre><code>git add .    # o los archivos que tocaste: cartelera.php, procesar_pelicula.php, .gitignore, documentacion.md
+  <li>Borrá <code>probar_conexion.php</code>: era una página de prueba y ya cumplió.</li>
+  <li>Commit y push. <strong>Nombrá los archivos</strong> en vez de usar <code>git add .</code>: el día que aprendés qué no se sube, el gesto es mirar la lista antes de subirla.
+    <pre><code>git add cartelera.php formulario.php procesar_pelicula.php .gitignore documentacion.md
 git commit -m "Web conectada a MySQL: la cartelera lee y agrega filas"
 git push</code></pre>
   </li>
@@ -214,7 +224,9 @@ git push</code></pre>
   <tr><th>Error</th><th>Qué revisar</th></tr>
   <tr><td><code>mysqli_connect()</code> no existe / "undefined function"</td><td>Faltó el <code>&lt;?php require 'conexion.php'; ?&gt;</code> en la página, o la página guardada sin extensión <code>.php</code>.</td></tr>
   <tr><td>Error de conexión (no conecta)</td><td>Leer <code>mysqli_connect_error()</code>: MySQL apagado, nombre de base mal escrito o credenciales equivocadas.</td></tr>
-  <tr><td><code>mysqli_fetch_assoc()</code> espera 1 parámetro</td><td><code>$resultado</code> no vino de <code>mysqli_query</code>: se llamó <code>fetch_assoc</code> sobre algo que no es un resultado.</td></tr>
+  <tr><td><code>mysqli_fetch_assoc(): … must be of type mysqli_result, bool given</code></td><td>La consulta está mal escrita y <code>mysqli_query</code> devolvió <code>false</code>. Correr ese mismo <code>SELECT</code> en phpMyAdmin: ahí se ve el error exacto (tabla o columna mal escrita, casi siempre).</td></tr>
+  <tr><td><code>Undefined variable $conexion</code></td><td>Falta el <code>&lt;?php require 'conexion.php'; ?&gt;</code> arriba de esa página. Pasa sobre todo en el formulario, que también consulta la base para el menú.</td></tr>
+  <tr><td><code>Undefined array key "titulo"</code> al abrir el procesador directo</td><td>Esa página espera un <code>POST</code>: hay que llegar desde el formulario, no escribiendo su nombre en la barra de direcciones.</td></tr>
   <tr><td><code>Undefined array key "titulo"</code></td><td>La clave no coincide con la columna real: las claves de <code>$fila</code> son los nombres del <code>CREATE TABLE</code>.</td></tr>
   <tr><td>Error de sintaxis SQL en el <code>INSERT</code></td><td>Se concatenó el dato del usuario dentro de la consulta (un apóstrofo la rompió). Usar la sentencia preparada.</td></tr>
   <tr><td><code>mysqli_stmt_execute()</code> falla con FK</td><td>El <code>director_id</code> no existe en la tabla apuntada (error 1452). Correr un <code>SELECT</code> y elegir un id real del menú.</td></tr>
@@ -240,7 +252,7 @@ git push</code></pre>
     <li><input type="checkbox" id="tpc8-5"><label for="tpc8-5"><code>conexion.php</code> figura en el <code>.gitignore</code>.</label></li>
     <li><input type="checkbox" id="tpc8-6"><label for="tpc8-6">El listado de mi sitio muestra las filas de <strong>mi</strong> base (lo verifiqué agregando una fila en phpMyAdmin).</label></li>
     <li><input type="checkbox" id="tpc8-7"><label for="tpc8-7">El formulario agrega una fila que aparece en el listado.</label></li>
-    <li><input type="checkbox" id="tpc8-8"><label for="tpc8-8">El <code>INSERT</code> usa <strong>sentencia preparada</strong> (los <code>?</code> y <code>bind_param</code>), no concatenación.</label></li>
+    <li><input type="checkbox" id="tpc8-8"><label for="tpc8-8">El <code>INSERT</code> usa <strong>sentencia preparada</strong> (los <code>?</code> y <code>bind_param</code>), no concatenación — y lo probé con un título con apóstrofo.</label></li>
     <li><input type="checkbox" id="tpc8-9"><label for="tpc8-9">La FK se carga desde el menú: muestra el nombre, envía el id.</label></li>
     <li><input type="checkbox" id="tpc8-10"><label for="tpc8-10">La plantilla de <code>conexion.php</code> está en <code>documentacion.md</code>.</label></li>
     <li><input type="checkbox" id="tpc8-11"><label for="tpc8-11">Hice commit y push, y verifiqué que <code>conexion.php</code> <strong>no</strong> está en GitHub.</label></li>

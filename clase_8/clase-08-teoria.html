@@ -65,7 +65,7 @@ id │ nombre          │ nacionalidad      id │ titulo       │ director_id
  3 │ Pete Docter     │ Estados Unidos     3 │ Intensamente │      3
       ▲ PK: se consulta, no se adivina         ▲ FK: un número, no un nombre</code></pre>
 
-<p>Eso está hecho y versionado. El paso que falta no es de SQL ni de diseño: es <strong>de comunicación</strong>. La base existe, y el sitio existe, pero todavía no se comunican. De eso trata esta clase.</p>
+<p>Eso está hecho y versionado. El paso que falta es <strong>de comunicación</strong>: la base existe y el sitio existe, cada uno por su lado. Ponerlos a hablar es el tema de esta clase.</p>
 
 <h2 id="s1">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -80,17 +80,17 @@ id │ nombre          │ nacionalidad      id │ titulo       │ director_id
 </ul>
 
 <pre><code>┌───────────────────┐      ┌────────────────────────┐
-│ PHP (el sitio)     │      │ MySQL (los datos)      │
-│ cartelera.php      │      │ cartelera              │
-│  lee datos.php     │      │  peliculas · directores│
-│  (array a mano)    │      │  filas reales          │
+│ PHP (el sitio)    │      │ MySQL (los datos)      │
+│ cartelera.php     │      │ cartelera              │
+│  lee datos.php    │      │  peliculas · directores│
+│  (array a mano)   │      │  filas reales          │
 └─────────┬─────────┘      └──────────┬─────────────┘
           │            falta el canal │
           └────────────────╳──────────┘</code></pre>
 
 <p>¿Qué pasa si cambiás un dato en phpMyAdmin? La cartelera de la web <strong>no refleja el cambio</strong>. ¿Y si cambiás algo en <code>datos.php</code>? La base tampoco lo recibe. Son dos copias de la misma información que pueden desincronizarse, y cada corrección habría que hacerla dos veces.</p>
 
-<p>La solución no es escribir los datos de nuevo en el programa: es <strong>abrir un canal</strong> entre los dos programas. PHP y MySQL son programas distintos, y este es el momento en que se conocen.</p>
+<p>La solución es <strong>abrir un canal</strong> entre los dos programas, para que el sitio le pida los datos a la base cada vez que los necesita. PHP y MySQL son programas distintos, y este es el momento en que se conocen.</p>
 
 <div class="callout callout-info">
   <div class="callout-title">La idea de toda la clase</div>
@@ -131,7 +131,7 @@ id │ nombre          │ nacionalidad      id │ titulo       │ director_id
   2. Conectar: los 4 datos y mysqli_connect
 </h2>
 
-<p>Para que tu programa entre a la base, PHP necesita saber <strong>dónde está</strong> esa base y <strong>con qué identidad</strong> entra. Son exactamente los cuatro datos que anotaste como tarea de la Clase 7:</p>
+<p>Para que tu programa entre a la base, PHP necesita saber <strong>dónde está</strong> esa base y <strong>con qué identidad</strong> entra. Son los datos que anotaste como tarea de la Clase 7 —host, usuario y contraseña—, más el nombre de tu base:</p>
 
 <pre><code>host          localhost       en qué máquina vive la base
 usuario       root            con qué usuario entra
@@ -149,23 +149,26 @@ base          cartelera       cuál de las bases abre</code></pre>
 │           └─ la función que abre el canal (familia mysqli)
 └─ el resultado se guarda en $conexion: el canal listo para usar</code></pre>
 
-<p><code>mysqli</code> no es una función suelta: es una <strong>familia de funciones</strong> con la que PHP habla con MySQL. Todas las que vamos a usar hoy empiezan con <code>mysqli_</code> — es la señal de "esto es una conversación con la base".</p>
+<p><code>mysqli</code> es una <strong>familia de funciones</strong>, la que PHP usa para hablar con MySQL. Todas las de esta clase empiezan con <code>mysqli_</code>, y ese prefijo es la señal de que ahí hay una conversación con la base.</p>
 
 <p><code>mysqli_connect</code> <strong>devuelve un valor</strong>. Si la conexión sale bien, devuelve el canal (un objeto conexión) y ese valor se guarda en <code>$conexion</code>. Si algo falla, devuelve <code>false</code> — y con <code>false</code> no se puede consultar nada, así que hay que enterarse antes de seguir.</p>
 
 <p>El bloque completo, con el control del error:</p>
 
 <pre><code>&lt;?php
-// 1. Los cuatro datos, cada uno en una variable
+// 1. Los errores de la base los manejamos nosotros, acá abajo
+mysqli_report(MYSQLI_REPORT_OFF);
+
+// 2. Los cuatro datos, cada uno en una variable
 $host      = 'localhost';
 $usuario   = 'root';
 $clave     = '';
 $base      = 'cartelera';
 
-// 2. Abrir el canal: el resultado queda en $conexion
+// 3. Abrir el canal: el resultado queda en $conexion
 $conexion = mysqli_connect($host, $usuario, $clave, $base);
 
-// 3. ¿Se abrió bien? Si no, detenerse y decir el motivo
+// 4. ¿Se abrió bien? Si no, detenerse y decir el motivo
 if (!$conexion) {
     die('Error de conexión: ' . mysqli_connect_error());
 }
@@ -174,10 +177,11 @@ if (!$conexion) {
 <p>Línea por línea:</p>
 
 <ul>
-  <li><strong>El bloque 1</strong> escribe los 4 datos una sola vez, arriba, para que se vean y se cambien fácil. Son las credenciales de <em>tu</em> base.</li>
-  <li><strong>El bloque 2</strong> llama a la función y guarda su resultado en <code>$conexion</code>.</li>
+  <li><strong><code>mysqli_report(MYSQLI_REPORT_OFF)</code></strong> le pide a PHP que, ante un problema con la base, <em>devuelva</em> el error en vez de cortar el programa con un mensaje propio. Va primero, una sola vez, y es lo que hace que el aviso que escribimos en el punto 4 sea el que se vea en pantalla.</li>
+  <li><strong>El bloque 2</strong> escribe los 4 datos una sola vez, arriba, para que se vean y se cambien fácil. Son las credenciales de <em>tu</em> base.</li>
+  <li><strong>El bloque 3</strong> llama a la función y guarda su resultado en <code>$conexion</code>.</li>
   <li><strong>El <code>if (!$conexion)</code></strong>: el <code>!</code> es la negación. <code>!$conexion</code> lee "si <em>no</em> hay conexión". Cuando la función falló, devolvió <code>false</code>, y la condición se cumple.</li>
-  <li><strong><code>die(...)</code></strong> detiene el programa en ese punto. No tiene sentido seguir si no hay canal: cualquier consulta fracasaría. Es un freno de emergencia que avisa.</li>
+  <li><strong><code>die(...)</code></strong> detiene el programa en ese punto. Sin canal, cualquier consulta que viniera después fracasaría, así que conviene frenar acá y avisar el motivo.</li>
   <li><strong><code>mysqli_connect_error()</code></strong> devuelve el motivo del fallo, para no adivinar. Se concatena con el punto (<code>.</code>), como venís haciendo desde la Clase 1.</li>
 </ul>
 
@@ -208,15 +212,15 @@ if (!$conexion) {
 
 <h3>La conexión se escribe una sola vez</h3>
 
-<p>La conexión no se copia en cada página: se escribe <strong>una sola vez</strong>, en un archivo aparte, y se reutiliza. Es el mismo principio que aplicaste en la Clase 4 con <code>datos.php</code>: un solo lugar para el dato que se usa en muchos lados.</p>
+<p>La conexión se escribe <strong>una sola vez</strong>, en un archivo aparte, y desde ahí se reutiliza en todas las páginas. Es el mismo principio que aplicaste en la Clase 4 con <code>datos.php</code>: un solo lugar para el dato que se usa en muchos lados.</p>
 
 <p><strong>Dónde va el archivo:</strong> en la raíz del proyecto, junto a <code>cartelera.php</code> — lo viste en el mapa de §1. Ahí vive porque las páginas lo buscan <em>en su misma carpeta</em>.</p>
 
 <pre><code>C:/xampp/htdocs/cartelera/
 ├── cartelera.php           ← acá va:  &lt;?php require 'conexion.php'; ?&gt;
 ├── pelicula.php            ← y acá también
-├── formulario.php
-├── procesar_pelicula.php   ← (nuevo, §5)
+├── formulario.php          ← y acá: el menú de la FK consulta la base (§6)
+├── procesar_pelicula.php   ← (nuevo, §5) también lo necesita
 ├── datos.php
 ├── conexion.php            ← EL archivo nuevo: los 4 datos + el control del error
 └── .gitignore              ← nuevo: dice "conexion.php no se sube"</code></pre>
@@ -224,6 +228,8 @@ if (!$conexion) {
 <pre><code>conexion.php   (se crea una vez, se usa en todas las páginas)
 ───────────────────────────────────────────────────────────
 &lt;?php
+mysqli_report(MYSQLI_REPORT_OFF);  // los errores los manejamos acá abajo
+
 // los 4 datos de TU base
 $host      = 'localhost';
 $usuario   = 'root';
@@ -322,12 +328,12 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 
 <div class="callout callout-info">
   <div class="callout-title">La fila de la base es el array de la Clase 4</div>
-  En <code>datos.php</code> escribías <code>['titulo' =&gt; 'Coco', 'anio' =&gt; 2017]</code>. MySQL entrega exactamente lo mismo: <code>$fila['titulo']</code>, <code>$fila['anio']</code>. Las claves las pone la base, y son los <strong>nombres de las columnas</strong> del <code>CREATE TABLE</code>. No aprendés a listar de nuevo: aprendés de dónde salen las filas.
+  En <code>datos.php</code> escribías <code>['titulo' =&gt; 'Coco', 'anio' =&gt; 2017]</code>. MySQL entrega exactamente lo mismo: <code>$fila['titulo']</code>, <code>$fila['anio']</code>. Las claves las pone la base, y son los <strong>nombres de las columnas</strong> del <code>CREATE TABLE</code>. Lo que se aprende acá es de dónde salen las filas; listar ya lo sabías.
 </div>
 
 <h3>Cómo se integra en el HTML de la página</h3>
 
-<p>Las páginas de tu sitio no son solo PHP ni solo HTML: son los <strong>dos, mezclados</strong>. El patrón es abrir un bloque de PHP, usar HTML normal afuera y hacer que el <code>echo</code> escriba justo donde se lo llama. Es lo que reemplazás en la Parte 3 del TP.</p>
+<p>Las páginas de tu sitio combinan <strong>PHP y HTML</strong> en el mismo archivo. El patrón es abrir un bloque de PHP, usar HTML normal afuera y hacer que el <code>echo</code> escriba justo donde se lo llama. Es lo que reemplazás en la Parte 3 del TP.</p>
 
 <pre><code>&lt;?php require 'conexion.php'; ?&gt;                    ← 1. abrir el canal
 
@@ -416,10 +422,10 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 <p>El recorrido completo ya lo conocés por partes:</p>
 
 <pre><code>formulario  ──POST──►  procesar_pelicula.php  ──INSERT──►  la base
-titulo                        │                            │
-anio                         │                            │
-director_id                  │   (la fila nueva)          ▼
-                             └── header('Location:')      el listado la muestra</code></pre>
+titulo                           │                           │
+anio                             │   (la fila nueva)         │
+director_id                      │                           ▼
+                                 └── header('Location:')      el listado la muestra</code></pre>
 
 <ul>
   <li>El <strong>formulario</strong> y el <code>POST</code> — de la Clase 1.</li>
@@ -427,30 +433,32 @@ director_id                  │   (la fila nueva)          ▼
   <li>El <strong><code>INSERT</code></strong> — de la Clase 5.</li>
 </ul>
 
+<p>La redirección del final cumple una función concreta. Si la página del procesador se quedara mostrando "listo", cada <strong>F5</strong> volvería a enviar el formulario y <strong>guardaría la fila otra vez</strong>. Al redirigir, lo que queda cargado en el navegador es el listado, y recargar un listado solo vuelve a leer.</p>
+
 <p>Lo nuevo es cómo se escribe ese INSERT desde PHP. Y acá hay una regla que no se negocia.</p>
 
 <div class="callout callout-warn">
   <div class="callout-title">La regla: el dato del usuario nunca va dentro de la consulta</div>
-  <p>La tentación es armar el SQL pegando el dato entre comillas: <code>'INSERT ... VALUES ("' . $_POST['titulo'] . '")'</code>. Eso es un error, y conviene ver por qué <strong>antes</strong> de que aparezca solo.</p>
-  <p>Si el título es <code>¿Qué pasó ayer?</code>, el apóstrofo <strong>rompe la consulta</strong>: para SQL, el apóstrofo es la marca de fin de texto, así que el texto se corta en la mitad y sobra basura que no entiende.</p>
+  <p>La tentación es armar el SQL pegando el dato entre comillas: <code>"INSERT ... VALUES ('" . $_POST['titulo'] . "')"</code>. Eso es un error, y conviene ver por qué <strong>antes</strong> de que aparezca solo.</p>
+  <p>Si el título es <code>Ocean's Eleven</code>, el apóstrofo <strong>rompe la consulta</strong>: para SQL, el apóstrofo es la marca de fin de texto, así que la consulta que llega es <code>VALUES ('Ocean'</code> más un <code>s Eleven')</code> suelto que no entiende. Es un título real y alcanza para romperla.</p>
   <p>El caso más grave es otro: quien escribe en el formulario podría escribir <strong>SQL</strong> en vez de un título, y esa consulta correría tal cual. Ese ataque tiene nombre — <em>inyección SQL</em> — y se previene con una sola práctica, desde el principio.</p>
 </div>
 
-<p>La forma correcta usa una <strong>sentencia preparada</strong>. La clave no está en el SQL: está en <strong>cómo viaja</strong>. En vez de armar una sola consulta con el dato adentro, la consulta viaja <strong>en dos partes separadas</strong>:</p>
+<p>La forma correcta usa una <strong>sentencia preparada</strong>. Lo que cambia está en <strong>cómo viaja</strong> la consulta. En vez de armar una sola consulta con el dato adentro, la consulta viaja <strong>en dos partes separadas</strong>:</p>
 
-<pre><code>┌────────────────────────────── VIAJE 1: el molde ──────────────────────────────┐
-│                                                                                │
-│   INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)          │
-│                                                                                │
-│   cada ? es un lugar vacío: ahí van a entrar los datos, en el viaje 2         │
-└────────────────────────────────────────────────────────────────────────────────┘
+<pre><code>┌─────────────────────────── VIAJE 1: el molde ────────────────────────────┐
+│                                                                          │
+│   INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)     │
+│                                                                          │
+│   cada ? es un lugar vacío: ahí van a entrar los datos, en el viaje 2    │
+└──────────────────────────────────────────────────────────────────────────┘
 
-┌────────────────────────────── VIAJE 2: los valores ───────────────────────────┐
-│                                                                                │
-│   $titulo = "Coco"     $anio = 2017     $director_id = 2                      │
-│                                                                                │
-│   llegan como DATOS: se leen, nunca se ejecutan como instrucción              │
-└────────────────────────────────────────────────────────────────────────────────┘</code></pre>
+┌────────────────────────── VIAJE 2: los valores ──────────────────────────┐
+│                                                                          │
+│   $titulo = "Ocean's Eleven"     $anio = 2001     $director_id = 2       │
+│                                                                          │
+│   llegan como DATOS: se leen, nunca se ejecutan como instrucción         │
+└──────────────────────────────────────────────────────────────────────────┘</code></pre>
 
 <p>Es como una planilla de inscripción en papel: el texto impreso es fijo y tiene <strong>espacios en blanco</strong>; después se llenan con los datos. Lo que se escribe en los espacios no se interpreta como parte del texto impreso — queda como dato. Eso mismo hace la sentencia preparada con el SQL.</p>
 
@@ -475,7 +483,7 @@ mysqli_stmt_execute($stmt);</code></pre>
   <li><strong>3) <code>mysqli_stmt_execute</code></strong> hace el viaje 2: envía los valores y recién ahí MySQL guarda la fila.</li>
 </ul>
 
-<p>¿Por qué esto neutraliza el apóstrofo y la inyección? Porque el dato viaja <strong>solo</strong>, después del molde, y MySQL lo trata como dato. El apóstrofo de <code>¿Qué pasó ayer?</code> ya no puede cerrar un texto de SQL: no se escribió dentro del molde, llega como un carácter más del valor <code>"¿Qué pasó ayer?"</code>. Y si en el formulario escribieran SQL, ese texto llegaría en el viaje 2 y MySQL lo guardaría literalmente como dato — nunca lo ejecuta, porque la instrucción ya se interpretó en el viaje 1.</p>
+<p>¿Por qué esto neutraliza el apóstrofo y la inyección? Porque el dato viaja <strong>solo</strong>, después del molde, y MySQL lo trata como dato. El apóstrofo de <code>Ocean's Eleven</code> ya no puede cerrar un texto de SQL: no se escribió dentro del molde, llega como un carácter más del valor <code>"Ocean's Eleven"</code>. Y si en el formulario escribieran SQL, ese texto llegaría en el viaje 2 y MySQL lo guardaría literalmente como dato — nunca lo ejecuta, porque la instrucción ya se interpretó en el viaje 1.</p>
 
 <div class="callout callout-info">
   <div class="callout-title">Cuándo se usa cada una</div>
@@ -484,9 +492,17 @@ mysqli_stmt_execute($stmt);</code></pre>
 
 <h3>La integridad referencial viaja con el INSERT</h3>
 
-<p>Todo lo que aprendiste en la Clase 7 sigue vigente. Si el formulario envía un <code>director_id</code> que no existe en <code>directores</code>, la base <strong>rechaza la fila</strong>:</p>
+<p>Todo lo que aprendiste en la Clase 7 sigue vigente. Si el formulario envía un <code>director_id</code> que no existe en <code>directores</code>, la base <strong>rechaza la fila</strong>.</p>
 
-<pre><code>ERROR 1452: Cannot add or update a child row:
+<p>Para enterarte cuando eso pasa, el <code>execute</code> se controla igual que la conexión: si devuelve <code>false</code>, la fila no se guardó y hay que decirlo. Sin este control, la página redirigiría al listado como si todo hubiera salido bien, y la fila simplemente no estaría.</p>
+
+<pre><code>if (!mysqli_stmt_execute($stmt)) {
+    die('No se pudo guardar: ' . mysqli_stmt_error($stmt));
+}</code></pre>
+
+<p>El mensaje que aparece es el conocido:</p>
+
+<pre><code>No se pudo guardar: Cannot add or update a child row:
 a foreign key constraint fails</code></pre>
 
 <p>Es el mismo error que provocaste en la Clase 7, ahora llegando desde la web. La regla que declaraste en el <code>CREATE TABLE</code> sigue trabajando; lo único que cambió es quién la dispara.</p>
@@ -501,7 +517,7 @@ mysqli_stmt_execute($stmt);</code></pre>
   <ol>
     <li><strong>a)</strong> ¿Qué hace cada una de las tres líneas? Explicá con tus palabras.</li>
     <li><strong>b)</strong> En <code>'sii'</code>, ¿qué tipo espera cada lugar? ¿Qué escribirías si tu tabla guardara un título, un año y un <code>paciente_id</code>?</li>
-    <li><strong>c)</strong> El formulario manda <code>titulo = "¿Qué pasó ayer?"</code>. ¿Se rompe la consulta? ¿Por qué no?</li>
+    <li><strong>c)</strong> El formulario manda <code>titulo = "Ocean's Eleven"</code>. ¿Se rompe la consulta? ¿Por qué no?</li>
     <li><strong>d)</strong> ¿En qué viaje va el molde y en cuál los valores? ¿Qué cambiaría si los valores viajaran dentro del molde (la concatenación del aviso)?</li>
   </ol>
 </div>
@@ -511,11 +527,13 @@ mysqli_stmt_execute($stmt);</code></pre>
   6. La clave foránea en el formulario
 </h2>
 
-<p>En el formulario de alta hay un campo que no es de texto: la <strong>clave foránea</strong>. Que el usuario escriba el número a mano provocaría el error de la Clase 7 — "¿cuál era el id de Pete Docter?"</p>
+<p>En el formulario de alta hay un campo con un tratamiento propio: la <strong>clave foránea</strong>. Que el usuario escriba el número a mano provocaría el error de la Clase 7 — "¿cuál era el id de Pete Docter?"</p>
 
-<p>La solución es un menú desplegable que se llena <strong>desde la base</strong>:</p>
+<p>La solución es un menú desplegable que se llena <strong>desde la base</strong>. La página del formulario también consulta la base, así que empieza con el mismo <code>require</code> que el listado.</p>
 
-<pre><code>&lt;form method="POST" action="procesar_pelicula.php"&gt;
+<pre><code>&lt;?php require 'conexion.php'; ?&gt;
+
+&lt;form method="POST" action="procesar_pelicula.php"&gt;
   &lt;label&gt;Título: &lt;input type="text" name="titulo" required&gt;&lt;/label&gt;
   &lt;label&gt;Año: &lt;input type="number" name="anio"&gt;&lt;/label&gt;
   &lt;label&gt;Director:
@@ -573,9 +591,19 @@ mysqli_stmt_execute($stmt);</code></pre>
     <td>Encender MySQL en XAMPP, o corregir los 4 datos en <code>conexion.php</code>.</td>
   </tr>
   <tr>
-    <td>La lista aparece vacía y no da error</td>
-    <td><code>mysqli_query</code> devolvió <code>false</code>: la consulta está mal escrita. PHP no la muestra porque el <code>while</code> no encuentra filas.</td>
-    <td>Correr la misma consulta en phpMyAdmin: ahí se ve el error de SQL exacto.</td>
+    <td><code>mysqli_fetch_assoc(): Argument #1 … must be of type mysqli_result, bool given</code></td>
+    <td>La consulta está mal escrita: <code>mysqli_query</code> devolvió <code>false</code> en vez de un resultado, y <code>fetch_assoc</code> no puede recorrer eso.</td>
+    <td>Correr la misma consulta en phpMyAdmin: ahí se ve el error de SQL exacto (tabla o columna mal escrita, casi siempre).</td>
+  </tr>
+  <tr>
+    <td>El listado aparece vacío, sin ningún error</td>
+    <td>La consulta corrió bien pero la tabla no tiene filas — o el <code>SELECT</code> apunta a otra tabla.</td>
+    <td>Correr <code>SELECT * FROM tu_tabla</code> en phpMyAdmin y comparar el nombre con el de tu código.</td>
+  </tr>
+  <tr>
+    <td><code>Undefined array key "titulo"</code> al abrir <code>procesar_pelicula.php</code> directo</td>
+    <td>Esa página espera los datos de un <code>POST</code>. Abierta desde la barra de direcciones, <code>$_POST</code> viene vacío.</td>
+    <td>Llegar siempre desde el formulario, con el botón Guardar.</td>
   </tr>
   <tr>
     <td><code>Undefined array key "titulo"</code></td>
