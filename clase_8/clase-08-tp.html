@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TP Clase 8 — Conectá tu web con la base: mostrar y agregar datos</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 8</div>
+  <h1>Conectá tu web con la base: mostrar y agregar datos</h1>
+  <p class="sub">Tu sitio deja de leer <code>datos.php</code> (un array escrito a mano) y empieza a <strong>leer la base real</strong> (mostrar) y a <strong>agregarle filas</strong> (insertar) desde un formulario, respetando la clave foránea y sin subir los datos de acceso al repositorio. Es el inicio de la <strong>Etapa 3</strong>: PHP y MySQL conectados.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Entorno:</strong> XAMPP (Apache + MySQL) · phpMyAdmin en <code>http://localhost/phpmyadmin</code> · tu sitio corre en <code>http://localhost/...</code><br>
+  <strong>Tiempo en clase:</strong> Parte 1 en el primer módulo · Partes 2 y 3 en el segundo y tercero · Partes 4 y 5 en el cuarto
+</div>
+
+<h2>Objetivo</h2>
+
+<p>Conectar la web de tu proyecto con su base de datos real. Que el listado del sitio <strong>lea las filas</strong> que cargaste en la Clase 7, y que un <strong>formulario las agregue</strong> desde el navegador — siempre por la clave foránea y con el <code>INSERT</code> protegido. Con esto dejás atrás el array escrito a mano (<code>datos.php</code>) y tu web pasa a tener datos vivos.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Las películas son un ejemplo</div>
+  Todo el TP usa la cartelera (<code>peliculas</code> + <code>directores</code>) para explicar, pero hacelo con <strong>tu</strong> proyecto: <code>turnos</code> + <code>pacientes</code>, <code>productos</code> + <code>categorias</code>, lo que sea. Lo evaluable es que la web lea y escriba en <strong>tu</strong> base real.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Antes de empezar</div>
+  XAMPP con <strong>Apache</strong> y <strong>MySQL</strong> encendidos, tu base de la Clase 7 respondiendo (dos tablas, FK declarada) y los <strong>4 datos de acceso</strong> a tu MySQL local anotados. Quien haya perdido la base, la reimporta desde su <code>.sql</code> del repositorio. Repaso de conceptos en la <a href="clase-08-teoria.html">teoría de Clase 8</a>.
+</div>
+
+<h2>Consigna</h2>
+
+<h3>Parte 1 — Verificá tu punto de partida</h3>
+
+<p>Esta clase arranca confirmando que todos están en el mismo lugar. Sin la base de la Clase 7 respondiendo, el resto no funciona.</p>
+
+<ol>
+  <li>Levantá XAMPP (<strong>Apache</strong> + <strong>MySQL</strong>) y entrá a <code>http://localhost/phpmyadmin</code>.</li>
+  <li>Abrí tu base y corré <code>SELECT * FROM</code> cada una de tus dos tablas. Tienen que devolver filas.</li>
+  <li>Verificá que la relación esté declarada: tabla que apunta → pestaña <strong>Estructura</strong> → <strong>Vista de relaciones</strong> → tu FK figura ahí.</li>
+  <li>Escribí en tu carpeta los <strong>4 datos de acceso</strong> a tu base: host, usuario, contraseña y el nombre de tu base.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 1</div>
+  Las dos tablas responden a un <code>SELECT</code> y tenés los 4 datos anotados. Sin esto, el resto de la clase no arranca — avisá antes de seguir.
+</div>
+
+<h3>Parte 2 — Conectá PHP con tu base</h3>
+
+<p>Vas a crear el archivo <code>conexion.php</code>: los 4 datos de <strong>tu</strong> base y la apertura del canal. Se escribe una sola vez y se reutiliza en todas las páginas que toquen datos.</p>
+
+<ol>
+  <li>Creá el archivo <code>conexion.php</code> en la raíz de tu proyecto, con <strong>tus</strong> 4 datos:
+    <pre><code>&lt;?php
+// los 4 datos de TU base
+$host      = 'localhost';
+$usuario   = 'root';
+$clave     = '';
+$base      = 'cartelera';          // cambiá por el nombre de la tuya
+
+$conexion = mysqli_connect($host, $usuario, $clave, $base);
+if (!$conexion) {
+    die('Error de conexión: ' . mysqli_connect_error());
+}
+?&gt;</code></pre>
+  </li>
+  <li>Creá una página de prueba <code>probar_conexion.php</code> que incluya la conexión:
+    <pre><code>&lt;?php require 'conexion.php'; ?&gt;
+&lt;p&gt;Conectado a la base &lt;?php echo $base; ?&gt;.&lt;/p&gt;</code></pre>
+    Abrila en el navegador: tenés que ver "Conectado a la base …".
+  </li>
+  <li><strong>Probalo fallando a propósito</strong> (para conocer el mensaje de error): apagá MySQL en XAMPP y recargá la página; anotá el error que aparece. Después volvé a encenderlo.</li>
+  <li>Creá el archivo <code>.gitignore</code> en la raíz de tu proyecto:
+    <pre><code>conexion.php</code></pre>
+    <code>conexion.php</code> no se sube: tiene la llave de tu base. Su plantilla la vas a documentar en la Parte 5 para poder recrearla en otra computadora.
+  </li>
+</ol>
+
+<div class="callout callout-warn">
+  <div class="callout-title">La llave nunca se publica</div>
+  Un repositorio en GitHub es visible para quien tenga el enlace, y lo que se sube queda ahí aunque después se borre. El archivo con los datos de acceso (<code>conexion.php</code>) <strong>no se sube nunca</strong>: por eso existe el <code>.gitignore</code>. Si lo subís una vez, se considera comprometido.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 2</div>
+  El navegador dice "Conectado a la base" y <code>conexion.php</code> figura en tu <code>.gitignore</code>.
+</div>
+
+<h3>Parte 3 — Mostrá los datos de tu base en la web</h3>
+
+<p>Vas a reemplazar la cartelera de <code>datos.php</code> por la base real. Compará y notá que el resto del listado no cambia: las filas son los mismos arrays de la Clase 4, solo que ahora las entrega MySQL.</p>
+
+<ol>
+  <li>Abrí la página de tu sitio que hoy muestra la cartelera (la que lee <code>datos.php</code>).</li>
+  <li>Arriba de todo, agregá: <code>&lt;?php require 'conexion.php'; ?&gt;</code></li>
+  <li>Reemplazá la lectura del array por la consulta a tu base:
+    <pre><code>&lt;?php
+$resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
+while ($fila = mysqli_fetch_assoc($resultado)) {
+?&gt;
+  &lt;article&gt;
+    &lt;h2&gt;&lt;?php echo $fila['titulo']; ?&gt;&lt;/h2&gt;
+    &lt;p&gt;&lt;?php echo $fila['anio']; ?&gt;&lt;/p&gt;
+  &lt;/article&gt;
+&lt;?php } ?&gt;</code></pre>
+    <p>Cambiá <code>peliculas</code>, <code>titulo</code> y <code>anio</code> por los nombres de <strong>tu</strong> tabla. Las claves de <code>$fila</code> son las columnas de tu <code>CREATE TABLE</code>.</p>
+  </li>
+  <li>Actualizá la página en el navegador. El listado tiene que mostrar las filas de tu base.</li>
+  <li><strong>Comprobación de que es la base real:</strong> en phpMyAdmin agregá una fila a tu tabla, actualizá la página y la fila nueva tiene que aparecer.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 3</div>
+  El listado del sitio muestra los datos de la base real: si los cambiás en phpMyAdmin, cambian en la web.
+</div>
+
+<h3>Parte 4 — Agregá filas desde un formulario</h3>
+
+<p>Ahora la web no solo lee: escribe. El formulario manda por <code>POST</code>, y el procesador guarda la fila con una <strong>sentencia preparada</strong>. Y hay una regla que no se negocia.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El dato del usuario nunca va dentro de la consulta</div>
+  Pegar el dato del formulario entre comillas en el SQL — <code>'INSERT ... VALUES ("' . $_POST['titulo'] . '")'</code> — es un error: un apóstrofo en el título rompe la consulta, y lo peor, quien escribe podría escribir <strong>SQL</strong> en vez de un título. Ese ataque se llama <em>inyección SQL</em>. Se previene con una sola práctica, desde el principio: la sentencia preparada.
+</div>
+
+<ol>
+  <li>Creá el formulario de alta (podés reusar el de la Clase 1). El menú del director se llena <strong>desde la base</strong> — muestra nombres, envía ids:
+    <pre><code>&lt;form method="POST" action="procesar_pelicula.php"&gt;
+  &lt;label&gt;Título: &lt;input type="text" name="titulo" required&gt;&lt;/label&gt;
+  &lt;label&gt;Año: &lt;input type="number" name="anio"&gt;&lt;/label&gt;
+  &lt;label&gt;Director:
+    &lt;select name="director_id"&gt;
+      &lt;?php
+      $resultado = mysqli_query($conexion,
+          'SELECT id, nombre FROM directores ORDER BY nombre');
+      while ($d = mysqli_fetch_assoc($resultado)) {
+      ?&gt;
+        &lt;option value="&lt;?php echo $d['id']; ?&gt;"&gt;
+          &lt;?php echo $d['nombre']; ?&gt;
+        &lt;/option&gt;
+      &lt;?php } ?&gt;
+    &lt;/select&gt;
+  &lt;/label&gt;
+  &lt;button&gt;Guardar&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+  </li>
+  <li>Creá el procesador. Los <code>?</code> son lugares reservados: la consulta se prepara con ellos y el dato se entrega <strong>por separado</strong>, después.
+    <pre><code>&lt;?php
+require 'conexion.php';
+
+$titulo      = $_POST['titulo'];
+$anio        = $_POST['anio'];
+$director_id = $_POST['director_id'];
+
+$stmt = mysqli_prepare($conexion,
+    'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)');
+mysqli_stmt_bind_param($stmt, 'sii', $titulo, $anio, $director_id);
+mysqli_stmt_execute($stmt);
+
+header('Location: cartelera.php');
+?&gt;</code></pre>
+    <p>En <code>'sii'</code> se describe cada lugar reservado: <code>s</code> = texto, <code>i</code> = entero. Adaptalo a las columnas de tu tabla.</p>
+  </li>
+  <li>Cargá una fila por el formulario y verificá en el listado que aparece. Revisá la fila en phpMyAdmin: la FK trae el <strong>id</strong> del director, no su nombre.</li>
+  <li>Probá qué pasa si la FK no existe: enviá un <code>director_id</code> inexistente (editalo en el formulario) y anotá el mensaje de error. Es la integridad referencial de la Clase 7, ahora llegando desde la web.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 4</div>
+  La fila agregada por el formulario aparece en el listado y en phpMyAdmin, con su FK válida.
+</div>
+
+<h3>Parte 5 — Documentá y versioná</h3>
+
+<ol>
+  <li>Actualizá tu <code>documentacion.md</code> (el de la Clase 6):
+    <ul>
+      <li>El sitio ahora <strong>lee y escribe en la base</strong>: qué página muestra y cuál agrega.</li>
+      <li>La <strong>plantilla de <code>conexion.php</code></strong> completa (los 4 datos con espacios para completar), para poder recrearla en otra computadora. Lo que se comparte es la plantilla, nunca la llave.</li>
+    </ul>
+  </li>
+  <li>Commit y push:
+    <pre><code>git add .    # o los archivos que tocaste: cartelera.php, procesar_pelicula.php, .gitignore, documentacion.md
+git commit -m "Web conectada a MySQL: la cartelera lee y agrega filas"
+git push</code></pre>
+  </li>
+  <li>Entrá a tu repositorio en GitHub desde el navegador y verificá que <code>conexion.php</code> <strong>no</strong> está subido.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 5</div>
+  La plantilla está en <code>documentacion.md</code>, el avance está en el repo y <code>conexion.php</code> no aparece en GitHub.
+</div>
+
+<h2>Errores comunes</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td><code>mysqli_connect()</code> no existe / "undefined function"</td><td>Faltó el <code>&lt;?php require 'conexion.php'; ?&gt;</code> en la página, o la página guardada sin extensión <code>.php</code>.</td></tr>
+  <tr><td>Error de conexión (no conecta)</td><td>Leer <code>mysqli_connect_error()</code>: MySQL apagado, nombre de base mal escrito o credenciales equivocadas.</td></tr>
+  <tr><td><code>mysqli_fetch_assoc()</code> espera 1 parámetro</td><td><code>$resultado</code> no vino de <code>mysqli_query</code>: se llamó <code>fetch_assoc</code> sobre algo que no es un resultado.</td></tr>
+  <tr><td><code>Undefined array key "titulo"</code></td><td>La clave no coincide con la columna real: las claves de <code>$fila</code> son los nombres del <code>CREATE TABLE</code>.</td></tr>
+  <tr><td>Error de sintaxis SQL en el <code>INSERT</code></td><td>Se concatenó el dato del usuario dentro de la consulta (un apóstrofo la rompió). Usar la sentencia preparada.</td></tr>
+  <tr><td><code>mysqli_stmt_execute()</code> falla con FK</td><td>El <code>director_id</code> no existe en la tabla apuntada (error 1452). Correr un <code>SELECT</code> y elegir un id real del menú.</td></tr>
+  <tr><td><code>conexion.php</code> aparece en GitHub</td><td>No se creó el <code>.gitignore</code>, o se hizo <code>git add</code> antes de crearlo. Verificarlo antes del push.</td></tr>
+  <tr><td>La página muestra el código PHP en vez de ejecutarlo</td><td>Apache no está procesando el PHP: archivo fuera de <code>htdocs</code> o con extensión equivocada. Abrir desde <code>http://localhost/...</code>.</td></tr>
+  <tr><td>Perdiste la base de la Clase 7</td><td>Importá tu <code>.sql</code> desde el repositorio: phpMyAdmin → <em>Importar</em>.</td></tr>
+</table>
+
+<h2>¿Terminaste? Verificá lo que tenés</h2>
+
+<p>Tildá lo que ya tengas hecho. Se guarda solo en este navegador, así podés volver a chequearlo.</p>
+
+<div class="selfcheck" data-key="tp-clase8">
+  <div class="selfcheck-head">
+    <span>Checklist del TP de Clase 8</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="tpc8-1"><label for="tpc8-1">La base de la Clase 7 responde a un <code>SELECT</code> y la FK figura en <strong>Vista de relaciones</strong>.</label></li>
+    <li><input type="checkbox" id="tpc8-2"><label for="tpc8-2">Anoté los <strong>4 datos de acceso</strong> a mi base.</label></li>
+    <li><input type="checkbox" id="tpc8-3"><label for="tpc8-3">Creé <code>conexion.php</code> con mis 4 datos y lo incluí con <code>require</code> en la página de prueba.</label></li>
+    <li><input type="checkbox" id="tpc8-4"><label for="tpc8-4">La página de prueba muestra "Conectado a la base".</label></li>
+    <li><input type="checkbox" id="tpc8-5"><label for="tpc8-5"><code>conexion.php</code> figura en el <code>.gitignore</code>.</label></li>
+    <li><input type="checkbox" id="tpc8-6"><label for="tpc8-6">El listado de mi sitio muestra las filas de <strong>mi</strong> base (lo verifiqué agregando una fila en phpMyAdmin).</label></li>
+    <li><input type="checkbox" id="tpc8-7"><label for="tpc8-7">El formulario agrega una fila que aparece en el listado.</label></li>
+    <li><input type="checkbox" id="tpc8-8"><label for="tpc8-8">El <code>INSERT</code> usa <strong>sentencia preparada</strong> (los <code>?</code> y <code>bind_param</code>), no concatenación.</label></li>
+    <li><input type="checkbox" id="tpc8-9"><label for="tpc8-9">La FK se carga desde el menú: muestra el nombre, envía el id.</label></li>
+    <li><input type="checkbox" id="tpc8-10"><label for="tpc8-10">La plantilla de <code>conexion.php</code> está en <code>documentacion.md</code>.</label></li>
+    <li><input type="checkbox" id="tpc8-11"><label for="tpc8-11">Hice commit y push, y verifiqué que <code>conexion.php</code> <strong>no</strong> está en GitHub.</label></li>
+  </ul>
+</div>
+
+<h2>Para pensar (tarea de cierre)</h2>
+
+<p>Hoy la web lee y agrega filas. Cuando una fila ya cargada tenga un dato mal (un título con una falta, un año equivocado), la web debería poder <strong>modificarla</strong> — y también <strong>borrarla</strong>. Esas dos operaciones completan el CRUD (crear, leer, actualizar, borrar) que se empezó hoy. La próxima clase las hace desde el sitio.</p>
+
+<ol>
+  <li>Dejá el avance en el repositorio: la web lee y escribe en tu base, con <code>conexion.php</code> protegido por el <code>.gitignore</code>.</li>
+  <li>Actualizá el <code>documentacion.md</code> con qué página muestra, cuál agrega, y la plantilla de <code>conexion.php</code>.</li>
+  <li>Pensá: para que la web pueda modificar una fila, el formulario tendría que aparecer <strong>ya cargado</strong> con los datos de esa fila. ¿Cómo llegaría el <code>id</code> de la fila a elegir al formulario de edición?</li>
+</ol>
+
+<div class="nav">
+  <a href="clase-08-teoria.html">← Volver a la teoría de Clase 8</a>
+</div>
+
+<p class="mat-links">
+  <a href="../">Inicio</a> ·
+  <a href="../clase_7/clase-07-tp.html">TP de Clase 7</a> ·
+  <a href="../clase_4/clase-04-tp-datos.html">TP de Clase 4</a>
+</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>

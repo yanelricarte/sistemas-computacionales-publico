@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 8 — Conectar PHP con MySQL: la web lee y escribe en la base</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 8 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Conectar PHP con MySQL: la web lee y escribe en la base</h1>
+  <p class="sub">Desde la Clase 6 vienen con dos mitades separadas: el sitio web lee <code>datos.php</code>, y la base de datos vive aparte, en phpMyAdmin. En esta clase <strong>las conectamos</strong>: tu sitio va a <strong>leer las filas de la base</strong> (mostrar) y a <strong>agregar filas</strong> desde un formulario (insertar). Así se presenta la primera regla de seguridad de un proyecto real: <strong>qué archivos nunca se suben a GitHub</strong>.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s0">De dónde venimos: la web y la base, por separado</a></li>
+    <li><a href="#s1">El problema: los datos en dos lugares (con el mapa del proyecto)</a></li>
+    <li><a href="#s2">Conectar: los 4 datos y mysqli_connect</a></li>
+    <li><a href="#s3">conexion.php y el .gitignore</a></li>
+    <li><a href="#s4">Mostrar: la web lee la base</a></li>
+    <li><a href="#s5">Agregar: INSERT desde la web</a></li>
+    <li><a href="#s6">La clave foránea en el formulario</a></li>
+    <li><a href="#errores">Errores frecuentes</a></li>
+    <li><a href="#glosario">Glosario</a></li>
+    <li><a href="#quiz">Práctica</a></li>
+    <li><a href="#s7">Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<h2 id="s0">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+  0. De dónde venimos: la web y la base, por separado
+</h2>
+
+<p>En la Clase 7 tu base dejó de ser una tabla suelta y pasó a ser un modelo: dos tablas conectadas por una clave foránea.</p>
+
+<ul>
+  <li><code>CREATE TABLE</code> con <code>FOREIGN KEY</code> — la relación declarada, con la FK del lado de los muchos.</li>
+  <li><code>INSERT</code> en orden — primero la tabla apuntada, y en la FK el <strong>id</strong>, nunca el nombre.</li>
+  <li><code>SELECT ... WHERE director_id = ...</code> — consultar filtrando por la clave foránea.</li>
+  <li>El error 1452 visto en vivo: la base se niega a guardar una fila que apunte a un id inexistente.</li>
+</ul>
+
+<pre><code>BASE: cartelera
+
+directores                               peliculas
+id │ nombre          │ nacionalidad      id │ titulo       │ director_id
+───┼─────────────────┼──────────────     ───┼──────────────┼─────────────
+ 2 │ Lee Unkrich     │ Estados Unidos     2 │ Coco         │      2
+ 3 │ Pete Docter     │ Estados Unidos     3 │ Intensamente │      3
+      ▲ PK: se consulta, no se adivina         ▲ FK: un número, no un nombre</code></pre>
+
+<p>Eso está hecho y versionado. El paso que falta no es de SQL ni de diseño: es <strong>de comunicación</strong>. La base existe, y el sitio existe, pero todavía no se comunican. De eso trata esta clase.</p>
+
+<h2 id="s1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+  1. El problema: los datos en dos lugares
+</h2>
+
+<p>En este momento tu proyecto tiene los datos <strong>en dos lugares</strong>, y entre ambos no hay comunicación:</p>
+
+<ul>
+  <li>En <strong>PHP</strong>: el sitio muestra la cartelera leyendo <code>datos.php</code>, un array escrito a mano desde la Clase 4.</li>
+  <li>En <strong>MySQL</strong>: la misma información, pero como filas reales, en las tablas que armaste en las Clases 5 y 7.</li>
+</ul>
+
+<pre><code>┌───────────────────┐      ┌────────────────────────┐
+│ PHP (el sitio)     │      │ MySQL (los datos)      │
+│ cartelera.php      │      │ cartelera              │
+│  lee datos.php     │      │  peliculas · directores│
+│  (array a mano)    │      │  filas reales          │
+└─────────┬─────────┘      └──────────┬─────────────┘
+          │            falta el canal │
+          └────────────────╳──────────┘</code></pre>
+
+<p>¿Qué pasa si cambiás un dato en phpMyAdmin? La cartelera de la web <strong>no refleja el cambio</strong>. ¿Y si cambiás algo en <code>datos.php</code>? La base tampoco lo recibe. Son dos copias de la misma información que pueden desincronizarse, y cada corrección habría que hacerla dos veces.</p>
+
+<p>La solución no es escribir los datos de nuevo en el programa: es <strong>abrir un canal</strong> entre los dos programas. PHP y MySQL son programas distintos, y este es el momento en que se conocen.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">La idea de toda la clase</div>
+  Los datos dejan de vivir <em>adentro</em> del programa y pasan a vivir <em>en la base</em>. La web los pide prestados (<code>SELECT</code>) y los devuelve (<code>INSERT</code>) a través de un puente llamado <code>mysqli</code>.
+</div>
+
+<h3>El mapa del proyecto: qué archivos tenés hoy</h3>
+
+<p>Para saber <strong>dónde va el archivo nuevo</strong>, primero hay que ver dónde está todo lo demás. Tu proyecto, tal como quedó después de la Clase 7, se ve así:</p>
+
+<pre><code>C:/xampp/htdocs/cartelera/          ← tu carpeta (la tuya tiene tu nombre)
+│                                    se abre en http://localhost/cartelera/
+│
+├── index.php               ← login (Clase 2)
+├── bienvenido.php          ← portada (Clase 2)
+├── formulario.php          ← alta (Clase 1)
+├── cartelera.php           ← la lista (Clase 4)
+├── pelicula.php            ← la ficha (Clase 4)
+├── datos.php               ← los datos a mano (Clase 4) · se deja de leer hoy
+│
+├── documentacion.md        ← la documentación (Clase 6)
+├── db.sql                  ← el script de tu base (Clases 5 y 7)
+├── docs/
+│   └── modelo-er.png       ← el diagrama (Clase 7)
+└── .git/                   ← el historial (Clase 3)</code></pre>
+
+<p>Lo que vas a <strong>agregar</strong> en esta clase, en la misma carpeta (a la raíz, junto a <code>cartelera.php</code>):</p>
+
+<pre><code>├── conexion.php             ← nuevo · la llave para entrar a la base
+├── probar_conexion.php      ← nuevo · página de prueba (se borra al final)
+├── procesar_pelicula.php    ← nuevo · recibe el formulario y guarda la fila
+└── .gitignore               ← nuevo · dice qué archivos NO se suben</code></pre>
+
+<p>La regla que se repite en toda la clase: <strong>los archivos que trabajan con la base viven en la raíz del proyecto, en la misma carpeta que las páginas</strong>. Cuando en §3 veas <code>require 'conexion.php'</code>, el <code>'conexion.php'</code> se busca en la misma carpeta que la página que lo pide.</p>
+
+<h2 id="s2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+  2. Conectar: los 4 datos y mysqli_connect
+</h2>
+
+<p>Para que tu programa entre a la base, PHP necesita saber <strong>dónde está</strong> esa base y <strong>con qué identidad</strong> entra. Son exactamente los cuatro datos que anotaste como tarea de la Clase 7:</p>
+
+<pre><code>host          localhost       en qué máquina vive la base
+usuario       root            con qué usuario entra
+contraseña    (vacía)         la clave de ese usuario
+base          cartelera       cuál de las bases abre</code></pre>
+
+<p>Con esos cuatro datos, la función que abre el canal es <code>mysqli_connect</code>. Desarmala en partes:</p>
+
+<pre><code>$conexion = mysqli_connect( $host , $usuario , $clave , $base );
+│           │              │         │         │      │
+│           │              │         │         │      └─ 4) qué base abre
+│           │              │         │         └─ 3) la contraseña de ese usuario
+│           │              │         └─ 2) con qué usuario entra
+│           │              └─ 1) dónde vive la base
+│           └─ la función que abre el canal (familia mysqli)
+└─ el resultado se guarda en $conexion: el canal listo para usar</code></pre>
+
+<p><code>mysqli</code> no es una función suelta: es una <strong>familia de funciones</strong> con la que PHP habla con MySQL. Todas las que vamos a usar hoy empiezan con <code>mysqli_</code> — es la señal de "esto es una conversación con la base".</p>
+
+<p><code>mysqli_connect</code> <strong>devuelve un valor</strong>. Si la conexión sale bien, devuelve el canal (un objeto conexión) y ese valor se guarda en <code>$conexion</code>. Si algo falla, devuelve <code>false</code> — y con <code>false</code> no se puede consultar nada, así que hay que enterarse antes de seguir.</p>
+
+<p>El bloque completo, con el control del error:</p>
+
+<pre><code>&lt;?php
+// 1. Los cuatro datos, cada uno en una variable
+$host      = 'localhost';
+$usuario   = 'root';
+$clave     = '';
+$base      = 'cartelera';
+
+// 2. Abrir el canal: el resultado queda en $conexion
+$conexion = mysqli_connect($host, $usuario, $clave, $base);
+
+// 3. ¿Se abrió bien? Si no, detenerse y decir el motivo
+if (!$conexion) {
+    die('Error de conexión: ' . mysqli_connect_error());
+}
+?&gt;</code></pre>
+
+<p>Línea por línea:</p>
+
+<ul>
+  <li><strong>El bloque 1</strong> escribe los 4 datos una sola vez, arriba, para que se vean y se cambien fácil. Son las credenciales de <em>tu</em> base.</li>
+  <li><strong>El bloque 2</strong> llama a la función y guarda su resultado en <code>$conexion</code>.</li>
+  <li><strong>El <code>if (!$conexion)</code></strong>: el <code>!</code> es la negación. <code>!$conexion</code> lee "si <em>no</em> hay conexión". Cuando la función falló, devolvió <code>false</code>, y la condición se cumple.</li>
+  <li><strong><code>die(...)</code></strong> detiene el programa en ese punto. No tiene sentido seguir si no hay canal: cualquier consulta fracasaría. Es un freno de emergencia que avisa.</li>
+  <li><strong><code>mysqli_connect_error()</code></strong> devuelve el motivo del fallo, para no adivinar. Se concatena con el punto (<code>.</code>), como venís haciendo desde la Clase 1.</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">Qué es "localhost"</div>
+  <code>localhost</code> no es internet: significa "esta misma computadora". Durante el desarrollo, la base vive en la misma máquina que el sitio. Cuando el proyecto se publique en un servidor real, ese dato va a ser la dirección de ese servidor — los otros tres conceptos no cambian.
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">ejercicio — leé el código</p>
+  <p>Mirá este bloque y respondé <strong>antes</strong> de ejecutar nada:</p>
+  <pre><code>$conexion = mysqli_connect('localhost', 'root', '', 'cartelera');
+if (!$conexion) {
+    die('Error de conexión: ' . mysqli_connect_error());
+}</code></pre>
+  <ol>
+    <li><strong>a)</strong> ¿Qué guarda <code>$conexion</code> si la conexión sale bien? ¿Y si sale mal?</li>
+    <li><strong>b)</strong> Apagás MySQL en XAMPP y recargás la página. ¿Qué muestra el navegador?</li>
+    <li><strong>c)</strong> Cambiás <code>'cartelera'</code> por un nombre de base que no existe. ¿Qué cambia del mensaje? ¿Qué parte del mensaje te dice el motivo?</li>
+  </ol>
+  <p>Lo comprobás en el TP, Parte 2, punto 3: está pensado para verlo en vivo, apagando y encendiendo MySQL.</p>
+</div>
+
+<h2 id="s3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+  3. conexion.php y el .gitignore
+</h2>
+
+<h3>La conexión se escribe una sola vez</h3>
+
+<p>La conexión no se copia en cada página: se escribe <strong>una sola vez</strong>, en un archivo aparte, y se reutiliza. Es el mismo principio que aplicaste en la Clase 4 con <code>datos.php</code>: un solo lugar para el dato que se usa en muchos lados.</p>
+
+<p><strong>Dónde va el archivo:</strong> en la raíz del proyecto, junto a <code>cartelera.php</code> — lo viste en el mapa de §1. Ahí vive porque las páginas lo buscan <em>en su misma carpeta</em>.</p>
+
+<pre><code>C:/xampp/htdocs/cartelera/
+├── cartelera.php           ← acá va:  &lt;?php require 'conexion.php'; ?&gt;
+├── pelicula.php            ← y acá también
+├── formulario.php
+├── procesar_pelicula.php   ← (nuevo, §5)
+├── datos.php
+├── conexion.php            ← EL archivo nuevo: los 4 datos + el control del error
+└── .gitignore              ← nuevo: dice "conexion.php no se sube"</code></pre>
+
+<pre><code>conexion.php   (se crea una vez, se usa en todas las páginas)
+───────────────────────────────────────────────────────────
+&lt;?php
+// los 4 datos de TU base
+$host      = 'localhost';
+$usuario   = 'root';
+$clave     = '';
+$base      = 'cartelera';          // cambiá por el nombre de la tuya
+
+$conexion = mysqli_connect($host, $usuario, $clave, $base);
+if (!$conexion) {
+    die('Error de conexión: ' . mysqli_connect_error());
+}
+?&gt;</code></pre>
+
+<h3>Cómo se trae a cada página: require</h3>
+
+<p>En cada página que toque la base, la conexión se incluye con <code>require</code>:</p>
+
+<pre><code>&lt;?php require 'conexion.php'; ?&gt;</code></pre>
+
+<p>¿Qué hace esa línea? <strong>Ejecuta el archivo <code>conexion.php</code> en ese mismo punto.</strong> El efecto es como si el contenido de <code>conexion.php</code> estuviera pegado ahí: después de esa línea, la variable <code>$conexion</code> ya está definida en la página y se puede usar.</p>
+
+<p>Notá la diferencia con <code>datos.php</code> de la Clase 4: ese archivo <strong>devuelve</strong> un valor (<code>return [ ... ]</code>) que se captura con <code>$peliculas = require 'datos.php'</code>. <code>conexion.php</code> <strong>no devuelve nada con <code>return</code></strong>: su código corre y deja la variable <code>$conexion</code> definida. Las dos formas sirven para separar código en un archivo aparte; lo que cambia es qué "entrega" el archivo.</p>
+
+<p>¿Por qué en un archivo aparte? Si algún día cambia el nombre de la base, lo corregís en <strong>un</strong> lugar y todas las páginas quedan bien. Repetirlo en cada página significaría buscarlo y cambiarlo en todas — el problema que <code>datos.php</code> ya te resolvió en la Clase 4, ahora con las credenciales.</p>
+
+<h3>La regla: estos datos no se suben</h3>
+
+<p>Ese archivo contiene la <strong>llave</strong> de tu base: los datos con los que cualquiera puede entrar a leerla y modificarla. La regla que quedó anotada en la Clase 7 se implementa ahora.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">La llave nunca se publica</div>
+  Un repositorio en GitHub es visible para quien tenga el enlace, y lo que se sube queda ahí aunque después se borre. El archivo con los datos de acceso (<code>conexion.php</code>) <strong>no se sube nunca</strong>.
+</div>
+
+<p>Para eso existe el <strong><code>.gitignore</code></strong>: un archivo de texto que se crea en la <strong>raíz del proyecto</strong>, donde se listan los archivos que Git <strong>no sube</strong>. Se llama "ignore" porque Git lo respeta a la hora de agregar archivos.</p>
+
+<pre><code>.gitignore   (en la raíz de tu proyecto, junto a conexion.php)
+────────────────────────────────────────────
+conexion.php       &lt;- esta línea: "esto no se sube"</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Cómo se recupera en otra computadora</div>
+  Si <code>conexion.php</code> no se sube, ¿cómo lo volvés a tener en otra máquina? Queda una <strong>plantilla</strong> documentada en <code>documentacion.md</code>: los cuatro datos con espacios para completar. Cada computadora crea su <code>conexion.php</code> a partir de la plantilla. Lo que se comparte es la plantilla, <strong>nunca la llave</strong>.
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">ejercicio — dónde va cada archivo</p>
+  <ol>
+    <li><strong>a)</strong> Mirá el mapa de §1. ¿En qué carpeta de tu disco vive <code>conexion.php</code>? ¿Junto a qué archivos?</li>
+    <li><strong>b)</strong> Escribí la línea que abre el canal y la línea que detiene el programa si falla. ¿En qué archivo están?</li>
+    <li><strong>c)</strong> Movés <code>conexion.php</code> a la carpeta <code>docs/</code> y recargás <code>cartelera.php</code>. ¿Qué pasa? ¿Por qué?</li>
+    <li><strong>d)</strong> ¿Qué pasa si te olvidás de escribir <code>conexion.php</code> en el <code>.gitignore</code> y subís el proyecto? ¿Quién podría leerlo?</li>
+  </ol>
+</div>
+
+<h2 id="s4">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  4. Mostrar: la web lee la base
+</h2>
+
+<p>Con el canal abierto, el primer uso es <strong>leer</strong>. Compará estos dos listados:</p>
+
+<pre><code>// Clase 4: las filas estaban a mano en datos.php
+$peliculas = [
+    ['titulo' =&gt; 'Coco',         'anio' =&gt; 2017],
+    ['titulo' =&gt; 'Intensamente', 'anio' =&gt; 2015]
+];
+foreach ($peliculas as $fila) {
+    echo $fila['titulo'];
+}
+
+// Clase 8: las trae la base, mismo resto del listado
+&lt;?php require 'conexion.php'; ?&gt;
+&lt;?php
+$resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
+while ($fila = mysqli_fetch_assoc($resultado)) {
+    echo $fila['titulo'];
+}
+?&gt;</code></pre>
+
+<p>La consulta tiene dos funciones, y conviene saber qué hace cada una:</p>
+
+<ul>
+  <li><code>mysqli_query($conexion, 'SELECT * FROM peliculas')</code> — <strong>envía la consulta por el canal</strong>. El primer parámetro es por cuál canal viaja (<code>$conexion</code>); el segundo, el SQL, exactamente el que escribirías en phpMyAdmin. Devuelve el resultado: un "paquete" con las filas que respondieron. Si la consulta está mal escrita, devuelve <code>false</code>.</li>
+  <li><code>mysqli_fetch_assoc($resultado)</code> — <strong>saca una fila por vez</strong> del paquete y la entrega como <strong>array asociativo</strong>. Cada llamada avanza a la fila siguiente; cuando no quedan más, devuelve <code>null</code>.</li>
+</ul>
+
+<p>El <code>while</code> junta las dos: cada vuelta pregunta "¿queda una fila?" y, si hay, la imprime.</p>
+
+<pre><code>while ( $fila = mysqli_fetch_assoc($resultado) ) {
+        │                        │
+        │                        └─ saca la próxima fila como array
+        │                           (o null si ya no quedan)
+        └─ asigna esa fila a $fila y la usa como condición:
+           si salió null, la condición es falsa y el while corta
+}</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">La fila de la base es el array de la Clase 4</div>
+  En <code>datos.php</code> escribías <code>['titulo' =&gt; 'Coco', 'anio' =&gt; 2017]</code>. MySQL entrega exactamente lo mismo: <code>$fila['titulo']</code>, <code>$fila['anio']</code>. Las claves las pone la base, y son los <strong>nombres de las columnas</strong> del <code>CREATE TABLE</code>. No aprendés a listar de nuevo: aprendés de dónde salen las filas.
+</div>
+
+<h3>Cómo se integra en el HTML de la página</h3>
+
+<p>Las páginas de tu sitio no son solo PHP ni solo HTML: son los <strong>dos, mezclados</strong>. El patrón es abrir un bloque de PHP, usar HTML normal afuera y hacer que el <code>echo</code> escriba justo donde se lo llama. Es lo que reemplazás en la Parte 3 del TP.</p>
+
+<pre><code>&lt;?php require 'conexion.php'; ?&gt;                    ← 1. abrir el canal
+
+&lt;section class="cartelera"&gt;                           ← 2. HTML normal
+
+  &lt;?php                                             ← 3. abrir un bloque PHP
+  $resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
+  while ($fila = mysqli_fetch_assoc($resultado)) {
+  ?&gt;
+    &lt;article&gt;                                       ← 4. el HTML de UNA película
+      &lt;h2&gt;&lt;?php echo $fila['titulo']; ?&gt;&lt;/h2&gt;
+      &lt;p&gt;Estreno: &lt;?php echo $fila['anio']; ?&gt;&lt;/p&gt;
+    &lt;/article&gt;
+  &lt;?php } ?&gt;                                         ← 5. cerrar bloque y bucle
+
+&lt;/section&gt;</code></pre>
+
+<ul>
+  <li>Los bloques de PHP se abren con <code>&lt;?php</code> y se cierran con <code>?&gt;</code>. Lo que queda entre esos dos marcadores se ejecuta; lo que queda afuera, se imprime tal cual.</li>
+  <li>El <code>echo</code> escribe el valor de la fila <strong>en ese mismo lugar</strong> del HTML: el navegador ve el resultado del echo como si fuera texto común.</li>
+  <li>El <code>while</code> repite todo el bloque de adentro — el <code>&lt;article&gt;</code> — <strong>una vez por fila</strong>. Una fila de la base se convierte en una tarjeta.</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">El PHP corre en el servidor; el navegador solo recibe HTML</div>
+  Este código mezclado lo ejecuta Apache, en el servidor, no el navegador. El navegador recibe el <strong>resultado</strong>: HTML puro, sin rastro de <code>&lt;?php</code>. Si apretás "Ver código fuente" (Ctrl+U) sobre tu cartelera, no vas a ver ninguna etiqueta PHP: vas a ver las tarjetas ya armadas, con los datos puestos.
+</div>
+
+<p><strong>Así se ve en el navegador.</strong> Cada vuelta del <code>while</code> produce una copia del <code>&lt;article&gt;</code> con los valores de una fila distinta. El navegador las apila una debajo de la otra:</p>
+
+<pre><code>┌──────────────────────────────────┐
+│ Coco                             │
+│ Estreno: 2017                    │
+└──────────────────────────────────┘
+┌──────────────────────────────────┐
+│ Intensamente                     │
+│ Estreno: 2015                    │
+└──────────────────────────────────┘
+  una tarjeta por cada fila que devolvió el SELECT</code></pre>
+
+<p>El mismo patrón se repite en el formulario de la Clase 8 (§6): ahí el <code>echo</code> no escribe el valor en un párrafo sino <em>dentro de un atributo</em> — <code>value="&lt;?php echo $d['id']; ?&gt;"</code>. La idea es idéntica: el resultado del <code>echo</code> queda pegado en el HTML.</p>
+
+<p>El <code>SELECT</code> es el mismo de la Clase 7: <code>SELECT * FROM peliculas</code>, o columnas puntuales, o <code>WHERE</code> para filtrar. Lo único nuevo es el viaje por el canal.</p>
+
+<h3>El límite que ahora se ve en pantalla</h3>
+
+<p>Cuando listás la cartelera, en la página aparece esto:</p>
+
+<pre><code>Intensamente · 2015 · director_id = 3    ← un número, no un nombre</code></pre>
+
+<p>Y lo que querrías ver es <em>"Pete Docter"</em>. Es el mismo límite de la Clase 7, ahora en la web: mostrar una tabla muestra la FK como número. Cruzar las dos tablas en <strong>una sola</strong> consulta se resuelve con <code>JOIN</code>, y se aborda cuando el listado lo pida.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Ampliación: las dos tablas en una sola consulta</div>
+  Ejecutá esta sentencia y observá el resultado:
+  <pre><code>SELECT peliculas.titulo, directores.nombre
+FROM peliculas
+JOIN directores ON peliculas.director_id = directores.id;</code></pre>
+  Leída en castellano: "traé el título de <code>peliculas</code> y el nombre de <code>directores</code>, uniendo aquellas filas donde el <code>director_id</code> coincide con el <code>id</code>".
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">ejercicio — leé el listado</p>
+  <p>Mirá este bloque y respondé <strong>antes</strong> de probarlo:</p>
+  <pre><code>&lt;?php require 'conexion.php'; ?&gt;
+&lt;?php
+$resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
+while ($fila = mysqli_fetch_assoc($resultado)) {
+    echo $fila['titulo'] . ' (' . $fila['anio'] . ')&lt;br&gt;';
+}
+?&gt;</code></pre>
+  <ol>
+    <li><strong>a)</strong> ¿Cuántas veces se imprime el <code>echo</code>? ¿Cómo lo sabés sin ejecutar?</li>
+    <li><strong>b)</strong> En la primera vuelta, ¿qué vale <code>$fila['titulo']</code>? ¿De dónde salen las claves <code>titulo</code> y <code>anio</code>?</li>
+    <li><strong>c)</strong> Escribí el mismo bloque para <strong>tu</strong> tabla (cambiá la tabla y las claves) y anotá qué muestra el navegador.</li>
+  </ol>
+</div>
+
+<h2 id="s5">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+  5. Agregar: INSERT desde la web
+</h2>
+
+<p>El segundo uso del canal es <strong>escribir</strong>. Hasta ahora, cargar una película nueva significaba abrir phpMyAdmin y ejecutar un <code>INSERT</code> a mano. Ahora eso lo hace un formulario del sitio.</p>
+
+<p>El recorrido completo ya lo conocés por partes:</p>
+
+<pre><code>formulario  ──POST──►  procesar_pelicula.php  ──INSERT──►  la base
+titulo                        │                            │
+anio                         │                            │
+director_id                  │   (la fila nueva)          ▼
+                             └── header('Location:')      el listado la muestra</code></pre>
+
+<ul>
+  <li>El <strong>formulario</strong> y el <code>POST</code> — de la Clase 1.</li>
+  <li>La <strong>redirección</strong> <code>header('Location:')</code> — de la Clase 2.</li>
+  <li>El <strong><code>INSERT</code></strong> — de la Clase 5.</li>
+</ul>
+
+<p>Lo nuevo es cómo se escribe ese INSERT desde PHP. Y acá hay una regla que no se negocia.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">La regla: el dato del usuario nunca va dentro de la consulta</div>
+  <p>La tentación es armar el SQL pegando el dato entre comillas: <code>'INSERT ... VALUES ("' . $_POST['titulo'] . '")'</code>. Eso es un error, y conviene ver por qué <strong>antes</strong> de que aparezca solo.</p>
+  <p>Si el título es <code>¿Qué pasó ayer?</code>, el apóstrofo <strong>rompe la consulta</strong>: para SQL, el apóstrofo es la marca de fin de texto, así que el texto se corta en la mitad y sobra basura que no entiende.</p>
+  <p>El caso más grave es otro: quien escribe en el formulario podría escribir <strong>SQL</strong> en vez de un título, y esa consulta correría tal cual. Ese ataque tiene nombre — <em>inyección SQL</em> — y se previene con una sola práctica, desde el principio.</p>
+</div>
+
+<p>La forma correcta usa una <strong>sentencia preparada</strong>. La clave no está en el SQL: está en <strong>cómo viaja</strong>. En vez de armar una sola consulta con el dato adentro, la consulta viaja <strong>en dos partes separadas</strong>:</p>
+
+<pre><code>┌────────────────────────────── VIAJE 1: el molde ──────────────────────────────┐
+│                                                                                │
+│   INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)          │
+│                                                                                │
+│   cada ? es un lugar vacío: ahí van a entrar los datos, en el viaje 2         │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────── VIAJE 2: los valores ───────────────────────────┐
+│                                                                                │
+│   $titulo = "Coco"     $anio = 2017     $director_id = 2                      │
+│                                                                                │
+│   llegan como DATOS: se leen, nunca se ejecutan como instrucción              │
+└────────────────────────────────────────────────────────────────────────────────┘</code></pre>
+
+<p>Es como una planilla de inscripción en papel: el texto impreso es fijo y tiene <strong>espacios en blanco</strong>; después se llenan con los datos. Lo que se escribe en los espacios no se interpreta como parte del texto impreso — queda como dato. Eso mismo hace la sentencia preparada con el SQL.</p>
+
+<p>En código, son tres pasos:</p>
+
+<pre><code>// 1) PREPARAR — viaje 1: enviar el molde
+$stmt = mysqli_prepare($conexion,
+    'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)');
+
+// 2) ATAR — dejar listos los datos para el viaje 2, con su tipo
+//    s = texto (string) · i = entero (integer)
+mysqli_stmt_bind_param($stmt, 'sii', $titulo, $anio, $director_id);
+
+// 3) EJECUTAR — viaje 2: enviar los valores y guardar la fila
+mysqli_stmt_execute($stmt);</code></pre>
+
+<p>Paso a paso:</p>
+
+<ul>
+  <li><strong>1) <code>mysqli_prepare</code></strong> envía el molde por el canal. MySQL lo recibe, lo interpreta como instrucción (qué se va a guardar y en qué columnas) y devuelve la "consulta armada", que se guarda en <code>$stmt</code>. Todavía no se guardó ninguna fila.</li>
+  <li><strong>2) <code>mysqli_stmt_bind_param</code></strong> ata cada dato a su lugar, en orden: el primero a <code>titulo</code>, el segundo a <code>anio</code>, el tercero a <code>director_id</code>. <code>'sii'</code> le dice a PHP el tipo de cada uno para que los entregue bien: <code>s</code> = texto, <code>i</code> = número entero. Un año viaja como número (<code>2017</code>), no como texto (<code>"2017"</code>).</li>
+  <li><strong>3) <code>mysqli_stmt_execute</code></strong> hace el viaje 2: envía los valores y recién ahí MySQL guarda la fila.</li>
+</ul>
+
+<p>¿Por qué esto neutraliza el apóstrofo y la inyección? Porque el dato viaja <strong>solo</strong>, después del molde, y MySQL lo trata como dato. El apóstrofo de <code>¿Qué pasó ayer?</code> ya no puede cerrar un texto de SQL: no se escribió dentro del molde, llega como un carácter más del valor <code>"¿Qué pasó ayer?"</code>. Y si en el formulario escribieran SQL, ese texto llegaría en el viaje 2 y MySQL lo guardaría literalmente como dato — nunca lo ejecuta, porque la instrucción ya se interpretó en el viaje 1.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Cuándo se usa cada una</div>
+  Toda consulta que lleve <strong>datos del formulario</strong> se escribe con <strong>sentencia preparada</strong>. <code>mysqli_query</code> queda para las consultas sin datos del usuario — sobre todo los <code>SELECT</code>, que solo leen.
+</div>
+
+<h3>La integridad referencial viaja con el INSERT</h3>
+
+<p>Todo lo que aprendiste en la Clase 7 sigue vigente. Si el formulario envía un <code>director_id</code> que no existe en <code>directores</code>, la base <strong>rechaza la fila</strong>:</p>
+
+<pre><code>ERROR 1452: Cannot add or update a child row:
+a foreign key constraint fails</code></pre>
+
+<p>Es el mismo error que provocaste en la Clase 7, ahora llegando desde la web. La regla que declaraste en el <code>CREATE TABLE</code> sigue trabajando; lo único que cambió es quién la dispara.</p>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">ejercicio — leé el INSERT preparado</p>
+  <p>Mirá estas tres líneas y respondé <strong>sin copiar nada</strong>:</p>
+  <pre><code>$stmt = mysqli_prepare($conexion,
+    'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)');
+mysqli_stmt_bind_param($stmt, 'sii', $titulo, $anio, $director_id);
+mysqli_stmt_execute($stmt);</code></pre>
+  <ol>
+    <li><strong>a)</strong> ¿Qué hace cada una de las tres líneas? Explicá con tus palabras.</li>
+    <li><strong>b)</strong> En <code>'sii'</code>, ¿qué tipo espera cada lugar? ¿Qué escribirías si tu tabla guardara un título, un año y un <code>paciente_id</code>?</li>
+    <li><strong>c)</strong> El formulario manda <code>titulo = "¿Qué pasó ayer?"</code>. ¿Se rompe la consulta? ¿Por qué no?</li>
+    <li><strong>d)</strong> ¿En qué viaje va el molde y en cuál los valores? ¿Qué cambiaría si los valores viajaran dentro del molde (la concatenación del aviso)?</li>
+  </ol>
+</div>
+
+<h2 id="s6">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+  6. La clave foránea en el formulario
+</h2>
+
+<p>En el formulario de alta hay un campo que no es de texto: la <strong>clave foránea</strong>. Que el usuario escriba el número a mano provocaría el error de la Clase 7 — "¿cuál era el id de Pete Docter?"</p>
+
+<p>La solución es un menú desplegable que se llena <strong>desde la base</strong>:</p>
+
+<pre><code>&lt;form method="POST" action="procesar_pelicula.php"&gt;
+  &lt;label&gt;Título: &lt;input type="text" name="titulo" required&gt;&lt;/label&gt;
+  &lt;label&gt;Año: &lt;input type="number" name="anio"&gt;&lt;/label&gt;
+  &lt;label&gt;Director:
+    &lt;select name="director_id"&gt;
+      &lt;?php
+      $resultado = mysqli_query($conexion,
+          'SELECT id, nombre FROM directores ORDER BY nombre');
+      while ($d = mysqli_fetch_assoc($resultado)) {
+      ?&gt;
+        &lt;option value="&lt;?php echo $d['id']; ?&gt;"&gt;
+          &lt;?php echo $d['nombre']; ?&gt;
+        &lt;/option&gt;
+      &lt;?php } ?&gt;
+    &lt;/select&gt;
+  &lt;/label&gt;
+  &lt;button&gt;Guardar&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+<p>Dentro del menú se escribe un <strong>pequeño listado</strong> — el mismo que aprendiste en §4, con un <code>SELECT</code> propio:</p>
+
+<ul>
+  <li>El <code>SELECT</code> trae <strong>dos columnas</strong>: <code>id</code> (lo que se envía) y <code>nombre</code> (lo que se ve). El <code>ORDER BY nombre</code> ordena el menú alfabéticamente.</li>
+  <li>Cada <code>&lt;option&gt;</code> tiene un <code>value</code> (el <code>id</code>) y un texto visible (el <code>nombre</code>).</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">El menú muestra nombres y envía ids</div>
+  Lo que el usuario ve es <code>Lee Unkrich</code>; lo que se envía es el <code>value</code>, que es el <code>id</code>. Es la decisión de la Clase 7 aplicada en la web: en la FK va el <strong>número</strong>, nunca el nombre. El menú es la garantía de que nadie tenga que adivinarlo.
+</div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">ejercicio — el menú de la FK</p>
+  <ol>
+    <li><strong>a)</strong> El usuario ve "Lee Unkrich" en el menú y aprieta Guardar. ¿Qué valor recibe el procesador en <code>$_POST['director_id']</code>?</li>
+    <li><strong>b)</strong> ¿Qué cambiaría si el <code>value</code> fuera el <strong>nombre</strong> en vez del id? Pensalo contra la regla de la Clase 7 y contra el error 1452.</li>
+    <li><strong>c)</strong> Tu menú trae directores <code>ORDER BY nombre</code>. ¿Y si un director tuviera dos películas cargadas? ¿Aparece dos veces en el menú? ¿Por qué?</li>
+  </ol>
+</div>
+
+<h2 id="errores">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  Errores frecuentes
+</h2>
+
+<table>
+  <tr><th>Mensaje / síntoma</th><th>Qué pasó</th><th>Cómo se arregla</th></tr>
+  <tr>
+    <td><code>mysqli_connect()</code> no existe / "undefined function"</td>
+    <td>Falta el <code>&lt;?php require 'conexion.php'; ?&gt;</code> en la página, o el archivo está guardado sin extensión <code>.php</code>.</td>
+    <td>Incluir la conexión en la página y verificar el nombre del archivo.</td>
+  </tr>
+  <tr>
+    <td>No conecta: la página se corta con un error de conexión</td>
+    <td>Leer <code>mysqli_connect_error()</code>: MySQL apagado, nombre de base mal escrito o credenciales equivocadas.</td>
+    <td>Encender MySQL en XAMPP, o corregir los 4 datos en <code>conexion.php</code>.</td>
+  </tr>
+  <tr>
+    <td>La lista aparece vacía y no da error</td>
+    <td><code>mysqli_query</code> devolvió <code>false</code>: la consulta está mal escrita. PHP no la muestra porque el <code>while</code> no encuentra filas.</td>
+    <td>Correr la misma consulta en phpMyAdmin: ahí se ve el error de SQL exacto.</td>
+  </tr>
+  <tr>
+    <td><code>Undefined array key "titulo"</code></td>
+    <td>La clave no coincide con una columna real: las claves de <code>$fila</code> son los nombres del <code>CREATE TABLE</code>.</td>
+    <td>Correr el <code>SELECT</code> en phpMyAdmin y copiar el nombre exacto de la columna.</td>
+  </tr>
+  <tr>
+    <td>Error de sintaxis en el <code>INSERT</code></td>
+    <td>Se concatenó el dato del usuario dentro de la consulta, y un apóstrofo la rompió.</td>
+    <td>Usar la sentencia preparada: los <code>?</code> y <code>bind_param</code>.</td>
+  </tr>
+  <tr>
+    <td>El <code>INSERT</code> falla con <code>foreign key constraint fails</code></td>
+    <td>El <code>director_id</code> no existe en la tabla apuntada (error 1452).</td>
+    <td>Correr un <code>SELECT</code> a esa tabla y elegir un id real desde el menú.</td>
+  </tr>
+  <tr>
+    <td><code>conexion.php</code> aparece en GitHub</td>
+    <td>No se creó el <code>.gitignore</code>, o se hizo <code>git add</code> antes de crearlo.</td>
+    <td>Crear el <code>.gitignore</code> con <code>conexion.php</code> y verificar antes del push.</td>
+  </tr>
+  <tr>
+    <td>La página muestra el código PHP en vez de ejecutarlo</td>
+    <td>Apache no está procesando el PHP (archivo fuera de <code>htdocs</code> o con extensión equivocada).</td>
+    <td>Abrir la página desde <code>http://localhost/...</code> con Apache encendido.</td>
+  </tr>
+</table>
+
+<h2 id="glosario">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  Glosario
+</h2>
+
+<table>
+  <tr><th>Término</th><th>Qué significa</th></tr>
+  <tr><td><strong>mysqli</strong></td><td>La familia de funciones de PHP para hablar con MySQL. Todas las de esta clase empiezan con <code>mysqli_</code>.</td></tr>
+  <tr><td><strong>Conexión</strong></td><td>El canal entre PHP y MySQL que abre <code>mysqli_connect</code>. Sin el canal, ninguna consulta viaja.</td></tr>
+  <tr><td><strong>Host</strong></td><td>Dónde vive la base. En desarrollo es <code>localhost</code>; en producción, la dirección del servidor.</td></tr>
+  <tr><td><strong>require</strong></td><td>Instrucción de PHP que ejecuta otro archivo en ese punto. La conexión se incluye así en cada página.</td></tr>
+  <tr><td><strong>die()</strong></td><td>Detiene el programa y muestra un mensaje. Se usa para no seguir sin conexión.</td></tr>
+  <tr><td><strong>mysqli_query</strong></td><td>Envía una consulta SQL por el canal y devuelve el resultado (o <code>false</code> si la consulta está mal).</td></tr>
+  <tr><td><strong>Resultado</strong></td><td>El "paquete" de filas que devuelve <code>mysqli_query</code>. Se recorre con <code>mysqli_fetch_assoc</code>.</td></tr>
+  <tr><td><strong>mysqli_fetch_assoc</strong></td><td>Devuelve una fila del resultado como array asociativo (claves = columnas), avanzando una fila por llamada.</td></tr>
+  <tr><td><strong>Sentencia preparada</strong></td><td>Una consulta con lugares reservados (<code>?</code>) a la que el dato se entrega por separado, después. Previene la inyección SQL.</td></tr>
+  <tr><td><strong>bind_param</strong></td><td>La parte de la sentencia preparada que ata cada dato a su lugar, indicando el tipo (<code>s</code> texto, <code>i</code> entero).</td></tr>
+  <tr><td><strong>Inyección SQL</strong></td><td>Escribir SQL dentro de un campo del formulario para que la consulta haga otra cosa. Se previene no concatenando datos en la consulta.</td></tr>
+  <tr><td><strong>.gitignore</strong></td><td>Archivo donde se listan los archivos que Git no sube al repositorio.</td></tr>
+  <tr><td><strong>Integridad referencial</strong></td><td>La garantía de que toda clave foránea apunta a una fila que existe. La hace cumplir MySQL.</td></tr>
+</table>
+
+<h2 id="quiz">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Práctica
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p class="quiz-intro">Ejercicios para repasar los conceptos de la clase y leer código PHP. Leé con atención y resolvé en base a lo abordado.</p>
+
+  <div class="quiz-q" data-correct="b" data-explanation="Son exactamente los 4 datos que pide mysqli_connect: dónde vive la base (host), con qué usuario (usuario), con qué clave (contraseña) y cuál base abre (base).">
+    <p><strong>1.</strong> ¿Qué cuatro datos necesita PHP para conectarse a tu base?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) El nombre de las tablas y sus columnas</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Host, usuario, contraseña y nombre de la base</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Host, contraseña y el diagrama ER</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="localhost es 'esta misma computadora'. La base y el sitio viven en la misma máquina durante el desarrollo. En un servidor real, ese dato sería la dirección de ese servidor.">
+    <p><strong>2.</strong> En la conexión de desarrollo, el host es <code>localhost</code>. ¿Qué significa?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Que la base está en esta misma computadora</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Que la base está en internet</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Que es un nombre que hay que reemplazar por la IP del curso</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="conexion.php se ejecuta en la página que hace el require y deja definida la variable $conexion. No usa return: no devuelve un valor, deja una variable lista.">
+    <p><strong>3.</strong> La línea <code>&lt;?php require 'conexion.php'; ?&gt;</code> …</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Copia el texto de conexion.php para que se vea en la página</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Devuelve el array de datos, como datos.php en la Clase 4</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Ejecuta conexion.php y deja definida la variable $conexion para usar en la página</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="La conexión se escribe una sola vez en conexion.php y se incluye con require. Si la base cambia, se corrige en un solo lugar, no en cada página.">
+    <p><strong>4.</strong> ¿Por qué la conexión va en un archivo aparte (<code>conexion.php</code>) en vez de copiarse en cada página?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Porque cada página necesita su propia conexión distinta</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Para tener un solo lugar donde esté la llave: si la base cambia, se corrige una vez</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Es obligatorio para que MySQL funcione</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="conexion.php tiene la llave de la base (usuario y contraseña). Se lista en el .gitignore para que Git no lo suba. Lo que se comparte es la plantilla, documentada en documentacion.md.">
+    <p><strong>5.</strong> ¿Por qué <code>conexion.php</code> va en el <code>.gitignore</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Porque tiene los datos de acceso a la base y no deben publicarse</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Porque Git no sabe subir archivos .php</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Porque es un archivo temporal que se borra solo</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+<div class="checkpoint">
+  <p class="checkpoint-title">leé el código</p>
+  <pre><code>&lt;?php
+$resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
+while ($fila = mysqli_fetch_assoc($resultado)) {
+    echo $fila['titulo'];
+}
+?&gt;</code></pre>
+  <div class="quiz-q" data-correct="c" data-explanation="mysqli_fetch_assoc entrega una fila por vez como array asociativo: las claves son los nombres de las columnas, igual que los arrays de datos.php de la Clase 4.">
+    <p><strong>6.</strong> ¿Qué devuelve <code>mysqli_fetch_assoc($resultado)</code> en cada vuelta del <code>while</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Una columna de la tabla</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) El texto completo de la consulta</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Una fila como array asociativo, con las claves = columnas</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="Los ? son lugares reservados: la consulta se prepara con ellos y el dato se entrega por separado, después. Así el dato no puede romper la consulta ni alterarla (inyección SQL).">
+    <p><strong>7.</strong> En la sentencia preparada <code>'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)'</code>, ¿qué son los <code>?</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Comodines que la base reemplaza por las columnas</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Lugares reservados, que se completan después con los datos entregados por separado</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Valores que se adivinan solos</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="Es la integridad referencial: el director_id que envió el formulario no existe en directores, y la base rechaza la fila. Es el mismo 1452 de la Clase 7, ahora desde la web.">
+    <p><strong>8.</strong> El formulario envía un <code>director_id</code> que no existe, y el <code>INSERT</code> falla con <em>"a foreign key constraint fails"</em>. ¿Qué significa?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Que el formulario está mal hecho</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Que la base está llena</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Que el id no existe en la tabla apuntada, y la base no deja guardar la fila</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="El menú muestra el nombre (lo que se lee), pero el value es el id (lo que se envía). En la FK va el número, nunca el nombre.">
+    <p><strong>9.</strong> El menú de directores muestra <em>Lee Unkrich</em> pero se envía <code>value="2"</code>. ¿Qué se guarda en <code>director_id</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) El nombre <code>Lee Unkrich</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) El <code>id</code> 2</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Las dos cosas</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="El while corta cuando mysqli_fetch_assoc devuelve null, porque $fila queda null y la condición es falsa. No hace falta contar las filas: el resultado se conoce solo.">
+    <p><strong>10.</strong> ¿Cómo sabe el <code>while</code> que ya no quedan más filas para mostrar?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Cuando <code>mysqli_fetch_assoc</code> devuelve <code>null</code>, la condición es falsa y el bucle corta</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Cuenta las filas con un <code>foreach</code> antes de empezar</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) No corta solo: hay que ponerle un <code>break</code> a mano</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score"></p>
+  <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
+
+  <p class="quiz-intro" style="margin-top:32px"><strong>¿Ya terminaste?</strong> Pasá al <a href="clase-08-tp.html">TP de Clase 8</a> — ahí conectás tu web con tu base y la hacés leer y escribir.</p>
+</div>
+
+<h2 id="s7">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+  7. Próximos pasos
+</h2>
+
+<p>Con esta clase se abre la <strong>Etapa 3</strong> del proyecto: PHP y MySQL conectados. Hoy hiciste las dos operaciones que arrancan el CRUD:</p>
+
+<ul>
+  <li><strong>Crear</strong> (C): el formulario que inserta una fila — el <code>INSERT</code> de hoy.</li>
+  <li><strong>Leer</strong> (R): el listado que muestra las filas de la base — el <code>SELECT</code> de hoy.</li>
+</ul>
+
+<p>Quedan dos operaciones, y ambas se resuelven con la misma base que ya tenés:</p>
+
+<ul>
+  <li><strong>Actualizar</strong> (U): cuando una fila ya cargada tiene un dato mal, la web debería poder <strong>modificarla</strong> (<code>UPDATE</code>) desde un formulario precargado.</li>
+  <li><strong>Borrar</strong> (D): poder <strong>eliminar</strong> una fila (<code>DELETE</code>) desde el sitio.</li>
+</ul>
+
+<p>Con esas dos, el sistema queda completo: eso se llama <strong>CRUD</strong>, y es la base de casi todas las aplicaciones web.</p>
+
+<p class="mat-links">
+  <a href="clase-08-tp.html"><strong>→ TP de Clase 8</strong></a> ·
+  <a href="../clase_7/clase-07-teoria.html"><strong>Teoría de Clase 7</strong></a> ·
+  <a href="../clase_4/clase-04-teoria.html"><strong>Teoría de Clase 4</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>
