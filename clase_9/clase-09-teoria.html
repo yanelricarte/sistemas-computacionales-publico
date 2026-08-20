@@ -115,8 +115,6 @@ LO QUE NO PUEDE HACER
   Con XAMPP encendido: <strong>(1)</strong> el listado de tu sitio muestra las filas de tu base; <strong>(2)</strong> tu formulario agrega una fila y aparece en el listado; <strong>(3)</strong> en GitHub, <code>conexion.php</code> no está subido. Si algo de esto falta, resolvelo ahora: la clase de hoy trabaja sobre eso.
 </div>
 
-<p>Las dos operaciones que faltan son las que permiten mantener los datos al día. Es lo que se completa hoy.</p>
-
 <h2 id="s1">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
   1. Las cuatro operaciones: el CRUD
@@ -137,7 +135,7 @@ LO QUE NO PUEDE HACER
   Las dos operaciones de hoy usan el <strong>mismo canal</strong> que ya tenés —<code>mysqli</code>, con tu <code>conexion.php</code>— y la misma familia de funciones. Lo que se suma es una cláusula que hasta ahora era opcional: <strong><code>WHERE</code></strong>, la que dice sobre cuál fila se trabaja.
 </div>
 
-<p>En la Clase 6 usaste <code>WHERE</code> para <strong>filtrar</strong> un <code>SELECT</code>: leer solo las películas de un director. Hoy el mismo <code>WHERE</code> decide <strong>sobre qué filas se escribe</strong>, y ahí deja de ser una comodidad para pasar a ser una precaución.</p>
+<p>En la Clase 6 usaste <code>WHERE</code> para <strong>filtrar</strong> un <code>SELECT</code>: leer solo las películas de un director. Hoy el mismo <code>WHERE</code> decide <strong>sobre qué filas se escribe</strong>: sin él, la operación se aplicaría a toda la tabla.</p>
 
 <h2 id="s2">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -192,7 +190,7 @@ if (!$pelicula) {
 <ul>
   <li><strong><code>mysqli_stmt_get_result</code></strong>. Un <code>INSERT</code> no devuelve filas, así que en la Clase 8 alcanzaba con <code>execute</code>. Un <code>SELECT</code> sí devuelve filas: cuando la consulta va preparada, el resultado se pide con esta función y después se recorre como siempre.</li>
   <li><strong>Sin <code>while</code>.</strong> La consulta trae una sola fila, así que no hay nada que recorrer: se guarda en una variable. <code>$pelicula</code> es un array asociativo, el mismo de la Clase 4.</li>
-  <li><strong><code>'i'</code> en <code>bind_param</code>.</strong> Una letra por cada <code>?</code>, que dice de qué tipo es el dato: <code>i</code> para entero, <code>s</code> para texto.</li>
+  <li><strong><code>'i'</code> en <code>bind_param</code>.</strong> La letra declara el tipo del dato que se entrega: <code>i</code> para entero, <code>s</code> para texto.</li>
 </ul>
 
 <div class="callout callout-warn">
@@ -366,7 +364,7 @@ if ($aviso === 'borrado')  { echo '&lt;p class="aviso"&gt;La fila se borró.&lt;
   6. Borrar: DELETE con confirmación
 </h2>
 
-<p>La solución rápida sería un enlace por fila: <code>borrar.php?id=3</code>. Y es una mala idea. Un enlace se sigue <strong>sin querer</strong> —un clic de más, el botón atrás del navegador—, se comparte y se guarda en favoritos. Y hay navegadores que abren enlaces por adelantado, para tenerlos listos si el usuario hace clic. Borrar datos no puede depender de eso.</p>
+<p>La solución rápida sería un enlace por fila: <code>borrar.php?id=3</code>. El problema está en lo que un enlace permite: se sigue <strong>sin querer</strong> —un clic de más, el botón atrás del navegador—, se comparte, se guarda en favoritos, y hay navegadores que lo abren por adelantado para tenerlo listo. Un borrado no puede depender de eso.</p>
 
 <div class="callout callout-info">
   <div class="callout-title">La regla: GET muestra, POST modifica</div>
@@ -444,7 +442,7 @@ if (mysqli_stmt_execute($stmt)) {
 <p>Del otro lado, el mismo mecanismo del punto 5 con otro texto: <em>"No se puede borrar: tiene películas cargadas."</em> El aviso de error usa el mismo mecanismo que el de éxito.</p>
 
 <div class="callout callout-info">
-  <div class="callout-title">Una decisión de diseño, no una regla técnica</div>
+  <div class="callout-title">Tres salidas cuando una fila está apuntada</div>
   Cuando una fila tiene otras que la apuntan, un sistema puede <strong>negarse</strong> a borrarla (lo que hace la base por defecto), <strong>borrar también las hijas</strong> (<code>ON DELETE CASCADE</code>) o <strong>dejarlas sin referencia</strong>. Cuál corresponde depende del proyecto: borrar un director no debería borrar sus películas, pero borrar un pedido probablemente sí deba borrar sus renglones. Es una decisión que cada grupo va a tomar sobre su propio modelo.
 </div>
 

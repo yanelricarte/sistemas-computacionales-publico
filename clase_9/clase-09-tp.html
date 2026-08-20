@@ -131,7 +131,7 @@ if (!$pelicula) {
 
   &lt;button&gt;Guardar cambios&lt;/button&gt;
 &lt;/form&gt;</code></pre>
-    El <code>hidden</code> no es opcional: es cómo el <code>id</code> llega al procesador.
+    El <code>hidden</code> es cómo el <code>id</code> llega al procesador: sin ese campo, el <code>UPDATE</code> no sabe a cuál fila modificar.
   </li>
   <li>Agregá el desplegable de tu clave foránea, con la opción de esta fila <strong>marcada</strong>:
     <pre><code>&lt;label&gt;Director:
@@ -349,7 +349,7 @@ if (($_GET['error'] ?? '') === 'vacio') {
 </ol>
 
 <div class="callout callout-warn">
-  <div class="callout-title">El exit no es opcional</div>
+  <div class="callout-title">Por qué el exit</div>
   El <code>header</code> le habla al navegador y no interrumpe el PHP: sin el <code>exit;</code>, el programa sigue con las líneas de abajo y ejecuta el <code>UPDATE</code> igual. Es un error que no da ningún mensaje — la fila se guarda con el título vacío y el aviso aparece como si se hubiera evitado. En los procesadores de las partes anteriores no hizo falta porque la redirección era la <strong>última</strong> línea del archivo; acá, con código debajo, es obligatorio.
 </div>
 
