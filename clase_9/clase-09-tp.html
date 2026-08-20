@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TP Clase 9 — Modificá y borrá desde tu web: el CRUD completo</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div class="hero">
+  <div class="eyebrow">Trabajo práctico · Clase 9</div>
+  <h1>Modificá y borrá desde tu web: el CRUD completo</h1>
+  <p class="sub">Tu sitio ya lista y agrega filas. En este TP le sumás las dos operaciones que faltan: <strong>corregir</strong> una fila cargada y <strong>eliminarla</strong>, con confirmación y sobre las <strong>dos tablas</strong> de tu base. Todo pasa por lo mismo: decir cuál fila con su <code>id</code>, y que ese <code>id</code> llegue al <code>WHERE</code>.</p>
+</div>
+
+<div class="meta">
+  <strong>Materia:</strong> Proyecto, Diseño e Implementación de Sistemas Computacionales · 7.º año<br>
+  <strong>Entorno:</strong> XAMPP (Apache + MySQL) · phpMyAdmin en <code>http://localhost/phpmyadmin</code> · tu sitio corre en <code>http://localhost/...</code><br>
+  <strong>Tiempo en clase:</strong> Partes 1 y 2 en el primer módulo · Parte 3 en el segundo · Parte 4 en el tercero · Partes 5, 6 y 7 en el cuarto · Parte 8, opcional, si terminás antes
+</div>
+
+<h2>Objetivo</h2>
+
+<p>Que tu sistema pase de <strong>agregar y listar</strong> a <strong>administrar</strong> sus datos. Al terminar, desde el navegador vas a poder corregir cualquier fila de tus dos tablas y borrarla —con una confirmación en el medio—, con el <code>WHERE</code> siempre presente y el dato entregado por sentencia preparada.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Las películas son un ejemplo</div>
+  El TP usa la cartelera (<code>peliculas</code> + <code>directores</code>) para explicar, pero hacelo con <strong>tu</strong> proyecto: <code>turnos</code> + <code>pacientes</code>, <code>productos</code> + <code>categorias</code>, lo que sea. Lo evaluable es que la web modifique y borre filas de <strong>tu</strong> base.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Antes de empezar</div>
+  XAMPP con <strong>Apache</strong> y <strong>MySQL</strong> encendidos, tu <code>conexion.php</code> funcionando y el listado del sitio mostrando las filas de tu base (Clase 8). El repaso de la Clase 8 —los archivos, las tres reglas y el código que ya escribiste— está en la <a href="clase-09-teoria.html#s0">§0 de la teoría de hoy</a>.
+</div>
+
+<h2>Consigna</h2>
+
+<h3>Parte 1 — Verificá tu punto de partida</h3>
+
+<p>Sin la Clase 8 cerrada no hay nada que editar. Esto se comprueba primero.</p>
+
+<ol>
+  <li>Levantá XAMPP (<strong>Apache</strong> + <strong>MySQL</strong>) y abrí el listado de tu sitio: tiene que mostrar las filas de tu base.</li>
+  <li>Agregá una fila con tu formulario y verificá que aparece en el listado.</li>
+  <li>Entrá a tu repositorio en GitHub y confirmá que <code>conexion.php</code> <strong>no</strong> está subido.</li>
+  <li>Anotá en tu carpeta el <strong>nombre exacto</strong> de tus dos tablas, de la columna <code>id</code> de cada una y de la columna que hace de clave foránea. Todo el TP se resuelve reemplazando esos nombres.</li>
+</ol>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Si algo de la Clase 8 no está</div>
+  Es el momento de resolverlo, no dentro de una hora. Si perdiste la base, importá tu <code>.sql</code> desde el repositorio (phpMyAdmin → <em>Importar</em>). Si te falta <code>conexion.php</code>, rehacelo con la plantilla que quedó en tu <code>documentacion.md</code>. Avisá si no lo podés recuperar.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 1</div>
+  El listado muestra tu base, el formulario agrega, <code>conexion.php</code> no está en GitHub y tenés los nombres anotados.
+</div>
+
+<h3>Parte 2 — El id en el listado y la ficha de detalle</h3>
+
+<p>El <code>id</code> de cada fila ya lo tenés: el <code>SELECT *</code> del listado lo trae. Ahora lo vas a usar para abrir <strong>una</strong> fila.</p>
+
+<ol>
+  <li>En el <code>while</code> de tu listado, agregá dos enlaces por fila:
+    <pre><code>&lt;a href="ficha.php?id=&lt;?php echo $fila['id']; ?&gt;"&gt;Ver&lt;/a&gt;
+&lt;a href="editar.php?id=&lt;?php echo $fila['id']; ?&gt;"&gt;Editar&lt;/a&gt;</code></pre>
+    Pasá el mouse por encima de dos filas distintas: los números de la barra de estado tienen que ser distintos.
+  </li>
+  <li>Creá <code>ficha.php</code>. Trae <strong>una</strong> fila, la de ese <code>id</code>, con sentencia preparada:
+    <pre><code>&lt;?php
+require 'conexion.php';
+
+$id = $_GET['id'];
+
+$stmt = mysqli_prepare($conexion, 'SELECT * FROM peliculas WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'i', $id);
+mysqli_stmt_execute($stmt);
+$resultado = mysqli_stmt_get_result($stmt);
+$pelicula  = mysqli_fetch_assoc($resultado);
+
+if (!$pelicula) {
+    die('No existe esa película.');
+}
+?&gt;
+&lt;h1&gt;&lt;?php echo $pelicula['titulo']; ?&gt;&lt;/h1&gt;
+&lt;p&gt;Año: &lt;?php echo $pelicula['anio']; ?&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="cartelera.php"&gt;← Volver al listado&lt;/a&gt;&lt;/p&gt;</code></pre>
+    (cambiá <code>peliculas</code>, <code>titulo</code> y <code>anio</code> por los de tu tabla).
+  </li>
+  <li>Abrí la ficha desde el listado: dos filas distintas tienen que mostrar datos distintos.</li>
+  <li><strong>Probá un id que no exista</strong>: escribí <code>ficha.php?id=999</code> en la barra de direcciones. Tenés que ver <em>tu</em> mensaje, no un error de PHP. Anotá en la carpeta qué pasaría sin el <code>if</code>.</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">Esta consulta se usa tres veces hoy</div>
+  El <code>SELECT … WHERE id = ?</code> de la ficha es exactamente el que va a usar el formulario de edición (Parte 3) y la página de confirmación del borrado (Parte 5). Dejalo funcionando bien acá y las dos partes siguientes son copiar y adaptar.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 2</div>
+  Cada fila del listado abre su propia ficha, y un <code>id</code> inexistente responde con tu mensaje.
+</div>
+
+<h3>Parte 3 — El formulario precargado</h3>
+
+<p>Ahora la misma fila, pero dentro de los campos de un formulario. Es el cambio de <code>&lt;h1&gt;</code> a <code>value</code>.</p>
+
+<ol>
+  <li>Creá <code>editar.php</code> copiando la consulta de la ficha, y armá el formulario:
+    <pre><code>&lt;form method="POST" action="procesar_edicion.php"&gt;
+  &lt;input type="hidden" name="id" value="&lt;?php echo $pelicula['id']; ?&gt;"&gt;
+
+  &lt;label&gt;Título:
+    &lt;input type="text" name="titulo"
+           value="&lt;?php echo htmlspecialchars($pelicula['titulo']); ?&gt;" required&gt;
+  &lt;/label&gt;
+
+  &lt;label&gt;Año:
+    &lt;input type="number" name="anio" value="&lt;?php echo $pelicula['anio']; ?&gt;"&gt;
+  &lt;/label&gt;
+
+  &lt;button&gt;Guardar cambios&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+    El <code>hidden</code> no es opcional: es cómo el <code>id</code> llega al procesador.
+  </li>
+  <li>Agregá el desplegable de tu clave foránea, con la opción de esta fila <strong>marcada</strong>:
+    <pre><code>&lt;label&gt;Director:
+  &lt;select name="director_id"&gt;
+    &lt;?php
+    $directores = mysqli_query($conexion, 'SELECT id, nombre FROM directores ORDER BY nombre');
+    while ($d = mysqli_fetch_assoc($directores)) {
+    ?&gt;
+      &lt;option value="&lt;?php echo $d['id']; ?&gt;"
+        &lt;?php if ($d['id'] == $pelicula['director_id']) { echo 'selected'; } ?&gt;&gt;
+        &lt;?php echo $d['nombre']; ?&gt;
+      &lt;/option&gt;
+    &lt;?php } ?&gt;
+  &lt;/select&gt;
+&lt;/label&gt;</code></pre>
+  </li>
+  <li><strong>Probalo con dos filas que tengan distinto valor de FK.</strong> Cada una tiene que abrir con su propio director en el menú. Si las dos abren en el mismo, revisá la comparación: es <code>==</code>, no <code>=</code>.</li>
+  <li>Probá abrir <code>editar.php</code> sin el <code>?id=</code> (escribiendo solo el nombre del archivo). Anotá el error que aparece y de dónde viene.</li>
+</ol>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Por qué el htmlspecialchars</div>
+  Cargá una fila cuyo texto tenga una comilla doble —<code>El "Zorro"</code>— y mirá el campo. Sin <code>htmlspecialchars</code>, la comilla cierra el <code>value="</code> y el campo aparece cortado. Es el hermano del apóstrofo que rompía el <code>INSERT</code> en la Clase 8.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 3</div>
+  <code>editar.php?id=…</code> abre con los datos de esa fila en los campos y con el desplegable marcado en el valor que tiene la fila. Todavía no guarda nada.
+</div>
+
+<h3>Parte 4 — Guardá los cambios con UPDATE</h3>
+
+<ol>
+  <li>Creá <code>procesar_edicion.php</code>:
+    <pre><code>&lt;?php
+require 'conexion.php';
+
+$id          = $_POST['id'];
+$titulo      = $_POST['titulo'];
+$anio        = $_POST['anio'];
+$director_id = $_POST['director_id'];
+
+$stmt = mysqli_prepare($conexion,
+    'UPDATE peliculas SET titulo = ?, anio = ?, director_id = ? WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'siii', $titulo, $anio, $director_id, $id);
+mysqli_stmt_execute($stmt);
+
+header('Location: cartelera.php?ok=guardado');
+?&gt;</code></pre>
+    <strong>El <code>$id</code> va último</strong>: es el <code>?</code> del <code>WHERE</code>. Y <code>'siii'</code> lleva una letra por cada <code>?</code>, en ese orden.
+  </li>
+  <li>Corregí un dato desde la web y <strong>verificalo en phpMyAdmin</strong>: la fila cambió, y solo esa.</li>
+  <li><strong>La prueba del <code>WHERE</code>, sobre una copia.</strong> En phpMyAdmin, con tu tabla seleccionada:
+    <ol>
+      <li><em>Operaciones → Copiar tabla a…</em>, nombre <code>prueba_borrar</code>, opción <strong>estructura y datos</strong>.</li>
+      <li>Pestaña <em>SQL</em>: <code>UPDATE prueba_borrar SET anio = 1900;</code> — sin <code>WHERE</code>.</li>
+      <li>Leé el número de <strong>filas afectadas</strong> y corré un <code>SELECT</code> sobre la copia. Anotá lo que ves.</li>
+      <li><code>DROP TABLE prueba_borrar;</code></li>
+    </ol>
+    Nunca sobre la tabla de tu proyecto: sin <code>WHERE</code> la operación no falla, y no hay botón de deshacer.
+  </li>
+  <li>Agregá el aviso al usuario. Arriba de tu listado:
+    <pre><code>&lt;?php
+$aviso = $_GET['ok'] ?? '';
+
+if ($aviso === 'guardado') { echo '&lt;p class="aviso"&gt;Los cambios se guardaron.&lt;/p&gt;'; }
+if ($aviso === 'borrado')  { echo '&lt;p class="aviso"&gt;La fila se borró.&lt;/p&gt;'; }
+?&gt;</code></pre>
+    Y una regla mínima en tu <code>estilos.css</code> para que se vea:
+    <pre><code>.aviso {
+  background: #e8f5e9;
+  border-left: 4px solid #43a047;
+  padding: 10px 14px;
+  margin: 16px 0;
+}</code></pre>
+  </li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 4</div>
+  Corregís un dato desde la web, el cambio se ve en phpMyAdmin y al volver al listado aparece el aviso.
+</div>
+
+<h3>Parte 5 — Borrar con confirmación</h3>
+
+<p>Borrar va en dos pasos: una página que <strong>pregunta</strong> (llega por <code>GET</code>) y un procesador que <strong>borra</strong> (llega por <code>POST</code>).</p>
+
+<ol>
+  <li>En el listado, agregá el enlace de borrado en cada fila:
+    <pre><code>&lt;a href="borrar.php?id=&lt;?php echo $fila['id']; ?&gt;"&gt;Borrar&lt;/a&gt;</code></pre>
+  </li>
+  <li>Creá <code>borrar.php</code>: la misma consulta de la ficha, y en vez de mostrar la fila, preguntá por ella.
+    <pre><code>&lt;p&gt;¿Borrar &lt;strong&gt;&lt;?php echo htmlspecialchars($pelicula['titulo']); ?&gt;&lt;/strong&gt;?
+   Esta acción no se puede deshacer.&lt;/p&gt;
+
+&lt;form method="POST" action="procesar_borrado.php"&gt;
+  &lt;input type="hidden" name="id" value="&lt;?php echo $pelicula['id']; ?&gt;"&gt;
+  &lt;button&gt;Sí, borrar&lt;/button&gt;
+&lt;/form&gt;
+&lt;p&gt;&lt;a href="cartelera.php"&gt;Cancelar&lt;/a&gt;&lt;/p&gt;</code></pre>
+    La confirmación tiene que <strong>nombrar</strong> lo que se va a borrar.
+  </li>
+  <li>Creá <code>procesar_borrado.php</code>:
+    <pre><code>&lt;?php
+require 'conexion.php';
+
+$id = $_POST['id'];
+
+$stmt = mysqli_prepare($conexion, 'DELETE FROM peliculas WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'i', $id);
+mysqli_stmt_execute($stmt);
+
+header('Location: cartelera.php?ok=borrado');
+?&gt;</code></pre>
+  </li>
+  <li>Cargá una fila de prueba, borrala pasando por la confirmación, y comprobá que desapareció del listado y de phpMyAdmin. Probá también el <em>Cancelar</em>: tiene que volver sin borrar nada.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 5</div>
+  El borrado pide confirmación nombrando la fila, borra al aceptar y no hace nada al cancelar.
+</div>
+
+<h3>Parte 6 — El mismo patrón en tu segunda tabla</h3>
+
+<p>La otra entidad —la del lado del <strong>uno</strong>, la que apunta tu clave foránea— es más simple: no tiene FK, así que su formulario de edición no lleva desplegable. Es el mismo patrón con una pieza menos.</p>
+
+<ol>
+  <li>Si no lo tenés, hacé el listado de esa tabla (el <code>SELECT</code> de la Clase 8 sobre la otra tabla), con sus enlaces de editar y borrar.</li>
+  <li>Copiá el patrón: <code>editar_director.php</code> + <code>procesar_edicion_director.php</code>, y <code>borrar_director.php</code> + <code>procesar_borrado_director.php</code>.</li>
+  <li>Corregí un nombre desde la web y verificalo en phpMyAdmin.</li>
+  <li><strong>Probá borrar una fila que tenga hijas</strong> (un director con películas cargadas). Anotá el error que aparece.</li>
+  <li>Hacé que el sistema lo explique en vez de mostrar el error de PHP:
+    <pre><code>&lt;?php
+if (mysqli_stmt_execute($stmt)) {
+    header('Location: directores.php?ok=borrado');
+} else {
+    header('Location: directores.php?error=tiene_peliculas');
+}
+?&gt;</code></pre>
+    Y en el listado de esa tabla, el aviso correspondiente:
+    <pre><code>&lt;?php
+$error = $_GET['error'] ?? '';
+if ($error === 'tiene_peliculas') {
+    echo '&lt;p class="aviso"&gt;No se puede borrar: tiene películas cargadas.&lt;/p&gt;';
+}
+?&gt;</code></pre>
+  </li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">1451 y 1452 son la misma garantía</div>
+  En la Clase 7 la base impidió <strong>cargar</strong> una película que apuntaba a un director inexistente (1452). Ahora impide <strong>borrar</strong> un director que dejaría películas apuntando al vacío (1451). Se llama integridad referencial, y que la base te frene es lo correcto: lo que falta siempre es que el sistema lo explique.
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 6</div>
+  Las dos tablas se pueden editar y borrar desde el sitio, y el borrado de una fila apuntada muestra un aviso en vez de un error.
+</div>
+
+<h3>Parte 7 — Documentá y versioná</h3>
+
+<ol>
+  <li>Actualizá tu <code>documentacion.md</code> con el <strong>mapa del CRUD</strong>: para cada tabla, qué archivo resuelve cada operación.
+    <pre><code>CRUD del sistema
+
+peliculas    C  formulario.php + procesar_pelicula.php
+             R  cartelera.php · ficha.php
+             U  editar.php + procesar_edicion.php
+             D  borrar.php + procesar_borrado.php
+
+directores   C  ...</code></pre>
+  </li>
+  <li>Commit y push, <strong>nombrando los archivos</strong>:
+    <pre><code>git add cartelera.php ficha.php editar.php procesar_edicion.php \
+        borrar.php procesar_borrado.php documentacion.md
+git commit -m "CRUD completo: la web modifica y borra filas"
+git push</code></pre>
+    Agregá también los archivos de tu segunda tabla y el <code>estilos.css</code> si lo tocaste.
+  </li>
+  <li>Verificá en GitHub que <code>conexion.php</code> sigue sin subirse.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">✓ Checkpoint Parte 7</div>
+  El mapa del CRUD está en <code>documentacion.md</code>, el avance está en el repositorio y <code>conexion.php</code> no aparece en GitHub.
+</div>
+
+<h3>Parte 8 (opcional) — Si terminaste antes</h3>
+
+<p>Estas dos no son obligatorias ni entran en la evaluación, y conviene hacerlas en este orden. Las dos siguen sobre tu mismo proyecto.</p>
+
+<h4>A — Comprobá en el servidor</h4>
+
+<p>El <code>required</code> del formulario lo controla el <strong>navegador</strong>, y el navegador está del otro lado: se puede saltear mandando el <code>POST</code> sin pasar por tu página. La comprobación que vale es la que hace el servidor.</p>
+
+<ol>
+  <li>En el procesador de la edición, después de leer los datos del <code>POST</code> y <strong>antes</strong> de la consulta:
+    <pre><code>&lt;?php
+$titulo = trim($_POST['titulo']);
+
+if ($titulo === '') {
+    header('Location: editar.php?id=' . $id . '&amp;error=vacio');
+    exit;
+}</code></pre>
+  </li>
+  <li>Y en <code>editar.php</code>, arriba del formulario, el aviso:
+    <pre><code>&lt;?php
+if (($_GET['error'] ?? '') === 'vacio') {
+    echo '&lt;p class="aviso"&gt;El título no puede quedar vacío.&lt;/p&gt;';
+}
+?&gt;</code></pre>
+  </li>
+  <li>Probalo: borrá el contenido del campo, quitale el <code>required</code> al <code>input</code> a mano y mandá el formulario. Tiene que volver con el aviso y <strong>sin</strong> haber tocado la fila.</li>
+</ol>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El exit no es opcional</div>
+  El <code>header</code> le habla al navegador y no interrumpe el PHP: sin el <code>exit;</code>, el programa sigue con las líneas de abajo y ejecuta el <code>UPDATE</code> igual. Es un error que no da ningún mensaje — la fila se guarda con el título vacío y el aviso aparece como si se hubiera evitado. En los procesadores de las partes anteriores no hizo falta porque la redirección era la <strong>última</strong> línea del archivo; acá, con código debajo, es obligatorio.
+</div>
+
+<h4>B — El nombre en vez del número: el JOIN</h4>
+
+<p>Tu listado muestra el <code>director_id</code>, que es un número. Ese fue el límite que quedó anunciado en la <a href="../clase_8/clase-08-teoria.html">Clase 8</a>: para mostrar el nombre hay que traer datos de <strong>las dos tablas</strong> en una sola consulta.</p>
+
+<ol>
+  <li>Corré primero la consulta en phpMyAdmin, así el error de SQL se ve donde se ve:
+    <pre><code>SELECT peliculas.titulo, peliculas.anio, directores.nombre
+  FROM peliculas
+  JOIN directores ON peliculas.director_id = directores.id
+ ORDER BY peliculas.titulo</code></pre>
+  </li>
+  <li>El <code>ON</code> dice <strong>cómo se emparejan</strong> las filas: la clave foránea de una tabla con la clave primaria de la otra. Es la relación que armaste en la Clase 7, escrita como consulta.</li>
+  <li>Llevala al listado de tu sitio. En PHP no cambia nada —el mismo <code>mysqli_query</code> y el mismo <code>while</code>—, solo que ahora <code>$fila['nombre']</code> existe y podés mostrarlo en lugar del número.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Cuando las dos tablas tienen columnas con el mismo nombre</div>
+  Las dos tienen <code>id</code>, así que en la consulta se escribe la tabla adelante: <code>peliculas.id</code>, <code>directores.id</code>. Con una sola tabla no hacía falta; con dos, sí.
+</div>
+
+<h2>Errores comunes</h2>
+
+<table>
+  <tr><th>Error</th><th>Qué revisar</th></tr>
+  <tr><td><code>Undefined array key "id"</code></td><td>Se abrió <code>editar.php</code> o <code>borrar.php</code> sin el <code>?id=…</code>. Detrás del aviso aparece tu propio mensaje, porque sin id la consulta no encuentra ninguna fila. Hay que llegar desde el listado.</td></tr>
+  <tr><td><code>Undefined array key "titulo"</code></td><td>El <code>id</code> no existe en la tabla: falta el <code>if (!$fila) { die(…); }</code> después del <code>fetch_assoc</code>.</td></tr>
+  <tr><td><code>mysqli_fetch_assoc(): … mysqli_result, bool given</code></td><td>Falta <code>mysqli_stmt_get_result($stmt)</code>: en una consulta preparada el resultado se pide aparte.</td></tr>
+  <tr><td>El formulario abre vacío</td><td>Los <code>value</code> no tienen el <code>echo</code>, o la consulta no trajo la fila (probala en phpMyAdmin con ese id).</td></tr>
+  <tr><td>El campo aparece cortado</td><td>El dato tiene una comilla doble: envolver la salida en <code>htmlspecialchars(…)</code>.</td></tr>
+  <tr><td>El desplegable siempre abre en el primero</td><td>Falta el <code>selected</code> o la comparación no se cumple. Es <code>==</code>, no <code>=</code>.</td></tr>
+  <tr><td>Guardar cambia un dato que no toqué</td><td>El formulario manda todos sus campos: si el menú abrió mal, guarda eso. El problema está en cómo abre.</td></tr>
+  <tr><td>El <code>UPDATE</code> guarda en la columna equivocada</td><td>El orden de los valores de <code>bind_param</code> tiene que seguir el orden de los <code>?</code>. El <code>id</code>, último.</td></tr>
+  <tr><td>Se modificaron todas las filas</td><td>Faltó el <code>WHERE</code>. Reimportá tu <code>.sql</code> del repositorio y escribí el <code>WHERE</code> antes que el <code>SET</code>.</td></tr>
+  <tr><td><code>Cannot delete or update a parent row</code> (1451)</td><td>La fila está apuntada por una clave foránea. Es correcto: mostrá un aviso al usuario.</td></tr>
+  <tr><td>El aviso no aparece</td><td>Mirá la barra de direcciones: si el <code>?ok=…</code> está, el problema está en el <code>if</code> del listado.</td></tr>
+  <tr><td><code>Warning: Cannot modify header information</code></td><td>El procesador imprimió algo antes del <code>header('Location: …')</code>. No tiene que mostrar nada.</td></tr>
+</table>
+
+<h2>¿Terminaste? Verificá lo que tenés</h2>
+
+<p>Tildá lo que ya tengas hecho. Se guarda solo en este navegador, así podés volver a chequearlo.</p>
+
+<div class="selfcheck" data-key="tp-clase9">
+  <div class="selfcheck-head">
+    <span>Checklist del TP de Clase 9</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="tpc9-1"><label for="tpc9-1">El listado muestra mi base, el formulario agrega y <code>conexion.php</code> no está en GitHub.</label></li>
+    <li><input type="checkbox" id="tpc9-2"><label for="tpc9-2">Cada fila del listado enlaza con <strong>su</strong> <code>id</code>.</label></li>
+    <li><input type="checkbox" id="tpc9-3"><label for="tpc9-3"><code>ficha.php?id=…</code> trae una fila sola con <code>SELECT … WHERE id = ?</code> por sentencia preparada.</label></li>
+    <li><input type="checkbox" id="tpc9-4"><label for="tpc9-4">Un <code>id</code> inexistente responde con mi mensaje, no con un error de PHP.</label></li>
+    <li><input type="checkbox" id="tpc9-5"><label for="tpc9-5">El formulario de edición abre con los datos de la fila en los campos.</label></li>
+    <li><input type="checkbox" id="tpc9-6"><label for="tpc9-6">El <code>id</code> viaja en el campo oculto.</label></li>
+    <li><input type="checkbox" id="tpc9-7"><label for="tpc9-7">El desplegable de la FK abre marcado en el valor que tiene la fila (probado con dos filas distintas).</label></li>
+    <li><input type="checkbox" id="tpc9-8"><label for="tpc9-8">El <code>UPDATE</code> guarda con <code>WHERE id = ?</code> y lo verifiqué en phpMyAdmin.</label></li>
+    <li><input type="checkbox" id="tpc9-9"><label for="tpc9-9">Hice la prueba del <code>WHERE</code> ausente sobre una tabla copia y anoté las filas afectadas.</label></li>
+    <li><input type="checkbox" id="tpc9-10"><label for="tpc9-10">El listado muestra el aviso al volver de guardar o borrar.</label></li>
+    <li><input type="checkbox" id="tpc9-11"><label for="tpc9-11">El borrado pide confirmación nombrando la fila, y el <em>Cancelar</em> no borra.</label></li>
+    <li><input type="checkbox" id="tpc9-12"><label for="tpc9-12">Mi segunda tabla también se puede editar y borrar desde el sitio.</label></li>
+    <li><input type="checkbox" id="tpc9-13"><label for="tpc9-13">Probé borrar una fila apuntada por la FK: el sistema avisa en vez de mostrar el error 1451.</label></li>
+    <li><input type="checkbox" id="tpc9-14"><label for="tpc9-14">El mapa del CRUD está en <code>documentacion.md</code> y el avance está commiteado.</label></li>
+  </ul>
+</div>
+
+<h2>Para pensar (tarea de cierre)</h2>
+
+<p>Tu sistema ya modifica y borra datos. Y con eso apareció un problema nuevo: cualquiera que escriba <code>borrar.php?id=3</code> en la barra de direcciones llega a la confirmación y puede borrar una fila. Las páginas no saben quién está del otro lado.</p>
+
+<ol>
+  <li>Escribí en tu carpeta <strong>quiénes</strong> deberían poder editar y borrar en tu proyecto, y qué debería pasar si alguien que no inició sesión abre <code>editar.php</code> directo.</li>
+  <li>Mirá el login que tenés desde la Clase 2: ¿dónde están hoy el usuario y la contraseña? ¿Qué problema trae que estén ahí?</li>
+  <li>Dejá el avance en el repositorio, con el mapa del CRUD en el <code>documentacion.md</code>.</li>
+</ol>
+
+<div class="nav">
+  <a href="clase-09-teoria.html">← Volver a la teoría de Clase 9</a>
+</div>
+
+<p class="mat-links">
+  <a href="../">Inicio</a> ·
+  <a href="../clase_8/clase-08-tp.html">TP de Clase 8</a> ·
+  <a href="../clase_7/clase-07-tp.html">TP de Clase 7</a>
+</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>

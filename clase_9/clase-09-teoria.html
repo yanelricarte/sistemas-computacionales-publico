@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 9 — Modificar y borrar: el CRUD completo</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 9 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Modificar y borrar: el CRUD completo</h1>
+  <p class="sub">Tu web ya agrega filas y las lista. Lo que todavía no puede hacer es <strong>corregir</strong> un dato mal cargado ni <strong>eliminar</strong> una fila que sobra. Para las dos operaciones hace falta lo mismo: decir <strong>cuál</strong> fila. En esta clase ese "cuál" —el <code>id</code>— sale del listado, viaja por la URL y termina en un <code>WHERE</code>.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s0">Recuperación de la Clase 8: la web lee y agrega</a></li>
+    <li><a href="#s1">Las cuatro operaciones: el CRUD</a></li>
+    <li><a href="#s2">El id viaja por la URL: una fila sola</a></li>
+    <li><a href="#s3">El formulario precargado</a></li>
+    <li><a href="#s4">Guardar los cambios: UPDATE</a></li>
+    <li><a href="#s5">Avisarle al usuario</a></li>
+    <li><a href="#s6">Borrar: DELETE con confirmación</a></li>
+    <li><a href="#errores">Errores frecuentes</a></li>
+    <li><a href="#glosario">Glosario</a></li>
+    <li><a href="#quiz">Práctica</a></li>
+    <li><a href="#s7">Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<h2 id="s0">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+  0. Recuperación de la Clase 8: la web lee y agrega
+</h2>
+
+<p>Antes de sumar algo nuevo, repasemos lo que tu sistema ya hace. En la Clase 8 tu sitio dejó de leer un array escrito a mano y se conectó con la base: los datos pasaron a vivir <strong>en la base</strong> y la web empezó a pedirlos y a escribirlos por un canal llamado <code>mysqli</code>.</p>
+
+<h3>Los archivos que escribiste y qué hace cada uno</h3>
+
+<table>
+  <tr><th>Archivo</th><th>Qué hace</th><th>La instrucción clave</th></tr>
+  <tr><td><code>conexion.php</code></td><td>Guarda los 4 datos de acceso y abre el canal. Se incluye con <code>require</code> en cada página que toque la base.</td><td><code>mysqli_connect</code></td></tr>
+  <tr><td><code>.gitignore</code></td><td>Lista lo que Git no sube. Ahí está <code>conexion.php</code>.</td><td>—</td></tr>
+  <tr><td>El listado (<code>cartelera.php</code>)</td><td>Muestra todas las filas de la tabla.</td><td><code>mysqli_query</code> + <code>mysqli_fetch_assoc</code></td></tr>
+  <tr><td>El formulario</td><td>Pide los datos y llena el menú de la clave foránea con un <code>SELECT</code> a la otra tabla.</td><td><code>&lt;select&gt;</code> con <code>value</code> = id</td></tr>
+  <tr><td>El procesador</td><td>Agrega la fila y vuelve al listado.</td><td><code>prepare</code> → <code>bind_param</code> → <code>execute</code></td></tr>
+</table>
+
+<h3>Las tres reglas que ya rigen tu proyecto</h3>
+
+<ol>
+  <li><strong>La llave no se publica.</strong> <code>conexion.php</code> tiene el usuario y la contraseña de tu base: va en el <code>.gitignore</code>, y lo que se comparte es la plantilla documentada en el <code>documentacion.md</code>.</li>
+  <li><strong>El dato del usuario nunca va dentro de la consulta.</strong> Viaja aparte, en los <code>?</code> de la sentencia preparada. Por el apóstrofo de <em>Ocean's Eleven</em>, que rompería la consulta, y por la inyección SQL, que es el caso grave.</li>
+  <li><strong>En la clave foránea va el id, no el nombre.</strong> El menú muestra el nombre y envía el número. Si ese número no existe en la otra tabla, la base rechaza la fila: es el error 1452.</li>
+</ol>
+
+<h3>El código que ya tenés escrito</h3>
+
+<p>Estas dos piezas son la base de todo lo de hoy. Tenelas a mano:</p>
+
+<pre><code>&lt;?php
+// mostrar: todas las filas
+$resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
+while ($fila = mysqli_fetch_assoc($resultado)) {
+    // $fila es un array asociativo: las claves son las columnas
+    echo $fila['titulo'];
+}</code></pre>
+
+<pre><code>&lt;?php
+// agregar: una fila nueva, con sentencia preparada
+$stmt = mysqli_prepare($conexion,
+    'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)');
+mysqli_stmt_bind_param($stmt, 'sii', $titulo, $anio, $director_id);
+mysqli_stmt_execute($stmt);</code></pre>
+
+<pre><code>TU WEB, HASTA AHORA
+
+  cartelera.php    ── SELECT ──►   muestra TODAS las filas
+  formulario.php   ── INSERT ──►   agrega UNA fila nueva
+
+LO QUE NO PUEDE HACER
+
+  corregir el año mal cargado de una película
+  eliminar una fila repetida
+
+  las dos necesitan lo mismo: DECIR CUÁL FILA</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">Para responder antes de empezar</div>
+  Si podés contestar estas cuatro, estás listo para la clase de hoy. Si alguna te traba, volvé a la <a href="../clase_8/clase-08-teoria.html">teoría de Clase 8</a>.
+  <ol>
+    <li>¿Por qué <code>conexion.php</code> no está en tu repositorio? ¿Cómo lo recuperás en otra computadora?</li>
+    <li>¿Qué devuelve <code>mysqli_fetch_assoc</code> y de dónde salen sus claves?</li>
+    <li>¿Para qué están los <code>?</code> del <code>INSERT</code>?</li>
+    <li>Tu listado no muestra nada y tampoco da error. ¿Qué revisás primero?</li>
+  </ol>
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Antes de seguir, verificá en tu máquina</div>
+  Con XAMPP encendido: <strong>(1)</strong> el listado de tu sitio muestra las filas de tu base; <strong>(2)</strong> tu formulario agrega una fila y aparece en el listado; <strong>(3)</strong> en GitHub, <code>conexion.php</code> no está subido. Si algo de esto falta, resolvelo ahora: la clase de hoy trabaja sobre eso.
+</div>
+
+<p>Las dos operaciones que faltan son las que permiten mantener los datos al día. Es lo que se completa hoy.</p>
+
+<h2 id="s1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+  1. Las cuatro operaciones: el CRUD
+</h2>
+
+<p>Casi todo lo que un sistema hace con sus datos entra en cuatro operaciones. Sus iniciales en inglés forman la sigla <strong>CRUD</strong>, y es vocabulario de oficio: se usa igual en cualquier lenguaje y con cualquier base de datos.</p>
+
+<table>
+  <tr><th>Letra</th><th>Operación</th><th>SQL</th><th>En tu proyecto</th></tr>
+  <tr><td><strong>C</strong></td><td>Crear (<em>create</em>)</td><td><code>INSERT</code></td><td>El formulario de alta — Clase 8</td></tr>
+  <tr><td><strong>R</strong></td><td>Leer (<em>read</em>)</td><td><code>SELECT</code></td><td>El listado del sitio — Clase 8</td></tr>
+  <tr><td><strong>U</strong></td><td>Actualizar (<em>update</em>)</td><td><code>UPDATE</code></td><td>El formulario de edición — hoy</td></tr>
+  <tr><td><strong>D</strong></td><td>Borrar (<em>delete</em>)</td><td><code>DELETE</code></td><td>El botón de borrar — hoy</td></tr>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">La idea de toda la clase</div>
+  Las dos operaciones de hoy usan el <strong>mismo canal</strong> que ya tenés —<code>mysqli</code>, con tu <code>conexion.php</code>— y la misma familia de funciones. Lo que se suma es una cláusula que hasta ahora era opcional: <strong><code>WHERE</code></strong>, la que dice sobre cuál fila se trabaja.
+</div>
+
+<p>En la Clase 6 usaste <code>WHERE</code> para <strong>filtrar</strong> un <code>SELECT</code>: leer solo las películas de un director. Hoy el mismo <code>WHERE</code> decide <strong>sobre qué filas se escribe</strong>, y ahí deja de ser una comodidad para pasar a ser una precaución.</p>
+
+<h2 id="s2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+  2. El id viaja por la URL: una fila sola
+</h2>
+
+<p>Si en el listado hay doce películas y querés corregir una, el programa tiene que saber cuál de las doce. El dato que sirve para señalarla es el <code>id</code>: es único en la tabla, ninguna otra fila tiene ese número. El título no sirve, porque dos películas pueden llamarse igual.</p>
+
+<p>Ese número ya lo tenés a mano. El <code>SELECT *</code> del listado trae la columna <code>id</code> junto con las demás, así que dentro del <code>while</code> está disponible en <code>$fila['id']</code>. Con eso se arma un enlace por fila:</p>
+
+<pre><code>&lt;?php
+$resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
+while ($fila = mysqli_fetch_assoc($resultado)) {
+?&gt;
+  &lt;article&gt;
+    &lt;h2&gt;&lt;?php echo $fila['titulo']; ?&gt;&lt;/h2&gt;
+    &lt;p&gt;&lt;?php echo $fila['anio']; ?&gt;&lt;/p&gt;
+
+    &lt;a href="ficha.php?id=&lt;?php echo $fila['id']; ?&gt;"&gt;Ver&lt;/a&gt;
+    &lt;a href="editar.php?id=&lt;?php echo $fila['id']; ?&gt;"&gt;Editar&lt;/a&gt;
+  &lt;/article&gt;
+&lt;?php } ?&gt;</code></pre>
+
+<p>El <code>3</code> de <code>ficha.php?id=3</code> no lo escribís vos: lo pone PHP en cada vuelta del bucle, con el <code>id</code> de esa fila. Pasar un dato por la URL ya lo hiciste en las Clases 2 y 3 con <code>info.php?seccion=…</code>; lo único que cambia es qué dato viaja.</p>
+
+<h3>Traer una fila puntual</h3>
+
+<p>Del otro lado, la página lee el número con <code>$_GET['id']</code> y pide a la base <strong>esa</strong> fila. Como el <code>id</code> es un dato que llega del navegador, entra a la consulta por <strong>sentencia preparada</strong>, igual que el título en el <code>INSERT</code> de la Clase 8:</p>
+
+<pre><code>&lt;?php
+// ficha.php
+require 'conexion.php';
+
+$id = $_GET['id'];
+
+$stmt = mysqli_prepare($conexion, 'SELECT * FROM peliculas WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'i', $id);
+mysqli_stmt_execute($stmt);
+$resultado = mysqli_stmt_get_result($stmt);
+$pelicula  = mysqli_fetch_assoc($resultado);
+
+if (!$pelicula) {
+    die('No existe esa película.');
+}
+?&gt;
+&lt;h1&gt;&lt;?php echo $pelicula['titulo']; ?&gt;&lt;/h1&gt;
+&lt;p&gt;Año: &lt;?php echo $pelicula['anio']; ?&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="cartelera.php"&gt;← Volver al listado&lt;/a&gt;&lt;/p&gt;</code></pre>
+
+<p>Lo nuevo del código es esto:</p>
+
+<ul>
+  <li><strong><code>mysqli_stmt_get_result</code></strong>. Un <code>INSERT</code> no devuelve filas, así que en la Clase 8 alcanzaba con <code>execute</code>. Un <code>SELECT</code> sí devuelve filas: cuando la consulta va preparada, el resultado se pide con esta función y después se recorre como siempre.</li>
+  <li><strong>Sin <code>while</code>.</strong> La consulta trae una sola fila, así que no hay nada que recorrer: se guarda en una variable. <code>$pelicula</code> es un array asociativo, el mismo de la Clase 4.</li>
+  <li><strong><code>'i'</code> en <code>bind_param</code>.</strong> Una letra por cada <code>?</code>, que dice de qué tipo es el dato: <code>i</code> para entero, <code>s</code> para texto.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El id puede venir mal</div>
+  El <code>id</code> llega por la URL, y cualquiera puede escribir <code>ficha.php?id=999</code> en la barra de direcciones. Cuando ese id no existe, <code>mysqli_fetch_assoc</code> devuelve <code>null</code>, y la página seguiría trabajando con una fila que no está: al llegar al <code>echo</code>, PHP avisa con <code>Undefined array key "titulo"</code>. El <code>if (!$pelicula)</code> es lo que la detiene con un mensaje propio. Es la primera vez en el año que programás <strong>la respuesta a un dato inválido</strong>, y de acá en adelante es parte de escribir una página.
+</div>
+
+<h2 id="s3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  3. El formulario precargado
+</h2>
+
+<p>Para corregir un dato, el formulario tiene que abrir <strong>con la fila ya escrita</strong> en sus campos: nadie edita algo que aparece vacío. Eso es la ficha del punto anterior con un solo cambio: en vez de mostrar el dato en un <code>&lt;h1&gt;</code>, se muestra dentro del <code>value</code> de un <code>&lt;input&gt;</code>.</p>
+
+<pre><code>ficha.php                          editar.php
+
+&lt;h1&gt;&lt;?php echo                     &lt;input value="&lt;?php echo
+  $fila['titulo']; ?&gt;&lt;/h1&gt;           $fila['titulo']; ?&gt;"&gt;
+
+mostrar la fila                     mostrar la fila DENTRO del campo</code></pre>
+
+<p>La consulta es idéntica. Lo que cambia es dónde va el <code>echo</code>:</p>
+
+<pre><code>&lt;?php
+// editar.php
+require 'conexion.php';
+
+$id = $_GET['id'];
+
+$stmt = mysqli_prepare($conexion, 'SELECT * FROM peliculas WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'i', $id);
+mysqli_stmt_execute($stmt);
+$pelicula = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+if (!$pelicula) {
+    die('No existe esa película.');
+}
+?&gt;
+&lt;form method="POST" action="procesar_edicion.php"&gt;
+  &lt;input type="hidden" name="id" value="&lt;?php echo $pelicula['id']; ?&gt;"&gt;
+
+  &lt;label&gt;Título:
+    &lt;input type="text" name="titulo"
+           value="&lt;?php echo htmlspecialchars($pelicula['titulo']); ?&gt;" required&gt;
+  &lt;/label&gt;
+
+  &lt;label&gt;Año:
+    &lt;input type="number" name="anio" value="&lt;?php echo $pelicula['anio']; ?&gt;"&gt;
+  &lt;/label&gt;
+
+  &lt;button&gt;Guardar cambios&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+<h3>El campo oculto: cuál fila se está editando</h3>
+
+<p>El formulario de alta de la Clase 8 y este se parecen mucho, y hacen cosas distintas: uno crea una fila nueva, el otro modifica una que ya existe. Por eso el de edición necesita un dato más — <strong>cuál</strong> fila —, y ese dato es el <code>id</code>.</p>
+
+<p>Viaja en un <code>&lt;input type="hidden"&gt;</code>: no se dibuja en la pantalla, y el navegador lo envía junto con el resto del formulario. Es el puente entre el <code>?id=3</code> que llegó por <code>GET</code> y el <code>POST</code> que va al procesador. Sin ese campo, el <code>UPDATE</code> no sabe a cuál fila modificar.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Oculto para el usuario, visible para el navegador</div>
+  "Oculto" quiere decir que no se muestra, no que sea intocable: quien sabe usar las herramientas del navegador puede cambiar ese número y mandar el formulario con otro <code>id</code>. Hoy alcanza para que el sistema funcione; cuando el sistema tenga usuarios, además de recibir el <code>id</code> va a tener que comprobar <strong>quién</strong> lo manda. Ese es el tema de la próxima clase.
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">htmlspecialchars, otra vez y con motivo</div>
+  Un título con comilla doble —<code>El "Zorro"</code>— <strong>cierra el <code>value="</code> antes de tiempo</strong> y el campo aparece cortado. <code>htmlspecialchars</code> convierte esa comilla en algo que el navegador muestra sin interpretarlo. Es el mismo cuidado de la Clase 1 (la salida del usuario se escapa), aplicado a un atributo HTML: el hermano del apóstrofo que rompía el <code>INSERT</code> en la Clase 8.
+</div>
+
+<h3>El desplegable de la clave foránea</h3>
+
+<p>El menú de la FK ya lo escribiste en la Clase 8: consulta la otra tabla y arma las <code>&lt;option&gt;</code> con <code>value</code> = id y texto = nombre. Falta una sola cosa: <strong>marcar</strong> cuál de todas es la de esta fila. Eso lo hace el atributo <code>selected</code>, en una sola opción — la que coincide.</p>
+
+<pre><code>&lt;label&gt;Director:
+  &lt;select name="director_id"&gt;
+    &lt;?php
+    $directores = mysqli_query($conexion, 'SELECT id, nombre FROM directores ORDER BY nombre');
+    while ($d = mysqli_fetch_assoc($directores)) {
+    ?&gt;
+      &lt;option value="&lt;?php echo $d['id']; ?&gt;"
+        &lt;?php if ($d['id'] == $pelicula['director_id']) { echo 'selected'; } ?&gt;&gt;
+        &lt;?php echo $d['nombre']; ?&gt;
+      &lt;/option&gt;
+    &lt;?php } ?&gt;
+  &lt;/select&gt;
+&lt;/label&gt;</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">== compara, = asigna</div>
+  La condición usa <code>==</code>, la comparación de la Clase 4. Con un solo <code>=</code> el programa asigna en lugar de comparar: la condición se queda con el valor asignado, se cumple, y <strong>todas</strong> las opciones salen marcadas. Y si te olvidás la comparación entera, el menú abre en el primer director de la lista: quien guarde sin tocar el menú <strong>le cambia el director a la película</strong> sin que nada avise. Es un error que no da mensaje — se ve en pantalla, abriendo dos filas con distinto director.
+</div>
+
+<h2 id="s4">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+  4. Guardar los cambios: UPDATE
+</h2>
+
+<p>El formulario manda sus datos por <code>POST</code> al procesador, que hace el <code>UPDATE</code> y devuelve al listado. Es el mismo recorrido del alta de la Clase 8, con otra instrucción SQL:</p>
+
+<pre><code>&lt;?php
+// procesar_edicion.php
+require 'conexion.php';
+
+$id          = $_POST['id'];
+$titulo      = $_POST['titulo'];
+$anio        = $_POST['anio'];
+$director_id = $_POST['director_id'];
+
+$stmt = mysqli_prepare($conexion,
+    'UPDATE peliculas SET titulo = ?, anio = ?, director_id = ? WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'siii', $titulo, $anio, $director_id, $id);
+mysqli_stmt_execute($stmt);
+
+header('Location: cartelera.php?ok=guardado');
+?&gt;</code></pre>
+
+<p>La instrucción tiene tres partes y se lee en ese orden. Para escribirla conviene empezar por el <code>WHERE</code>: el recuadro de abajo explica por qué.</p>
+
+<pre><code>UPDATE peliculas                                   ¿qué tabla?
+   SET titulo = ?, anio = ?, director_id = ?       ¿qué columnas cambian?
+ WHERE id = ?                                      ¿sobre cuál fila?</code></pre>
+
+<p>Las columnas que no aparecen en el <code>SET</code> quedan como estaban. El <code>WHERE</code> es el que limita la operación a una fila.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">El id va último en bind_param</div>
+  El orden de los valores sigue <strong>el orden de los <code>?</code> en la consulta</strong>. El <code>?</code> del <code>WHERE</code> está escrito al final, así que el <code>$id</code> es el último de la lista, y <code>'siii'</code> lleva una letra por cada uno: texto para el título, entero para el año, para la clave foránea y para el id. Si cambiás el orden, PHP <strong>no</strong> da error de sintaxis: guarda el dato en la columna equivocada, o modifica otra fila.
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">La línea que no se olvida: sin WHERE se afecta toda la tabla</div>
+  <p>Estas dos consultas no fallan. Hacen exactamente lo que se les pidió:</p>
+  <pre><code>UPDATE peliculas SET anio = 1900;    →  12 filas afectadas
+DELETE FROM peliculas;              →  la tabla queda vacía</code></pre>
+  <p>No hay botón de deshacer. Lo que te protege es el <strong>hábito</strong> de escribir el <code>WHERE</code> antes que el <code>SET</code>, el <strong>número de filas afectadas</strong> que informa phpMyAdmin —que avisa cuando esperabas una fila y toca doce— y la <strong>copia</strong>: el <code>.sql</code> que exportaste al repositorio en las Clases 5 y 7. El código está en Git; los datos, solo en ese archivo.</p>
+</div>
+
+<p>Si querés verlo sin riesgo, hacelo sobre una copia: en phpMyAdmin, <em>Operaciones → Copiar tabla a…</em> (con estructura y datos) a <code>peliculas_prueba</code>, corré el <code>UPDATE</code> sin <code>WHERE</code> ahí, mirá el resultado y después <code>DROP TABLE peliculas_prueba;</code>.</p>
+
+<h2 id="s5">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  5. Avisarle al usuario
+</h2>
+
+<p>Guardás un cambio, volvés al listado y la página no dice nada. El dato cambió, pero el sistema no lo comunica: el usuario tiene que ir a buscar la fila para comprobar si su clic sirvió. Confirmar lo que se hizo es parte del trabajo del sistema.</p>
+
+<p>Hay un detalle técnico que explica por qué el aviso no se escribe en el procesador: el <code>header('Location: …')</code> le dice al navegador que pida <strong>otra</strong> página, y esa página nueva no sabe nada de lo que pasó en la anterior. Así que el aviso viaja donde puede viajar: en la URL.</p>
+
+<pre><code>&lt;?php
+// procesar_edicion.php  (al final)
+header('Location: cartelera.php?ok=guardado');
+?&gt;</code></pre>
+
+<pre><code>&lt;?php
+// cartelera.php  (arriba del listado)
+$aviso = $_GET['ok'] ?? '';
+
+if ($aviso === 'guardado') { echo '&lt;p class="aviso"&gt;Los cambios se guardaron.&lt;/p&gt;'; }
+if ($aviso === 'borrado')  { echo '&lt;p class="aviso"&gt;La fila se borró.&lt;/p&gt;'; }
+?&gt;</code></pre>
+
+<p>El <code>??</code> es el de la Clase 4: si en la URL no viene <code>ok</code>, <code>$aviso</code> queda vacío y no se muestra nada. Sin él, entrar al listado directo daría <code>Undefined array key "ok"</code>. En el <code>estilos.css</code>, una regla mínima para <code>.aviso</code> (un fondo suave y un borde) alcanza: el aviso tiene que verse distinto del contenido.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Un límite conocido</div>
+  El aviso queda en la URL, así que recargar la página lo repite. La forma seria de resolverlo son las <strong>sesiones</strong> —las que ya usás para el login desde la Clase 2—: guardar el mensaje una vez, mostrarlo y borrarlo. Se retoma en la próxima clase.
+</div>
+
+<h2 id="s6">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+  6. Borrar: DELETE con confirmación
+</h2>
+
+<p>La solución rápida sería un enlace por fila: <code>borrar.php?id=3</code>. Y es una mala idea. Un enlace se sigue <strong>sin querer</strong> —un clic de más, el botón atrás del navegador—, se comparte y se guarda en favoritos. Y hay navegadores que abren enlaces por adelantado, para tenerlos listos si el usuario hace clic. Borrar datos no puede depender de eso.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">La regla: GET muestra, POST modifica</div>
+  Una página que <strong>muestra</strong> algo se pide por <code>GET</code> (así viaja el <code>?id=3</code> de la ficha). Una acción que <strong>modifica</strong> datos se manda por <code>POST</code>, desde un formulario con su botón. Los dos los venís usando desde la Clase 1; lo que se agrega hoy es el criterio para elegir.
+</div>
+
+<p>Con esa regla, el borrado queda en dos pasos. El primero es la ficha del punto 2 con otra pregunta:</p>
+
+<pre><code>&lt;?php
+// borrar.php  — llega por GET, con ?id=3
+require 'conexion.php';
+
+$id = $_GET['id'];
+
+$stmt = mysqli_prepare($conexion, 'SELECT * FROM peliculas WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'i', $id);
+mysqli_stmt_execute($stmt);
+$pelicula = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+if (!$pelicula) {
+    die('No existe esa película.');
+}
+?&gt;
+&lt;p&gt;¿Borrar &lt;strong&gt;&lt;?php echo htmlspecialchars($pelicula['titulo']); ?&gt;&lt;/strong&gt;?
+   Esta acción no se puede deshacer.&lt;/p&gt;
+
+&lt;form method="POST" action="procesar_borrado.php"&gt;
+  &lt;input type="hidden" name="id" value="&lt;?php echo $pelicula['id']; ?&gt;"&gt;
+  &lt;button&gt;Sí, borrar&lt;/button&gt;
+&lt;/form&gt;
+&lt;p&gt;&lt;a href="cartelera.php"&gt;Cancelar&lt;/a&gt;&lt;/p&gt;</code></pre>
+
+<p>Y el segundo paso, que es el que toca la base:</p>
+
+<pre><code>&lt;?php
+// procesar_borrado.php  — llega por POST
+require 'conexion.php';
+
+$id = $_POST['id'];
+
+$stmt = mysqli_prepare($conexion, 'DELETE FROM peliculas WHERE id = ?');
+mysqli_stmt_bind_param($stmt, 'i', $id);
+mysqli_stmt_execute($stmt);
+
+header('Location: cartelera.php?ok=borrado');
+?&gt;</code></pre>
+
+<p><strong>Nombrar la fila es parte de la confirmación.</strong> Un cartel que dice "¿Seguro?" sin decir qué se va a borrar no informa nada. En el listado, el botón de borrar de cada fila sí puede ser un enlace a <code>borrar.php?id=…</code>: esa página pregunta, no modifica.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">La ventanita del navegador</div>
+  En muchos sistemas la confirmación es un cartel de JavaScript (<code>confirm()</code>). La vas a ver en todas partes y está bien conocerla, pero no reemplaza a esta página: si el navegador tiene el JavaScript desactivado, la ventanita no aparece y el borrado sigue igual. La confirmación que vale es la que decide el servidor.
+</div>
+
+<h3>Borrar una fila que está apuntada</h3>
+
+<p>Probá borrar un director que tenga películas cargadas. La base se niega:</p>
+
+<pre><code>ERROR 1451: Cannot delete or update a parent row:
+            a foreign key constraint fails</code></pre>
+
+<p>Es el hermano del <strong>1452</strong> de la Clase 7. Entonces la base impidió cargar una película que apuntaba a un director inexistente; ahora impide borrar un director que dejaría películas apuntando al vacío. Las dos son la misma garantía —<strong>integridad referencial</strong>— mirada de cada lado.</p>
+
+<p>Que la base frene el borrado es lo correcto. Lo que falta es que <strong>el sistema lo explique</strong>, en lugar de mostrar un error de PHP:</p>
+
+<pre><code>&lt;?php
+// procesar_borrado_director.php
+if (mysqli_stmt_execute($stmt)) {
+    header('Location: directores.php?ok=borrado');
+} else {
+    header('Location: directores.php?error=tiene_peliculas');
+}
+?&gt;</code></pre>
+
+<p>Del otro lado, el mismo mecanismo del punto 5 con otro texto: <em>"No se puede borrar: tiene películas cargadas."</em> El aviso de error usa el mismo mecanismo que el de éxito.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Una decisión de diseño, no una regla técnica</div>
+  Cuando una fila tiene otras que la apuntan, un sistema puede <strong>negarse</strong> a borrarla (lo que hace la base por defecto), <strong>borrar también las hijas</strong> (<code>ON DELETE CASCADE</code>) o <strong>dejarlas sin referencia</strong>. Cuál corresponde depende del proyecto: borrar un director no debería borrar sus películas, pero borrar un pedido probablemente sí deba borrar sus renglones. Es una decisión que cada grupo va a tomar sobre su propio modelo.
+</div>
+
+<h2 id="errores">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  Errores frecuentes
+</h2>
+
+<table>
+  <tr><th>Mensaje / síntoma</th><th>Qué pasó</th><th>Cómo se arregla</th></tr>
+  <tr>
+    <td><code>Undefined array key "id"</code> al abrir <code>editar.php</code></td>
+    <td>Se llegó a la página sin el <code>?id=…</code>, escribiendo el nombre del archivo en la barra de direcciones. Detrás del aviso aparece tu propio mensaje: sin id, la consulta no encuentra ninguna fila.</td>
+    <td>Llegar desde el listado, con el enlace que arma PHP.</td>
+  </tr>
+  <tr>
+    <td><code>Undefined array key "titulo"</code> en la ficha o en la edición</td>
+    <td>El <code>id</code> no existe en la tabla: la consulta no devolvió ninguna fila.</td>
+    <td>Agregar el <code>if (!$fila) { die(…); }</code> después del <code>fetch_assoc</code>.</td>
+  </tr>
+  <tr>
+    <td><code>mysqli_fetch_assoc(): Argument #1 … mysqli_result, bool given</code></td>
+    <td>Falta el <code>mysqli_stmt_get_result($stmt)</code>: en una consulta preparada, el resultado se pide aparte.</td>
+    <td>Pasar el resultado de <code>get_result</code> a <code>fetch_assoc</code>, no el <code>$stmt</code>.</td>
+  </tr>
+  <tr>
+    <td>El formulario abre con los campos vacíos</td>
+    <td>Los <code>value</code> no tienen el <code>echo</code>, o la consulta no trajo la fila.</td>
+    <td>Revisar el <code>value="&lt;?php echo … ?&gt;"</code> y probar la consulta en phpMyAdmin con ese id.</td>
+  </tr>
+  <tr>
+    <td>El campo del título aparece cortado</td>
+    <td>El dato tiene una comilla doble y cerró el atributo <code>value="</code> antes de tiempo.</td>
+    <td>Envolver la salida en <code>htmlspecialchars(…)</code>.</td>
+  </tr>
+  <tr>
+    <td>El desplegable siempre abre en el primer nombre</td>
+    <td>Falta el <code>selected</code>, o la comparación no se cumple nunca.</td>
+    <td>Comparar con <code>==</code> el <code>id</code> de la opción contra el valor de la FK de la fila.</td>
+  </tr>
+  <tr>
+    <td>Guardar cambia un dato que no se tocó</td>
+    <td>El formulario manda <strong>todos</strong> sus campos: si el menú abrió en la opción equivocada, guarda esa.</td>
+    <td>Arreglar el <code>selected</code>: el problema está en cómo abre el formulario, no en cómo guarda.</td>
+  </tr>
+  <tr>
+    <td>El <code>UPDATE</code> guarda el dato en la columna equivocada</td>
+    <td>El orden de los valores de <code>bind_param</code> no coincide con el orden de los <code>?</code>.</td>
+    <td>Leer la consulta de izquierda a derecha y poner los valores en ese orden. El <code>id</code> del <code>WHERE</code>, último.</td>
+  </tr>
+  <tr>
+    <td>Se modificaron todas las filas de la tabla</td>
+    <td>Al <code>UPDATE</code> le faltó el <code>WHERE</code>.</td>
+    <td>Reimportar el <code>.sql</code> del repositorio. Después, escribir siempre el <code>WHERE</code> antes que el <code>SET</code>.</td>
+  </tr>
+  <tr>
+    <td><code>Cannot delete or update a parent row</code> (1451)</td>
+    <td>La fila que se quiere borrar está apuntada por una clave foránea.</td>
+    <td>Es correcto que la base lo impida: mostrar un aviso al usuario en vez del error.</td>
+  </tr>
+  <tr>
+    <td>El aviso <code>?ok=guardado</code> no aparece</td>
+    <td>El listado no lee <code>$_GET['ok']</code>, o el <code>header</code> redirige sin el parámetro.</td>
+    <td>Mirar la barra de direcciones: si el parámetro está, el problema está en el <code>if</code>.</td>
+  </tr>
+  <tr>
+    <td><code>Warning: Cannot modify header information</code></td>
+    <td>Se imprimió algo (un espacio, un <code>echo</code>, HTML) antes del <code>header('Location: …')</code>.</td>
+    <td>El procesador no muestra nada: la redirección va antes de cualquier salida.</td>
+  </tr>
+</table>
+
+<h2 id="glosario">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  Glosario
+</h2>
+
+<table>
+  <tr><th>Término</th><th>Qué significa</th></tr>
+  <tr><td><strong>CRUD</strong></td><td>Las cuatro operaciones básicas sobre datos: crear, leer, actualizar y borrar (<code>INSERT</code>, <code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code>).</td></tr>
+  <tr><td><strong><code>WHERE</code></strong></td><td>La cláusula que dice sobre cuáles filas trabaja una consulta. En <code>UPDATE</code> y <code>DELETE</code> es lo que evita afectar la tabla entera.</td></tr>
+  <tr><td><strong><code>UPDATE</code></strong></td><td>Instrucción SQL que modifica columnas de las filas que cumplen el <code>WHERE</code>.</td></tr>
+  <tr><td><strong><code>SET</code></strong></td><td>La parte del <code>UPDATE</code> que enumera qué columnas cambian y con qué valor.</td></tr>
+  <tr><td><strong><code>DELETE</code></strong></td><td>Instrucción SQL que elimina las filas que cumplen el <code>WHERE</code>.</td></tr>
+  <tr><td><strong>Filas afectadas</strong></td><td>La cantidad de filas que una operación modificó o borró. Es la señal para darse cuenta de que un <code>WHERE</code> falta o está mal.</td></tr>
+  <tr><td><strong><code>mysqli_stmt_get_result</code></strong></td><td>Pide el resultado de una consulta preparada que devuelve filas (un <code>SELECT</code>), para después recorrerlo con <code>fetch_assoc</code>.</td></tr>
+  <tr><td><strong>Campo oculto</strong></td><td><code>&lt;input type="hidden"&gt;</code>: no se dibuja en la pantalla, y el navegador lo envía con el formulario. Es como viaja el <code>id</code>.</td></tr>
+  <tr><td><strong>Formulario precargado</strong></td><td>Un formulario que abre con los datos de una fila escritos en sus campos, listos para corregir.</td></tr>
+  <tr><td><strong><code>value</code></strong></td><td>El atributo que define lo que un campo muestra al abrirse.</td></tr>
+  <tr><td><strong><code>selected</code></strong></td><td>El atributo que marca cuál <code>&lt;option&gt;</code> aparece elegida al abrir un <code>&lt;select&gt;</code>.</td></tr>
+  <tr><td><strong><code>htmlspecialchars</code></strong></td><td>Convierte los símbolos con significado en HTML (<code>&lt;</code>, <code>&gt;</code>, <code>"</code>, <code>&amp;</code>) para que se muestren en vez de interpretarse.</td></tr>
+  <tr><td><strong><code>GET</code> / <code>POST</code></strong></td><td>Las dos formas de pedir una página. <code>GET</code> para mostrar (los datos van en la URL), <code>POST</code> para modificar (van en el cuerpo del pedido).</td></tr>
+  <tr><td><strong>Error 1451</strong></td><td>El rechazo de MySQL a borrar una fila apuntada por una clave foránea. El 1452 es el rechazo a cargar una FK que no existe.</td></tr>
+  <tr><td><strong>Borrado lógico</strong></td><td>Marcar una fila como inactiva en vez de eliminarla, para poder recuperarla. Se usa en la mayoría de los sistemas reales.</td></tr>
+</table>
+
+<h2 id="quiz">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  Práctica
+</h2>
+
+<div id="quiz-final" class="quiz-wrap">
+  <p class="quiz-intro">Ejercicios para repasar los conceptos de la clase y leer código PHP. Leé con atención y resolvé en base a lo abordado.</p>
+
+  <div class="quiz-q" data-correct="c" data-explanation="El id identifica la fila y no se repite. El título puede repetirse entre dos filas, y la posición en el listado cambia según cómo se ordene la consulta.">
+    <p><strong>1.</strong> Para modificar una fila, ¿con qué dato conviene señalarla?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Con el título, que es lo que el usuario ve</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Con el número de orden en que aparece en el listado</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Con el <code>id</code>, que identifica la fila y no se repite</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="El SELECT * del listado trae la columna id junto con las demás, así que en cada vuelta del while está en $fila['id'] y PHP lo escribe en el enlace.">
+    <p><strong>2.</strong> En el listado, ¿de dónde sale el <code>3</code> de <code>editar.php?id=3</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Se escribe a mano en el enlace</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Lo pone PHP en cada vuelta del bucle, con el <code>id</code> de esa fila</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Lo genera el navegador al hacer clic</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="Un INSERT no devuelve filas: con execute alcanza. Un SELECT sí las devuelve, y cuando la consulta va preparada el resultado se pide con mysqli_stmt_get_result.">
+    <p><strong>3.</strong> ¿Por qué el <code>SELECT</code> preparado necesita <code>mysqli_stmt_get_result</code> y el <code>INSERT</code> de la Clase 8 no lo necesitaba?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Porque el <code>SELECT</code> devuelve filas y hay que pedir ese resultado para recorrerlo</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Porque el <code>INSERT</code> no usa sentencia preparada</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Porque <code>get_result</code> reemplaza a <code>execute</code> en las consultas de lectura</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="fetch_assoc devuelve null cuando no hay fila, y sin el if la página sigue usando un array que no existe: Undefined array key. El id llega del navegador, así que puede venir cualquier número.">
+    <p><strong>4.</strong> ¿Qué previene el <code>if (!$pelicula) { die(…); }</code> después de traer la fila?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Que la consulta se ejecute dos veces</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Que la página siga trabajando con una fila que no existe, cuando el <code>id</code> de la URL no está en la tabla</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Que alguien modifique el <code>id</code> desde el formulario</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="El id llega por GET y tiene que seguir viaje en el POST del formulario; el campo oculto lo lleva sin mostrarlo. Un campo visible permitiría editarlo, y editar el id significa modificar otra fila.">
+    <p><strong>5.</strong> ¿Para qué está el <code>&lt;input type="hidden" name="id"&gt;</code> en el formulario de edición?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Para que el usuario no vea datos técnicos en la pantalla</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Para guardar el <code>id</code> en la base junto con los otros campos</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Para que el <code>id</code> llegue al procesador, que necesita saber cuál fila modificar</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="La comilla doble del dato cierra el atributo value=&quot; antes de tiempo y el resto del texto queda afuera del campo. htmlspecialchars la convierte para que se muestre.">
+    <p><strong>6.</strong> Una película se llama <code>El "Zorro"</code> y en el formulario el campo aparece cortado. ¿Qué pasó?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La comilla doble cerró el atributo <code>value</code> antes de tiempo: falta <code>htmlspecialchars</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) La base guardó el título recortado</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) El <code>input</code> tiene un límite de caracteres que hay que ampliar</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="Sin selected el menú abre en la primera opción, y el formulario manda todos sus campos: guardar escribe esa primera opción en la FK, sin ningún error.">
+    <p><strong>7.</strong> El formulario de edición abre siempre con el primer director del menú. Se corrige solo el año y se guarda. ¿Qué pasa?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Se guarda el año y el director queda como estaba</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Se guarda el año y también el director de la primera opción, sin ningún aviso</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La base rechaza la operación por integridad referencial</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="Los valores de bind_param siguen el orden de los ? en la consulta. El ? del WHERE está escrito último, así que el id va último.">
+    <p><strong>8.</strong> En <code>'UPDATE peliculas SET titulo = ?, anio = ? WHERE id = ?'</code>, ¿en qué orden van los valores en <code>bind_param</code>?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) El <code>id</code> primero, porque es la clave primaria</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) En cualquier orden: <code>bind_param</code> los reconoce por el nombre de la columna</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Título, año y por último el <code>id</code>: el orden de los <code>?</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="Sin WHERE la operación se aplica a todas las filas, y no da error: hace lo que se le pidió. El número de filas afectadas es la señal de que algo salió mal.">
+    <p><strong>9.</strong> ¿Qué hace <code>UPDATE peliculas SET anio = 1900;</code> tal como está escrito?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Pone 1900 en el año de <strong>todas</strong> las filas de la tabla</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Da un error de sintaxis, porque falta el <code>WHERE</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Modifica la primera fila de la tabla</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="b" data-explanation="Un enlace se puede seguir sin querer, compartir o abrir automáticamente. Las acciones que modifican datos van por POST, desde un formulario; GET queda para mostrar.">
+    <p><strong>10.</strong> ¿Por qué el borrado se manda por <code>POST</code> y no con un enlace <code>borrar.php?id=3</code> que borre directo?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Porque por <code>GET</code> no se puede pasar un <code>id</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Porque un enlace se sigue sin querer o se comparte: lo que modifica datos va por <code>POST</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Porque <code>DELETE</code> solo funciona con datos que llegan por <code>POST</code></button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="c" data-explanation="El 1451 protege la integridad referencial del otro lado que el 1452: impide dejar filas apuntando a algo que ya no existe. El sistema tiene que avisarlo, no mostrar el error.">
+    <p><strong>11.</strong> Al borrar un director con películas cargadas aparece el error 1451. ¿Qué significa?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Que la conexión se cortó durante el <code>DELETE</code></button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Que falta el <code>WHERE</code> en la consulta</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Que la base impide borrar una fila apuntada por una clave foránea</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-q" data-correct="a" data-explanation="Después del header('Location:') el navegador pide otra página, que no sabe nada de la anterior. Por eso el aviso viaja en la URL y el listado lo lee de $_GET.">
+    <p><strong>12.</strong> ¿Por qué el mensaje "Los cambios se guardaron" viaja en la URL (<code>?ok=guardado</code>)?</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Porque después de la redirección el navegador pide otra página, que no recuerda lo que hizo la anterior</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Porque los mensajes de éxito siempre se pasan por la URL</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Porque el <code>UPDATE</code> devuelve ese texto y hay que pasarlo</button>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <p id="quiz-score"></p>
+  <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
+
+  <p class="quiz-intro" style="margin-top:32px"><strong>¿Ya terminaste?</strong> Pasá al <a href="clase-09-tp.html">TP de Clase 9</a> — ahí tu web pasa a modificar y borrar filas de tus dos tablas.</p>
+</div>
+
+<h2 id="s7">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+  7. Próximos pasos
+</h2>
+
+<p>Con esta clase el CRUD queda completo: tu sistema crea, lee, modifica y borra los datos de sus dos entidades. Con eso aparece un problema nuevo, que es la señal de que el sistema ya hace algo importante:</p>
+
+<pre><code>Cualquiera que escriba en la barra de direcciones
+
+    borrar.php?id=3
+
+llega a la confirmación y puede borrar una fila.</code></pre>
+
+<p>Las páginas que modifican datos no saben quién está del otro lado. En el sistema hay un login desde la Clase 2, pero con el usuario y la contraseña escritos en el código, y no protege a estas páginas nuevas. La próxima clase lo lleva a la base: una tabla de usuarios, las contraseñas guardadas como corresponde (<code>password_hash</code>, nunca en texto plano), las páginas de edición y borrado protegidas, y la comprobación de los datos hecha en el servidor.</p>
+
+<p class="mat-links">
+  <a href="clase-09-tp.html"><strong>→ TP de Clase 9</strong></a> ·
+  <a href="../clase_8/clase-08-teoria.html"><strong>Teoría de Clase 8</strong></a> ·
+  <a href="../clase_7/clase-07-teoria.html"><strong>Teoría de Clase 7</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>
