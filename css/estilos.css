@@ -474,8 +474,8 @@ details[open] summary::before { transform: rotate(90deg); }
 /* ─── Comparación de código antes/después (teoría) ───
    El <pre> mantiene el fondo oscuro de siempre (buen contraste);
    antes/después se distinguen con un borde de color, no con fondo claro. */
-.code-switch { margin: 1em 0; display: grid; gap: .8em; }
-.code-switch .code-wrap { margin: 0; }
+.code-switch { margin: 1em 0; display: grid; gap: .8em; min-width: 0; }
+.code-switch .code-wrap { margin: 0; min-width: 0; overflow-x: auto; }
 .code-switch pre { margin: 0; }
 .code-switch .old { border-left: 4px solid #fb7185; }   /* rojo: el "antes" */
 .code-switch .new { border-left: 4px solid #4ade80; }   /* verde: el "después" */
