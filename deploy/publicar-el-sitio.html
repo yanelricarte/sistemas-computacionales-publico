@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publicar el sitio en internet</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Publicar el sitio en internet</h1>
+  <p class="sub">El tema es el <strong>despliegue</strong>: sacar el sistema de la máquina del laboratorio y ponerlo en un servidor con una dirección que cualquiera pueda abrir. Los contenidos son: qué cambia entre desarrollo y producción, hosting de PHP y MySQL, transferencia de archivos, exportación e importación de la base, configuración por entorno, y comprobación de que el sistema publicado funciona.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol class="sin-numero">
+    <li><a href="#idea">Qué significa publicar</a></li>
+    <li><a href="#antes">Antes de empezar</a></li>
+    <li class="toc-parte">Los seis pasos</li>
+    <li><a href="#p1">1. Cuenta y subdominio</a></li>
+    <li><a href="#p2">2. Base de datos en el servidor</a></li>
+    <li><a href="#p3">3. Exportar la base local</a></li>
+    <li><a href="#p4">4. Importar en el servidor</a></li>
+    <li><a href="#p5">5. Subir los archivos</a></li>
+    <li><a href="#p6">6. El archivo de conexión del servidor</a></li>
+    <li class="toc-parte">Después de publicar</li>
+    <li><a href="#comprobar">Comprobación del sistema publicado</a></li>
+    <li><a href="#cuidados">Cuidados que cambian en producción</a></li>
+    <li><a href="#problemas">Problemas frecuentes</a></li>
+  </ol>
+</nav>
+
+<div class="materiales-clase">
+  <span class="rot">Materiales de la Clase 8</span>
+  <ul>
+    <li><a href="../clase_8/clase-08-teoria.html">Teoría de la Clase 8</a> <span class="desc">— Conectar PHP con MySQL: la conexión, el listado que lee la base y el formulario que escribe. Dos bloques, cada uno con su práctica.</span></li>
+    <li><a href="../clase_8/clase-08-tp.html">TP de la Clase 8</a> <span class="desc">— La consigna con los pasos, los checkpoints y la checklist de autoverificación.</span></li>
+    <li><a href="../clase_8/auditoria-crud.html">Auditoría del CRUD</a> <span class="desc">— Doce comprobaciones sobre el código propio, con su fundamento, y el control de acceso.</span></li>
+    <li class="actual"><strong>Publicar el sitio</strong> <span class="desc">— estás acá</span></li>
+  </ul>
+</div>
+
+<main>
+
+<h2 id="idea">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+  Qué significa publicar
+</h2>
+
+<p>Hasta ahora el sistema corrió en <span class="redondeo">localhost</span>, que es la computadora donde está sentado quien lo usa. Apache, PHP y MySQL están instalados ahí por XAMPP, y la dirección <code>localhost/cartelera</code> solo la puede abrir esa máquina.</p>
+
+<p>Publicar es poner esas mismas tres piezas en una computadora que está prendida todo el día y conectada a internet, con una dirección pública. El código es el mismo. Lo que cambia es <span class="sub-lapiz">el entorno</span>: la máquina, las credenciales de la base, el nombre de la base y las rutas.</p>
+
+<pre><code>DE LA MAQUINA DEL LABORATORIO AL SERVIDOR
+
+  ACA (desarrollo)                    ALLA (produccion)
+
+  XAMPP en su computadora             un servidor prendido siempre
+  localhost/cartelera                 https://suproyecto.rf.gd
+  MySQL: root, sin contrasena         usuario y contrasena que da el panel
+  base: cartelera                     base: if0_12345678_cartelera
+  la ve solo esa maquina              la ve cualquiera
+
+  EL CODIGO ES EL MISMO.
+  Cambia conexion.php, que por eso vive fuera del repositorio.</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">Acá se cierra lo del <code>.env</code></div>
+  En la clase de auditoría vieron por qué el archivo de conexión va aparte y fuera del repositorio. El despliegue es el momento en que eso deja de ser una precaución y pasa a ser una necesidad: el sistema tiene que correr en dos lugares con datos de acceso distintos, sin tocar una sola línea del código.
+</div>
+
+<h2 id="antes">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  Antes de empezar
+</h2>
+
+<p>Tres cosas tienen que estar resueltas antes de abrir ninguna cuenta. Si falta alguna, el despliegue se traba a mitad de camino.</p>
+
+<ol class="pasos">
+  <li><strong>El sistema anda en local.</strong> Las cuatro operaciones del CRUD funcionan sobre XAMPP.</li>
+  <li><strong>El código está en el repositorio y el archivo de conexión no.</strong> Comprobación 1 de la clase de auditoría.</li>
+  <li><strong>Las rutas son relativas.</strong> Ningún <code>src</code>, <code>href</code> ni <code>require</code> con <code>C:/xampp/htdocs/...</code> ni con <code>localhost</code> adentro. Esas rutas existen solo en la máquina del laboratorio y en el servidor no van a resolver.</li>
+</ol>
+
+<div class="code-check" data-answer="localhost|c:/xampp|c:\\xampp"
+  data-hint1="Es la palabra que nombra a «esta misma computadora»."
+  data-hint2="Aparece en la barra de direcciones cuando prueban en XAMPP.">
+  <p><strong>Escríbanlo.</strong> La palabra que hay que buscar en todo el código antes de publicar, porque nombra una máquina que en el servidor no existe.</p>
+  <div class="code-check-row">
+    <input class="code-check-input" aria-label="Palabra a buscar en el código antes de publicar" placeholder="una palabra">
+    <button type="button" class="btn code-check-btn">Comprobar</button>
+  </div>
+  <div class="code-check-feedback" aria-live="polite"></div>
+</div>
+
+<p class="parte"><span>Los seis pasos</span> De la máquina al servidor</p>
+
+<h2 id="p1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  1. Cuenta y subdominio
+</h2>
+
+<p>Van a usar <strong>InfinityFree</strong>, que da alojamiento gratuito con PHP 8.3, MySQL y certificado de seguridad, sin tarjeta de crédito. Los límites del plan gratuito son 5 GB de disco, 50.000 visitas por día y <strong>50 MB por base de datos</strong>, de sobra para el proyecto.</p>
+
+<ol class="pasos">
+  <li>Creen una cuenta con un correo al que tengan acceso, porque hay que confirmarlo.</li>
+  <li>Creen un sitio nuevo. El panel ofrece un <strong>subdominio gratuito</strong>, del estilo <code>suproyecto.rf.gd</code>. Anótenlo: esa va a ser la dirección del sistema.</li>
+  <li>Esperen a que el sitio quede activo. La primera vez puede tardar unos minutos.</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">Una sola cuenta por equipo</div>
+  Conviene que la cuenta quede a nombre del equipo y que los cuatro tengan las credenciales anotadas, en la carpeta y no en el repositorio. Si la cuenta queda a nombre de una sola persona y esa persona falta el día de la entrega, el sistema no se puede tocar.
+</div>
+
+<h2 id="p2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+  2. Base de datos en el servidor
+</h2>
+
+<p>En el panel, la sección de bases de datos MySQL. Creen una base y anoten los cuatro datos que el panel devuelve, que <strong>no son los de XAMPP</strong>.</p>
+
+<pre><code>LOS CUATRO DATOS, ACA Y ALLA
+
+                 en XAMPP              en el servidor
+  host           localhost             sqlNNN.infinityfree.com
+  usuario        root                  if0_12345678
+  contrasena     (vacia)               la que eligieron al crear
+  base           cartelera             if0_12345678_cartelera
+
+  El panel le pone un prefijo al nombre de la base y al del usuario.
+  Ese prefijo es parte del nombre: va tal cual en conexion.php.</code></pre>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El host no es <code>localhost</code></div>
+  Es el error más común. En muchos servidores la base corre en otra máquina que el sitio, y el panel les da su dirección. Copien exactamente lo que dice el panel, sin cambiarle nada.
+</div>
+
+<h2 id="p3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+  3. Exportar la base local
+</h2>
+
+<p>En el phpMyAdmin de XAMPP, elijan la base del proyecto y vayan a <em>Exportar</em>. Método rápido, formato SQL. Baja un archivo <code>.sql</code> con las instrucciones que reconstruyen las tablas y los datos.</p>
+
+<p>Ábranlo con el editor antes de subirlo y comprueben dos cosas. Que las tablas digan <code>ENGINE=InnoDB</code>, porque con MyISAM las claves foráneas viajan como comentario. Y que el archivo <strong>no cree la base</strong>: si arriba tiene un <code>CREATE DATABASE</code> o un <code>USE</code>, bórrenlos, porque la base del servidor ya existe y se llama distinto.</p>
+
+<h2 id="p4">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+  4. Importar en el servidor
+</h2>
+
+<p>El panel tiene su propio phpMyAdmin. Entren, elijan la base que crearon y vayan a <em>Importar</em>. Seleccionen el <code>.sql</code> y ejecuten.</p>
+
+<p>Al terminar, comprueben en el panel que estén <strong>todas</strong> las tablas y que tengan filas. Una importación que falla a mitad deja algunas tablas creadas y otras no, y el mensaje de error pasa desapercibido.</p>
+
+<h2 id="p5">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8.5"/><path d="M2 10h20"/><path d="M18 22v-6"/><path d="m15 19 3-3 3 3"/></svg>
+  5. Subir los archivos
+</h2>
+
+<p>El panel tiene un administrador de archivos y también acceso por FTP. Con el administrador alcanza. Los archivos del sitio van adentro de la carpeta <code>htdocs</code>, que es la que el servidor publica.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Adentro de <code>htdocs</code>, no en una carpeta nueva</div>
+  Si crean una carpeta <code>cartelera</code> adentro de <code>htdocs</code> y suben todo ahí, la dirección va a ser <code>suproyecto.rf.gd/cartelera</code> y no <code>suproyecto.rf.gd</code>. Las dos funcionan; lo que importa es saber cuál eligieron, porque las rutas del sitio dependen de eso.
+</div>
+
+<p>Suban todo lo que el sistema necesita para correr, y nada más. Quedan afuera el <code>.sql</code>, la carpeta <code>.git</code>, la documentación y cualquier página de prueba que hayan hecho para depurar — sobre todo la que genera el hash de una contraseña.</p>
+
+<h2 id="p6">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  6. El archivo de conexión del servidor
+</h2>
+
+<p>Este es el único archivo que se escribe distinto, y es el que no está en el repositorio. Créenlo <strong>en el servidor</strong>, con el administrador de archivos, y con los datos del paso 2.</p>
+
+<pre><code class="language-php">&lt;?php
+$conexion = mysqli_connect(
+  'sqlNNN.infinityfree.com',   // el host que dio el panel
+  'if0_12345678',              // el usuario que dio el panel
+  'la-contrasena-que-eligieron',
+  'if0_12345678_cartelera'     // la base, con su prefijo
+);
+
+if (!$conexion) {
+  error_log(mysqli_connect_error());
+  exit('El sistema no está disponible en este momento.');
+}
+
+mysqli_set_charset($conexion, 'utf8mb4');</code></pre>
+
+<p>El <code>exit</code> con un mensaje común, en lugar del <code>mysqli_connect_error()</code> en pantalla, es la comprobación 2 de la clase de auditoría aplicada acá: en producción el detalle va al registro y el visitante lee una frase.</p>
+
+<p class="parte"><span>Después de publicar</span> Comprobar y sostener</p>
+
+<h2 id="comprobar">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+  Comprobación del sistema publicado
+</h2>
+
+<p>Publicado no es lo mismo que funcionando. Recorran esto desde un teléfono con datos móviles, que es la forma de asegurarse de que están viendo el servidor y no una copia guardada de la máquina.</p>
+
+<div class="selfcheck" data-key="deploy">
+  <div class="selfcheck-head">
+    <span>El sistema en internet</span>
+    <span class="selfcheck-count"></span>
+  </div>
+  <ul>
+    <li><input type="checkbox" id="dep-1"><label for="dep-1">La dirección abre y muestra la portada.</label></li>
+    <li><input type="checkbox" id="dep-2"><label for="dep-2">El listado muestra las filas de la base del servidor.</label></li>
+    <li><input type="checkbox" id="dep-3"><label for="dep-3">Las tildes y las eñes se ven bien.</label></li>
+    <li><input type="checkbox" id="dep-4"><label for="dep-4">El alta guarda una fila, y aparece en el listado.</label></li>
+    <li><input type="checkbox" id="dep-5"><label for="dep-5">La edición y el borrado funcionan.</label></li>
+    <li><input type="checkbox" id="dep-6"><label for="dep-6">El login entra con el usuario correcto y rechaza el incorrecto.</label></li>
+    <li><input type="checkbox" id="dep-7"><label for="dep-7">Escribir la dirección de una página que modifica, sin sesión, manda al login.</label></li>
+    <li><input type="checkbox" id="dep-8"><label for="dep-8">Ningún error de PHP ni de MySQL aparece en pantalla.</label></li>
+    <li><input type="checkbox" id="dep-9"><label for="dep-9">La página de generar el hash ya no está en el servidor.</label></li>
+    <li><input type="checkbox" id="dep-10"><label for="dep-10">La dirección quedó anotada en el README del repositorio.</label></li>
+  </ul>
+</div>
+
+<h2 id="cuidados">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  Cuidados que cambian en producción
+</h2>
+
+<p>Lo que en el laboratorio era una recomendación, publicado pasa a tener consecuencias. Estas cinco son las que cambian de peso.</p>
+
+<ul>
+  <li><strong>La contraseña de la base ya no está vacía.</strong> En XAMPP entraban con <code>root</code> y sin clave porque nadie más llegaba a esa máquina. Ahora la credencial protege algo real, y por eso el archivo de conexión no puede estar en el repositorio.</li>
+  <li><strong>Los errores no se muestran.</strong> Cualquiera puede provocar uno y leer lo que devuelve.</li>
+  <li><strong>Las contraseñas de los usuarios importan de verdad.</strong> Una tabla con contraseñas en texto plano, publicada, es un problema para las personas que se registraron, no solo para el sistema.</li>
+  <li><strong>Las direcciones se descubren.</strong> Un archivo que existe y no está enlazado igual se puede pedir. Eso vale para las páginas de prueba, para el <code>.sql</code> y para cualquier cosa que hayan subido «por las dudas».</li>
+  <li><strong>El sitio queda a nombre de ustedes.</strong> Si alguien carga contenido inapropiado en el formulario, aparece publicado con su dirección.</li>
+</ul>
+
+<div class="quiz-q" data-correct="c"
+  data-hint1="Pensá cuál de los tres archivos deja de ser inofensivo cuando cualquiera puede pedirlo."
+  data-hint2="Uno de ellos permite crear una contraseña válida para el sistema."
+  data-explanation="La página que genera el hash es la más peligrosa de las tres: quien la abra puede fabricarse un hash y, si además llega a la base, crearse un usuario administrador. El .sql expone la estructura y los datos, que también es grave. El README no expone nada.">
+  <p><strong>Pregunta.</strong> Se subieron por error tres archivos que no correspondían. El más urgente de sacar es…</p>
+  <button type="button" class="quiz-opt" data-opt="a">a) El <code>README.md</code> con la documentación del proyecto</button>
+  <button type="button" class="quiz-opt" data-opt="b">b) El <code>.sql</code> con la estructura y los datos</button>
+  <button type="button" class="quiz-opt" data-opt="c">c) La página que genera el hash de una contraseña</button>
+  <div class="quiz-feedback"></div>
+</div>
+
+<h2 id="problemas">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+  Problemas frecuentes
+</h2>
+
+<p>El orden en que conviene buscar, según lo que aparezca en pantalla.</p>
+
+<table>
+  <thead>
+    <tr><th>Lo que se ve</th><th>Dónde mirar, en este orden</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Página en blanco</td>
+      <td>El servidor tiene los errores ocultos, así que el mensaje está en el registro del panel. Si no hay registro, agreguen un <code>echo</code> al principio del archivo para ver hasta dónde llega.</td>
+    </tr>
+    <tr>
+      <td>«Access denied for user…»</td>
+      <td>Los cuatro datos del paso 2, uno por uno. El prefijo del usuario y el de la base son parte del nombre.</td>
+    </tr>
+    <tr>
+      <td>«Unknown database»</td>
+      <td>El nombre de la base sin el prefijo que puso el panel.</td>
+    </tr>
+    <tr>
+      <td>El listado sale vacío</td>
+      <td>La importación del paso 4: entren al phpMyAdmin del servidor y miren si la tabla tiene filas.</td>
+    </tr>
+    <tr>
+      <td>Las tildes salen rotas</td>
+      <td>Falta <code>mysqli_set_charset</code> en el archivo de conexión del servidor, que es uno nuevo y no el que tenían en local.</td>
+    </tr>
+    <tr>
+      <td>Error 403 o 404</td>
+      <td>Dónde quedaron los archivos: tienen que estar adentro de <code>htdocs</code>, y la portada llamarse <code>index.php</code> o <code>index.html</code>.</td>
+    </tr>
+    <tr>
+      <td>Anda en local y no publicado</td>
+      <td>Una ruta absoluta con <code>C:/xampp</code> o con <code>localhost</code> adentro, o una diferencia de mayúsculas en un nombre de archivo: Windows no las distingue y el servidor sí.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">La diferencia de mayúsculas</div>
+  Es el problema que más cuesta encontrar. En Windows, <code>Estilos.css</code> y <code>estilos.css</code> son el mismo archivo; en el servidor son dos, y el que no existe da 404. Si algo anda en la máquina y no publicado, comparen los nombres letra por letra.
+</div>
+
+<p class="mat-links">
+  <a href="../clase_8/auditoria-crud.html"><strong>Auditar, reparar y proteger el sistema</strong></a> ·
+  <a href="../"><strong>Volver al inicio</strong></a>
+</p>
+
+</main>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+<script src="../js/marcador.js"></script>
+
+</body>
+</html>

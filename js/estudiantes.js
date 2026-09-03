@@ -185,28 +185,61 @@
       }
     }
 
+    // La respuesta aparece recién cuando se agotan los intentos: al errar se
+    // marca la opción, se descuenta un intento y se muestra la ayuda que
+    // corresponda (data-hint1, data-hint2), sin revelar cuál es la correcta.
+    // Con pocas opciones el límite baja solo: cuando queda una sin marcar, esa
+    // es la respuesta y no tiene sentido seguir preguntando.
+    var INTENTOS = 3;
+
     document.querySelectorAll('.quiz-q').forEach(function (q) {
       var correctOpt = q.dataset.correct;
-      var feedback = q.querySelector('.quiz-feedback');
+      var feedback = q.querySelector('.quiz-feedback') || q.appendChild(document.createElement('p'));
+      if (!feedback.className) feedback.className = 'quiz-feedback';
       var explanation = q.dataset.explanation || '';
-      q.querySelectorAll('.quiz-opt').forEach(function (opt) {
+      var opciones = q.querySelectorAll('.quiz-opt');
+      var ayudas = [q.dataset.hint1, q.dataset.hint2, q.dataset.hint3];
+      var limite = Math.min(INTENTOS, Math.max(1, opciones.length - 1));
+      var errados = 0;
+
+      function cerrar(resultado) {
+        q.dataset.answered = '1';
+        q.dataset.result = resultado;
+        opciones.forEach(function (o) { o.disabled = true; });
+        if (finalQuiz && finalQuiz.contains(q)) updateFinalScore();
+      }
+
+      opciones.forEach(function (opt) {
         opt.addEventListener('click', function () {
           if (q.dataset.answered) return;
-          q.dataset.answered = '1';
+
           if (opt.dataset.opt === correctOpt) {
-            q.dataset.result = 'ok';
             opt.classList.add('correct');
             feedback.textContent = '✓ ¡Correcto! ' + explanation;
             feedback.style.color = 'var(--ok)';
-          } else {
-            q.dataset.result = 'wrong';
-            opt.classList.add('wrong');
+            cerrar('ok');
+            return;
+          }
+
+          errados++;
+          opt.classList.add('wrong');
+          opt.disabled = true;
+
+          if (errados >= limite) {
             var correctEl = q.querySelector('[data-opt="' + correctOpt + '"]');
             if (correctEl) correctEl.classList.add('correct');
             feedback.textContent = '✗ La correcta era la ' + correctOpt + '. ' + explanation;
             feedback.style.color = 'var(--warm)';
+            cerrar('wrong');
+            return;
           }
-          if (finalQuiz && finalQuiz.contains(q)) updateFinalScore();
+
+          var quedan = limite - errados;
+          var ayuda = ayudas[errados - 1] ? ' Pista: ' + ayudas[errados - 1] : '';
+          feedback.textContent = '✗ Esa no es.' + ayuda + ' Te ' +
+            (quedan === 1 ? 'queda un intento' : 'quedan ' + quedan + ' intentos') +
+            ' antes de que aparezca la respuesta.';
+          feedback.style.color = 'var(--warm)';
         });
       });
     });
@@ -227,6 +260,26 @@
         window.location.reload();
       });
     }
+  })();
+
+  // === Tablas que se apilan en pantallas angostas ===
+  // Cada celda se queda con el rótulo de su columna, para que al apilarse
+  // siga sabiéndose qué es cada dato. El apilado lo hace el CSS; acá solo
+  // se copian los encabezados.
+  (function () {
+    document.querySelectorAll('table').forEach(function (t) {
+      var enc = t.querySelector('thead tr');
+      if (!enc) return;
+      var titulos = Array.prototype.map.call(enc.children, function (c) {
+        return (c.textContent || '').trim();
+      });
+      t.querySelectorAll('tbody tr').forEach(function (fila) {
+        Array.prototype.forEach.call(fila.children, function (celda, i) {
+          if (titulos[i]) celda.setAttribute('data-rotulo', titulos[i]);
+        });
+      });
+      t.classList.add('apilable');
+    });
   })();
 
   // === "Completá el código" — escribir con feedback ===
@@ -253,14 +306,38 @@
       var fb = cc.querySelector('.code-check-feedback');
       if (!input || !btn || !fb) return;
       var answers = (cc.getAttribute('data-answer') || '').split('|').map(norm);
-      var hint = cc.getAttribute('data-hint') || '';
+      var ayudas = [cc.getAttribute('data-hint1'), cc.getAttribute('data-hint2'),
+                    cc.getAttribute('data-hint')].filter(Boolean);
+      var INTENTOS = 3;
+      var errados = 0, cerrado = false;
       function check() {
+        if (cerrado) return;
         var val = norm(input.value);
         if (!val) return;
-        var ok = answers.indexOf(val) !== -1;
-        cc.classList.toggle('ok', ok);
-        cc.classList.toggle('bad', !ok);
-        fb.textContent = ok ? '✓ ¡Bien! Lo escribiste correcto.' : ('✗ Todavía no. ' + hint);
+        if (answers.indexOf(val) !== -1) {
+          cerrado = true;
+          cc.classList.add('ok');
+          cc.classList.remove('bad');
+          fb.textContent = '✓ ¡Bien! Lo escribiste correcto.';
+          input.disabled = true;
+          btn.disabled = true;
+          return;
+        }
+        errados++;
+        cc.classList.add('bad');
+        cc.classList.remove('ok');
+        if (errados >= INTENTOS) {
+          cerrado = true;
+          fb.textContent = '✗ Se escribe así: ' + (cc.getAttribute('data-answer') || '').split('|')[0];
+          input.disabled = true;
+          btn.disabled = true;
+          return;
+        }
+        var quedan = INTENTOS - errados;
+        var ayuda = ayudas[errados - 1] ? ' Pista: ' + ayudas[errados - 1] : '';
+        fb.textContent = '✗ Todavía no.' + ayuda + ' Te ' +
+          (quedan === 1 ? 'queda un intento' : 'quedan ' + quedan + ' intentos') +
+          ' antes de que aparezca la respuesta.';
       }
       btn.addEventListener('click', check);
       input.addEventListener('keydown', function (e) {

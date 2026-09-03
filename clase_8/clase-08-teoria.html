@@ -22,32 +22,53 @@
 <div class="hero">
   <div class="eyebrow">Clase 8 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
   <h1>Conectar PHP con MySQL: la web lee y escribe en la base</h1>
-  <p class="sub">Desde la Clase 6 vienen con dos mitades separadas: el sitio web lee <code>datos.php</code>, y la base de datos vive aparte, en phpMyAdmin. En esta clase <strong>las conectamos</strong>: tu sitio va a <strong>leer las filas de la base</strong> (mostrar) y a <strong>agregar filas</strong> desde un formulario (insertar). Así se presenta la primera regla de seguridad de un proyecto real: <strong>qué archivos nunca se suben a GitHub</strong>.</p>
+  <p class="sub">Desde la Clase 6 vienen con dos mitades separadas: el sitio web lee <code>datos.php</code>, y la base de datos vive aparte, en phpMyAdmin. En esta clase <strong>las conectamos</strong>: su sitio va a <strong>leer las filas de la base</strong> (mostrar) y a <strong>agregar filas</strong> desde un formulario (insertar). Así se presenta la primera regla de seguridad de un proyecto real: <strong>qué archivos nunca se suben a GitHub</strong>.</p>
 </div>
 
 <nav class="toc">
   <h3>En esta página</h3>
-  <ol>
-    <li><a href="#s0">De dónde venimos: la web y la base, por separado</a></li>
-    <li><a href="#s1">El problema: los datos en dos lugares (con el mapa del proyecto)</a></li>
-    <li><a href="#s2">Conectar: los 4 datos y mysqli_connect</a></li>
-    <li><a href="#s3">conexion.php y el .gitignore</a></li>
-    <li><a href="#s4">Mostrar: la web lee la base</a></li>
-    <li><a href="#s5">Agregar: INSERT desde la web</a></li>
-    <li><a href="#s6">La clave foránea en el formulario</a></li>
+  <ol class="sin-numero">
+    <li class="toc-parte">Bloque 1 · CRUD completo y sentencias preparadas</li>
+    <li><a href="#s0">0. Web y base, por separado</a></li>
+    <li><a href="#s1">1. Datos en dos lugares</a></li>
+    <li><a href="#s2">2. Cuatro datos y mysqli_connect</a></li>
+    <li><a href="#s3">3. conexion.php y .gitignore</a></li>
+    <li><a href="#s4">4. Lectura de la base desde el sitio</a></li>
+    <li><a href="#s5">5. INSERT desde la web</a></li>
+    <li><a href="#s6">6. Clave foránea en el formulario</a></li>
+    <li><a href="#seg">7. Sentencias preparadas</a></li>
+    <li><a href="#p1"><strong>Práctica del bloque 1</strong></a></li>
+    <li class="toc-parte" data-bloque="2">Bloque 2 · Seguridad</li>
+    <li><a href="#seg1">Contraseñas y hash</a></li>
+    <li><a href="#seg2">Otras cuestiones de seguridad del sistema</a></li>
+    <li><a href="#seg3">Cambios al publicar el sistema</a></li>
+    <li><a href="#p2"><strong>Práctica del bloque 2</strong></a></li>
+    <li class="toc-parte">Cierre</li>
     <li><a href="#errores">Errores frecuentes</a></li>
     <li><a href="#glosario">Glosario</a></li>
-    <li><a href="#quiz">Práctica</a></li>
-    <li><a href="#s7">Próximos pasos</a></li>
+    <li><a href="#quiz">Práctica final</a></li>
+    <li><a href="#s7">7. Próximos pasos</a></li>
   </ol>
 </nav>
 
+<div class="materiales-clase">
+  <span class="rot">Materiales de la Clase 8</span>
+  <ul>
+    <li class="actual"><strong>Teoría de la Clase 8</strong> <span class="desc">— estás acá</span></li>
+    <li><a href="clase-08-tp.html">TP de la Clase 8</a> <span class="desc">— La consigna con los pasos, los checkpoints y la checklist de autoverificación.</span></li>
+    <li><a href="auditoria-crud.html">Auditoría del CRUD</a> <span class="desc">— Doce comprobaciones sobre el código propio, con su fundamento, y el control de acceso.</span></li>
+    <li><a href="../deploy/publicar-el-sitio.html">Publicar el sitio</a> <span class="desc">— El despliegue paso a paso: hosting, base en el servidor y comprobación de lo publicado.</span></li>
+  </ul>
+</div>
+
+<p class="parte" data-bloque="1"><span>Bloque 1</span> CRUD completo y sentencias preparadas<span class="subtitulo">las cuatro operaciones, y cómo tienen que estar escritas</span></p>
+
 <h2 id="s0">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-  0. De dónde venimos: la web y la base, por separado
+  0. Web y base, por separado
 </h2>
 
-<p>En la Clase 7 tu base dejó de ser una tabla suelta y pasó a ser un modelo: dos tablas conectadas por una clave foránea.</p>
+<p>En la Clase 7 su base dejó de ser una tabla suelta y pasó a ser un modelo: dos tablas conectadas por una clave foránea.</p>
 
 <ul>
   <li><code>CREATE TABLE</code> con <code>FOREIGN KEY</code> — la relación declarada, con la FK del lado de los muchos.</li>
@@ -69,14 +90,14 @@ id │ nombre          │ nacionalidad      id │ titulo       │ director_id
 
 <h2 id="s1">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-  1. El problema: los datos en dos lugares
+  1. Datos en dos lugares
 </h2>
 
-<p>En este momento tu proyecto tiene los datos <strong>en dos lugares</strong>, y entre ambos no hay comunicación:</p>
+<p>En este momento su proyecto tiene los datos <strong>en dos lugares</strong>, y entre ambos no hay comunicación:</p>
 
 <ul>
   <li>En <strong>PHP</strong>: el sitio muestra la cartelera leyendo <code>datos.php</code>, un array escrito a mano desde la Clase 4.</li>
-  <li>En <strong>MySQL</strong>: la misma información, pero como filas reales, en las tablas que armaste en las Clases 5 y 7.</li>
+  <li>En <strong>MySQL</strong>: la misma información, pero como filas reales, en las tablas que armaron en las Clases 5 y 7.</li>
 </ul>
 
 <pre><code>┌───────────────────┐      ┌────────────────────────┐
@@ -88,20 +109,22 @@ id │ nombre          │ nacionalidad      id │ titulo       │ director_id
           │            falta el canal │
           └────────────────╳──────────┘</code></pre>
 
-<p>¿Qué pasa si cambiás un dato en phpMyAdmin? La cartelera de la web <strong>no refleja el cambio</strong>. ¿Y si cambiás algo en <code>datos.php</code>? La base tampoco lo recibe. Son dos copias de la misma información que pueden desincronizarse, y cada corrección habría que hacerla dos veces.</p>
+<p>¿Qué pasa si cambian un dato en phpMyAdmin? La cartelera de la web <strong>no refleja el cambio</strong>. ¿Y si cambian algo en <code>datos.php</code>? La base tampoco lo recibe. Son dos copias de la misma información que pueden desincronizarse, y cada corrección habría que hacerla dos veces.</p>
 
-<p>La solución es <strong>abrir un canal</strong> entre los dos programas, para que el sitio le pida los datos a la base cada vez que los necesita. PHP y MySQL son programas distintos, y este es el momento en que se conocen.</p>
+<p>La solución es <span class="redondeo">abrir un canal</span> entre los dos programas, para que el sitio le pida los datos a la base cada vez que los necesita. PHP y MySQL son programas distintos, y este es el momento en que se conocen.</p>
 
 <div class="callout callout-info">
   <div class="callout-title">La idea de toda la clase</div>
   Los datos dejan de vivir <em>adentro</em> del programa y pasan a vivir <em>en la base</em>. La web los pide prestados (<code>SELECT</code>) y los devuelve (<code>INSERT</code>) a través de un puente llamado <code>mysqli</code>.
 </div>
 
-<h3>El mapa del proyecto: qué archivos tenés hoy</h3>
+<details class="amplia">
+  <summary><span class="etiqueta">Ampliación</span> Mapa del proyecto: qué archivos hay hoy</summary>
 
-<p>Para saber <strong>dónde va el archivo nuevo</strong>, primero hay que ver dónde está todo lo demás. Tu proyecto, tal como quedó después de la Clase 7, se ve así:</p>
 
-<pre><code>C:/xampp/htdocs/cartelera/          ← tu carpeta (la tuya tiene tu nombre)
+<p>Para saber <span class="sub-lapiz">dónde va el archivo nuevo</span>, primero hay que ver dónde está todo lo demás. Su proyecto, tal como quedó después de la Clase 7, se ve así:</p>
+
+<pre><code>C:/xampp/htdocs/cartelera/          ← la carpeta del equipo (con el nombre del proyecto)
 │                                    se abre en http://localhost/cartelera/
 │
 ├── index.php               ← login (Clase 2)
@@ -112,12 +135,12 @@ id │ nombre          │ nacionalidad      id │ titulo       │ director_id
 ├── datos.php               ← los datos a mano (Clase 4) · se deja de leer hoy
 │
 ├── documentacion.md        ← la documentación (Clase 6)
-├── db.sql                  ← el script de tu base (Clases 5 y 7)
+├── db.sql                  ← el script de la base (Clases 5 y 7)
 ├── docs/
 │   └── modelo-er.png       ← el diagrama (Clase 7)
 └── .git/                   ← el historial (Clase 3)</code></pre>
 
-<p>Lo que vas a <strong>agregar</strong> en esta clase, en la misma carpeta (a la raíz, junto a <code>cartelera.php</code>):</p>
+<p>Lo que van a <strong>agregar</strong> en esta clase, en la misma carpeta (a la raíz, junto a <code>cartelera.php</code>):</p>
 
 <pre><code>├── conexion.php             ← nuevo · la llave para entrar a la base
 ├── probar_conexion.php      ← nuevo · página de prueba (se borra al final)
@@ -126,12 +149,28 @@ id │ nombre          │ nacionalidad      id │ titulo       │ director_id
 
 <p>La regla que se repite en toda la clase: <strong>los archivos que trabajan con la base viven en la raíz del proyecto, en la misma carpeta que las páginas</strong>. Cuando en §3 veas <code>require 'conexion.php'</code>, el <code>'conexion.php'</code> se busca en la misma carpeta que la página que lo pide.</p>
 
+</details>
+
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="b"
+    data-hint1="Fijate de dónde saca los datos cada uno."
+    data-hint2="El sitio todavía no le pregunta nada a la base."
+    data-explanation="El sitio lee datos.php, que es un array escrito a mano. Mientras no haya una conexión, lo que pase en la base no lo cambia.">
+    <p><strong>Pregunta.</strong> Alguien corrige el precio de una película en phpMyAdmin. El listado del sitio, que lee <code>datos.php</code>…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Muestra el precio nuevo en la próxima recarga</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Sigue mostrando el viejo, porque lee otro lugar</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Da error, porque los dos valores dejaron de coincidir</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
 <h2 id="s2">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-  2. Conectar: los 4 datos y mysqli_connect
+  2. Cuatro datos y mysqli_connect
 </h2>
 
-<p>Para que tu programa entre a la base, PHP necesita saber <strong>dónde está</strong> esa base y <strong>con qué identidad</strong> entra. Son los datos que anotaste como tarea de la Clase 7 —host, usuario y contraseña—, más el nombre de tu base:</p>
+<p>Para que su programa entre a la base, PHP necesita saber <strong>dónde está</strong> esa base y <strong>con qué identidad</strong> entra. Son los datos que anotaste como tarea de la Clase 7 —host, usuario y contraseña—, más el nombre de su base:</p>
 
 <pre><code>host          localhost       en qué máquina vive la base
 usuario       root            con qué usuario entra
@@ -178,11 +217,11 @@ if (!$conexion) {
 
 <ul>
   <li><strong><code>mysqli_report(MYSQLI_REPORT_OFF)</code></strong> le pide a PHP que, ante un problema con la base, <em>devuelva</em> el error en vez de cortar el programa con un mensaje propio. Va primero, una sola vez, y es lo que hace que el aviso que escribimos en el punto 4 sea el que se vea en pantalla.</li>
-  <li><strong>El bloque 2</strong> escribe los 4 datos una sola vez, arriba, para que se vean y se cambien fácil. Son las credenciales de <em>tu</em> base.</li>
+  <li><strong>El bloque 2</strong> escribe los 4 datos una sola vez, arriba, para que se vean y se cambien fácil. Son las credenciales de <em>su</em> base.</li>
   <li><strong>El bloque 3</strong> llama a la función y guarda su resultado en <code>$conexion</code>.</li>
   <li><strong>El <code>if (!$conexion)</code></strong>: el <code>!</code> es la negación. <code>!$conexion</code> lee "si <em>no</em> hay conexión". Cuando la función falló, devolvió <code>false</code>, y la condición se cumple.</li>
   <li><strong><code>die(...)</code></strong> detiene el programa en ese punto. Sin canal, cualquier consulta que viniera después fracasaría, así que conviene frenar acá y avisar el motivo.</li>
-  <li><strong><code>mysqli_connect_error()</code></strong> devuelve el motivo del fallo, para no adivinar. Se concatena con el punto (<code>.</code>), como venís haciendo desde la Clase 1.</li>
+  <li><strong><code>mysqli_connect_error()</code></strong> devuelve el motivo del fallo, para no adivinar. Se concatena con el punto (<code>.</code>), como vienen haciendo desde la Clase 1.</li>
 </ul>
 
 <div class="callout callout-info">
@@ -191,30 +230,44 @@ if (!$conexion) {
 </div>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">ejercicio — leé el código</p>
-  <p>Mirá este bloque y respondé <strong>antes</strong> de ejecutar nada:</p>
+  <p class="checkpoint-title">ejercicio — lean el código</p>
+  <p>Miren este bloque y respondé <strong>antes</strong> de ejecutar nada:</p>
   <pre><code>$conexion = mysqli_connect('localhost', 'root', '', 'cartelera');
 if (!$conexion) {
     die('Error de conexión: ' . mysqli_connect_error());
 }</code></pre>
   <ol>
     <li><strong>a)</strong> ¿Qué guarda <code>$conexion</code> si la conexión sale bien? ¿Y si sale mal?</li>
-    <li><strong>b)</strong> Apagás MySQL en XAMPP y recargás la página. ¿Qué muestra el navegador?</li>
-    <li><strong>c)</strong> Cambiás <code>'cartelera'</code> por un nombre de base que no existe. ¿Qué cambia del mensaje? ¿Qué parte del mensaje te dice el motivo?</li>
+    <li><strong>b)</strong> Apagan MySQL en XAMPP y recargan la página. ¿Qué muestra el navegador?</li>
+    <li><strong>c)</strong> Cambian <code>'cartelera'</code> por un nombre de base que no existe. ¿Qué cambia del mensaje? ¿Qué parte del mensaje te dice el motivo?</li>
   </ol>
-  <p>Lo comprobás en el TP, Parte 2, punto 3: está pensado para verlo en vivo, apagando y encendiendo MySQL.</p>
+  <p>Lo comprueban en el TP, Parte 2, punto 3: está pensado para verlo en vivo, apagando y encendiendo MySQL.</p>
+</div>
+
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="b"
+    data-hint1="Son los mismos datos con los que entran a phpMyAdmin, y uno más."
+    data-hint2="Una conexión abre una base entera, no una tabla."
+    data-explanation="Host dice dónde vive la base, usuario y contraseña dicen con qué credenciales se entra, y el cuarto dice cuál de las bases del gestor se abre.">
+    <p><strong>Pregunta.</strong> Para abrir la base, <code>mysqli_connect</code> necesita…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) El nombre de las tablas y de sus columnas</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Host, usuario, contraseña y nombre de la base</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Usuario, contraseña y la tabla que se va a consultar</button>
+    <div class="quiz-feedback"></div>
+  </div>
 </div>
 
 <h2 id="s3">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
-  3. conexion.php y el .gitignore
+  3. conexion.php y .gitignore
 </h2>
 
 <h3>La conexión se escribe una sola vez</h3>
 
 <p>La conexión se escribe <strong>una sola vez</strong>, en un archivo aparte, y desde ahí se reutiliza en todas las páginas. Es el mismo principio que aplicaste en la Clase 4 con <code>datos.php</code>: un solo lugar para el dato que se usa en muchos lados.</p>
 
-<p><strong>Dónde va el archivo:</strong> en la raíz del proyecto, junto a <code>cartelera.php</code> — lo viste en el mapa de §1. Ahí vive porque las páginas lo buscan <em>en su misma carpeta</em>.</p>
+<p><strong>Dónde va el archivo:</strong> en la raíz del proyecto, junto a <code>cartelera.php</code> — lo vieron en el mapa de §1. Ahí vive porque las páginas lo buscan <em>en su misma carpeta</em>.</p>
 
 <pre><code>C:/xampp/htdocs/cartelera/
 ├── cartelera.php           ← acá va:  &lt;?php require 'conexion.php'; ?&gt;
@@ -230,7 +283,7 @@ if (!$conexion) {
 &lt;?php
 mysqli_report(MYSQLI_REPORT_OFF);  // los errores los manejamos acá abajo
 
-// los 4 datos de TU base
+// los 4 datos de LA base del equipo
 $host      = 'localhost';
 $usuario   = 'root';
 $clave     = '';
@@ -242,7 +295,7 @@ if (!$conexion) {
 }
 ?&gt;</code></pre>
 
-<h3>Cómo se trae a cada página: require</h3>
+<h3>Inclusión en cada página con require</h3>
 
 <p>En cada página que toque la base, la conexión se incluye con <code>require</code>:</p>
 
@@ -252,11 +305,11 @@ if (!$conexion) {
 
 <p>Notá la diferencia con <code>datos.php</code> de la Clase 4: ese archivo <strong>devuelve</strong> un valor (<code>return [ ... ]</code>) que se captura con <code>$peliculas = require 'datos.php'</code>. <code>conexion.php</code> <strong>no devuelve nada con <code>return</code></strong>: su código corre y deja la variable <code>$conexion</code> definida. Las dos formas sirven para separar código en un archivo aparte; lo que cambia es qué "entrega" el archivo.</p>
 
-<p>¿Por qué en un archivo aparte? Si algún día cambia el nombre de la base, lo corregís en <strong>un</strong> lugar y todas las páginas quedan bien. Repetirlo en cada página significaría buscarlo y cambiarlo en todas — el problema que <code>datos.php</code> ya te resolvió en la Clase 4, ahora con las credenciales.</p>
+<p>¿Por qué en un archivo aparte? Si algún día cambia el nombre de la base, lo corrigen en <strong>un</strong> lugar y todas las páginas quedan bien. Repetirlo en cada página significaría buscarlo y cambiarlo en todas — el problema que <code>datos.php</code> ya te resolvió en la Clase 4, ahora con las credenciales.</p>
 
 <h3>La regla: estos datos no se suben</h3>
 
-<p>Ese archivo contiene la <strong>llave</strong> de tu base: los datos con los que cualquiera puede entrar a leerla y modificarla. La regla que quedó anotada en la Clase 7 se implementa ahora.</p>
+<p>Ese archivo contiene la <strong>llave</strong> de su base: los datos con los que cualquiera puede entrar a leerla y modificarla. La regla que quedó anotada en la Clase 7 se implementa ahora.</p>
 
 <div class="callout callout-warn">
   <div class="callout-title">La llave nunca se publica</div>
@@ -265,31 +318,45 @@ if (!$conexion) {
 
 <p>Para eso existe el <strong><code>.gitignore</code></strong>: un archivo de texto que se crea en la <strong>raíz del proyecto</strong>, donde se listan los archivos que Git <strong>no sube</strong>. Se llama "ignore" porque Git lo respeta a la hora de agregar archivos.</p>
 
-<pre><code>.gitignore   (en la raíz de tu proyecto, junto a conexion.php)
+<pre><code>.gitignore   (en la raiz del proyecto, junto a conexion.php)
 ────────────────────────────────────────────
 conexion.php       &lt;- esta línea: "esto no se sube"</code></pre>
 
 <div class="callout callout-tip">
   <div class="callout-title">Cómo se recupera en otra computadora</div>
-  Si <code>conexion.php</code> no se sube, ¿cómo lo volvés a tener en otra máquina? Queda una <strong>plantilla</strong> documentada en <code>documentacion.md</code>: los cuatro datos con espacios para completar. Cada computadora crea su <code>conexion.php</code> a partir de la plantilla. Lo que se comparte es la plantilla, <strong>nunca la llave</strong>.
+  Si <code>conexion.php</code> no se sube, ¿cómo lo vuelven a tener en otra máquina? Queda una <strong>plantilla</strong> documentada en <code>documentacion.md</code>: los cuatro datos con espacios para completar. Cada computadora crea su <code>conexion.php</code> a partir de la plantilla. Lo que se comparte es la plantilla, <strong>nunca la llave</strong>.
 </div>
 
 <div class="checkpoint">
   <p class="checkpoint-title">ejercicio — dónde va cada archivo</p>
   <ol>
-    <li><strong>a)</strong> Mirá el mapa de §1. ¿En qué carpeta de tu disco vive <code>conexion.php</code>? ¿Junto a qué archivos?</li>
-    <li><strong>b)</strong> Escribí la línea que abre el canal y la línea que detiene el programa si falla. ¿En qué archivo están?</li>
-    <li><strong>c)</strong> Movés <code>conexion.php</code> a la carpeta <code>docs/</code> y recargás <code>cartelera.php</code>. ¿Qué pasa? ¿Por qué?</li>
-    <li><strong>d)</strong> ¿Qué pasa si te olvidás de escribir <code>conexion.php</code> en el <code>.gitignore</code> y subís el proyecto? ¿Quién podría leerlo?</li>
+    <li><strong>a)</strong> Miren el mapa de §1. ¿En qué carpeta de su disco vive <code>conexion.php</code>? ¿Junto a qué archivos?</li>
+    <li><strong>b)</strong> Escriban la línea que abre el canal y la línea que detiene el programa si falla. ¿En qué archivo están?</li>
+    <li><strong>c)</strong> Mueven <code>conexion.php</code> a la carpeta <code>docs/</code> y recargan <code>cartelera.php</code>. ¿Qué pasa? ¿Por qué?</li>
+    <li><strong>d)</strong> ¿Qué pasa si te olvidan de escribir <code>conexion.php</code> en el <code>.gitignore</code> y suben el proyecto? ¿Quién podría leerlo?</li>
   </ol>
+</div>
+
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="a"
+    data-hint1="Pensá quién puede ver un repositorio, y qué guarda ese archivo."
+    data-hint2="El <code>.gitignore</code> es la lista de lo que Git deja afuera."
+    data-explanation="El archivo tiene el usuario y la contraseña de la base. Todo lo que entra al repositorio se copia a cada clon y queda en el historial.">
+    <p><strong>Pregunta.</strong> <code>conexion.php</code> va en el <code>.gitignore</code> para que…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) El archivo con la contraseña no llegue al repositorio</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Git lo comprima antes de subirlo</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Cada integrante tenga que escribirlo de nuevo</button>
+    <div class="quiz-feedback"></div>
+  </div>
 </div>
 
 <h2 id="s4">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  4. Mostrar: la web lee la base
+  4. Lectura de la base desde el sitio
 </h2>
 
-<p>Con el canal abierto, el primer uso es <strong>leer</strong>. Compará estos dos listados:</p>
+<p>Con el canal abierto, el primer uso es <strong>leer</strong>. Comparen estos dos listados:</p>
 
 <pre><code>// Clase 4: las filas estaban a mano en datos.php
 $peliculas = [
@@ -313,7 +380,7 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 
 <ul>
   <li><code>mysqli_query($conexion, 'SELECT * FROM peliculas')</code> — <strong>envía la consulta por el canal</strong>. El primer parámetro es por cuál canal viaja (<code>$conexion</code>); el segundo, el SQL, exactamente el que escribirías en phpMyAdmin. Devuelve el resultado: un "paquete" con las filas que respondieron. Si la consulta está mal escrita, devuelve <code>false</code>.</li>
-  <li><code>mysqli_fetch_assoc($resultado)</code> — <strong>saca una fila por vez</strong> del paquete y la entrega como <strong>array asociativo</strong>. Cada llamada avanza a la fila siguiente; cuando no quedan más, devuelve <code>null</code>.</li>
+  <li><code>mysqli_fetch_assoc($resultado)</code> — <span class="sub-lapiz">saca una fila por vez</span> del paquete y la entrega como <strong>array asociativo</strong>. Cada llamada avanza a la fila siguiente; cuando no quedan más, devuelve <code>null</code>.</li>
 </ul>
 
 <p>El <code>while</code> junta las dos: cada vuelta pregunta "¿queda una fila?" y, si hay, la imprime.</p>
@@ -331,9 +398,9 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
   En <code>datos.php</code> escribías <code>['titulo' =&gt; 'Coco', 'anio' =&gt; 2017]</code>. MySQL entrega exactamente lo mismo: <code>$fila['titulo']</code>, <code>$fila['anio']</code>. Las claves las pone la base, y son los <strong>nombres de las columnas</strong> del <code>CREATE TABLE</code>. Lo que se aprende acá es de dónde salen las filas; listar ya lo sabías.
 </div>
 
-<h3>Cómo se integra en el HTML de la página</h3>
+<h3>Integración en el HTML de la página</h3>
 
-<p>Las páginas de tu sitio combinan <strong>PHP y HTML</strong> en el mismo archivo. El patrón es abrir un bloque de PHP, usar HTML normal afuera y hacer que el <code>echo</code> escriba justo donde se lo llama. Es lo que reemplazás en la Parte 3 del TP.</p>
+<p>Las páginas de su sitio combinan <strong>PHP y HTML</strong> en el mismo archivo. El patrón es abrir un bloque de PHP, usar HTML normal afuera y hacer que el <code>echo</code> escriba justo donde se lo llama. Es lo que reemplazan en la Parte 3 del TP.</p>
 
 <pre><code>&lt;?php require 'conexion.php'; ?&gt;                    ← 1. abrir el canal
 
@@ -354,12 +421,12 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 <ul>
   <li>Los bloques de PHP se abren con <code>&lt;?php</code> y se cierran con <code>?&gt;</code>. Lo que queda entre esos dos marcadores se ejecuta; lo que queda afuera, se imprime tal cual.</li>
   <li>El <code>echo</code> escribe el valor de la fila <strong>en ese mismo lugar</strong> del HTML: el navegador ve el resultado del echo como si fuera texto común.</li>
-  <li>El <code>while</code> repite todo el bloque de adentro — el <code>&lt;article&gt;</code> — <strong>una vez por fila</strong>. Una fila de la base se convierte en una tarjeta.</li>
+  <li>El <code>while</code> repite todo el bloque de adentro — el <code>&lt;article&gt;</code> — <span class="sub-lapiz">una vez por fila</span>. Una fila de la base se convierte en una tarjeta.</li>
 </ul>
 
 <div class="callout callout-info">
   <div class="callout-title">El PHP corre en el servidor; el navegador solo recibe HTML</div>
-  Este código mezclado lo ejecuta Apache, en el servidor, no el navegador. El navegador recibe el <strong>resultado</strong>: HTML puro, sin rastro de <code>&lt;?php</code>. Si apretás "Ver código fuente" (Ctrl+U) sobre tu cartelera, no vas a ver ninguna etiqueta PHP: vas a ver las tarjetas ya armadas, con los datos puestos.
+  Este código mezclado lo ejecuta Apache, en el servidor, no el navegador. El navegador recibe el <strong>resultado</strong>: HTML puro, sin rastro de <code>&lt;?php</code>. Si aprietan "Ver código fuente" (Ctrl+U) sobre su cartelera, no van a ver ninguna etiqueta PHP: van a ver las tarjetas ya armadas, con los datos puestos.
 </div>
 
 <p><strong>Así se ve en el navegador.</strong> Cada vuelta del <code>while</code> produce una copia del <code>&lt;article&gt;</code> con los valores de una fila distinta. El navegador las apila una debajo de la otra:</p>
@@ -380,7 +447,7 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 
 <h3>El límite que ahora se ve en pantalla</h3>
 
-<p>Cuando listás la cartelera, en la página aparece esto:</p>
+<p>Cuando listan la cartelera, en la página aparece esto:</p>
 
 <pre><code>Intensamente · 2015 · director_id = 3    ← un número, no un nombre</code></pre>
 
@@ -388,7 +455,7 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 
 <div class="callout callout-tip">
   <div class="callout-title">Ampliación: las dos tablas en una sola consulta</div>
-  Ejecutá esta sentencia y observá el resultado:
+  Ejecuten esta sentencia y observá el resultado:
   <pre><code>SELECT peliculas.titulo, directores.nombre
 FROM peliculas
 JOIN directores ON peliculas.director_id = directores.id;</code></pre>
@@ -396,8 +463,8 @@ JOIN directores ON peliculas.director_id = directores.id;</code></pre>
 </div>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">ejercicio — leé el listado</p>
-  <p>Mirá este bloque y respondé <strong>antes</strong> de probarlo:</p>
+  <p class="checkpoint-title">ejercicio — lean el listado</p>
+  <p>Miren este bloque y respondé <strong>antes</strong> de probarlo:</p>
   <pre><code>&lt;?php require 'conexion.php'; ?&gt;
 &lt;?php
 $resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
@@ -406,20 +473,34 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
 }
 ?&gt;</code></pre>
   <ol>
-    <li><strong>a)</strong> ¿Cuántas veces se imprime el <code>echo</code>? ¿Cómo lo sabés sin ejecutar?</li>
+    <li><strong>a)</strong> ¿Cuántas veces se imprime el <code>echo</code>? ¿Cómo lo saben sin ejecutar?</li>
     <li><strong>b)</strong> En la primera vuelta, ¿qué vale <code>$fila['titulo']</code>? ¿De dónde salen las claves <code>titulo</code> y <code>anio</code>?</li>
-    <li><strong>c)</strong> Escribí el mismo bloque para <strong>tu</strong> tabla (cambiá la tabla y las claves) y anotá qué muestra el navegador.</li>
+    <li><strong>c)</strong> Escriban el mismo bloque para <strong>su</strong> tabla (cambiá la tabla y las claves) y anoten qué muestra el navegador.</li>
   </ol>
+</div>
+
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="b"
+    data-hint1="El <code>while</code> da una vuelta por cada fila."
+    data-hint2="Adentro del <code>while</code> se escribe <code>$fila['titulo']</code>."
+    data-explanation="Devuelve una fila por vez, como array asociativo: las claves son los nombres de las columnas. Por eso adentro se lee $fila['titulo'].">
+    <p><strong>Pregunta.</strong> En cada vuelta del <code>while</code>, <code>mysqli_fetch_assoc($resultado)</code> devuelve…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Todas las filas juntas, en un array</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Una fila, con los nombres de columna como claves</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La cantidad de filas que todavía quedan</button>
+    <div class="quiz-feedback"></div>
+  </div>
 </div>
 
 <h2 id="s5">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-  5. Agregar: INSERT desde la web
+  5. INSERT desde la web
 </h2>
 
 <p>El segundo uso del canal es <strong>escribir</strong>. Hasta ahora, cargar una película nueva significaba abrir phpMyAdmin y ejecutar un <code>INSERT</code> a mano. Ahora eso lo hace un formulario del sitio.</p>
 
-<p>El recorrido completo ya lo conocés por partes:</p>
+<p>El recorrido completo ya lo conocen por partes:</p>
 
 <pre><code>formulario  ──POST──►  procesar_pelicula.php  ──INSERT──►  la base
 titulo                           │                           │
@@ -440,11 +521,11 @@ director_id                      │                           ▼
 <div class="callout callout-warn">
   <div class="callout-title">La regla: el dato del usuario nunca va dentro de la consulta</div>
   <p>La tentación es armar el SQL pegando el dato entre comillas: <code>"INSERT ... VALUES ('" . $_POST['titulo'] . "')"</code>. Eso es un error, y conviene ver por qué <strong>antes</strong> de que aparezca solo.</p>
-  <p>Si el título es <code>Ocean's Eleven</code>, el apóstrofo <strong>rompe la consulta</strong>: para SQL, el apóstrofo es la marca de fin de texto, así que la consulta que llega es <code>VALUES ('Ocean'</code> más un <code>s Eleven')</code> suelto que no entiende. Es un título real y alcanza para romperla.</p>
+  <p>Si el título es <code>Ocean's Eleven</code>, el apóstrofo <span class="sub-lapiz">rompe la consulta</span>: para SQL, el apóstrofo es la marca de fin de texto, así que la consulta que llega es <code>VALUES ('Ocean'</code> más un <code>s Eleven')</code> suelto que no entiende. Es un título real y alcanza para romperla.</p>
   <p>El caso más grave es otro: quien escribe en el formulario podría escribir <strong>SQL</strong> en vez de un título, y esa consulta correría tal cual. Ese ataque tiene nombre — <em>inyección SQL</em> — y se previene con una sola práctica, desde el principio.</p>
 </div>
 
-<p>La forma correcta usa una <strong>sentencia preparada</strong>. Lo que cambia está en <strong>cómo viaja</strong> la consulta. En vez de armar una sola consulta con el dato adentro, la consulta viaja <strong>en dos partes separadas</strong>:</p>
+<p>La forma correcta usa una <span class="redondeo">sentencia preparada</span>. Lo que cambia está en <strong>cómo viaja</strong> la consulta. En vez de armar una sola consulta con el dato adentro, la consulta viaja <strong>en dos partes separadas</strong>:</p>
 
 <pre><code>┌─────────────────────────── VIAJE 1: el molde ────────────────────────────┐
 │                                                                          │
@@ -508,26 +589,40 @@ a foreign key constraint fails</code></pre>
 <p>Es el mismo error que provocaste en la Clase 7, ahora llegando desde la web. La regla que declaraste en el <code>CREATE TABLE</code> sigue trabajando; lo único que cambió es quién la dispara.</p>
 
 <div class="checkpoint">
-  <p class="checkpoint-title">ejercicio — leé el INSERT preparado</p>
-  <p>Mirá estas tres líneas y respondé <strong>sin copiar nada</strong>:</p>
+  <p class="checkpoint-title">ejercicio — lean el INSERT preparado</p>
+  <p>Miren estas tres líneas y respondé <span class="sub-lapiz">sin copiar nada</span>:</p>
   <pre><code>$stmt = mysqli_prepare($conexion,
     'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)');
 mysqli_stmt_bind_param($stmt, 'sii', $titulo, $anio, $director_id);
 mysqli_stmt_execute($stmt);</code></pre>
   <ol>
-    <li><strong>a)</strong> ¿Qué hace cada una de las tres líneas? Explicá con tus palabras.</li>
-    <li><strong>b)</strong> En <code>'sii'</code>, ¿qué tipo espera cada lugar? ¿Qué escribirías si tu tabla guardara un título, un año y un <code>paciente_id</code>?</li>
+    <li><strong>a)</strong> ¿Qué hace cada una de las tres líneas? Explicá con sus palabras.</li>
+    <li><strong>b)</strong> En <code>'sii'</code>, ¿qué tipo espera cada lugar? ¿Qué escribirías si su tabla guardara un título, un año y un <code>paciente_id</code>?</li>
     <li><strong>c)</strong> El formulario manda <code>titulo = "Ocean's Eleven"</code>. ¿Se rompe la consulta? ¿Por qué no?</li>
     <li><strong>d)</strong> ¿En qué viaje va el molde y en cuál los valores? ¿Qué cambiaría si los valores viajaran dentro del molde (la concatenación del aviso)?</li>
   </ol>
 </div>
 
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="b"
+    data-hint1="Tiene tantas letras como signos de pregunta hay en la consulta."
+    data-hint2="<code>s</code> de <em>string</em>, <code>i</code> de <em>integer</em>."
+    data-explanation="Cada letra dice de qué tipo es el dato que va en ese lugar, y el orden es el de los signos de pregunta. Una letra de menos, o cambiada de lugar, guarda mal sin avisar.">
+    <p><strong>Pregunta.</strong> En <code>mysqli_stmt_bind_param($sentencia, 'sis', …)</code>, la cadena <code>'sis'</code>…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Es un nombre interno que la base le da a la consulta</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Dice el tipo de cada dato, en el orden de los <code>?</code></button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Indica cuántas filas se van a insertar</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
 <h2 id="s6">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
-  6. La clave foránea en el formulario
+  6. Clave foránea en el formulario
 </h2>
 
-<p>En el formulario de alta hay un campo con un tratamiento propio: la <strong>clave foránea</strong>. Que el usuario escriba el número a mano provocaría el error de la Clase 7 — "¿cuál era el id de Pete Docter?"</p>
+<p>En el formulario de alta hay un campo con un tratamiento propio: la <span class="redondeo">clave foránea</span>. Que el usuario escriba el número a mano provocaría el error de la Clase 7 — "¿cuál era el id de Pete Docter?"</p>
 
 <p>La solución es un menú desplegable que se llena <strong>desde la base</strong>. La página del formulario también consulta la base, así que empieza con el mismo <code>require</code> que el listado.</p>
 
@@ -569,8 +664,286 @@ mysqli_stmt_execute($stmt);</code></pre>
   <ol>
     <li><strong>a)</strong> El usuario ve "Lee Unkrich" en el menú y aprieta Guardar. ¿Qué valor recibe el procesador en <code>$_POST['director_id']</code>?</li>
     <li><strong>b)</strong> ¿Qué cambiaría si el <code>value</code> fuera el <strong>nombre</strong> en vez del id? Pensalo contra la regla de la Clase 7 y contra el error 1452.</li>
-    <li><strong>c)</strong> Tu menú trae directores <code>ORDER BY nombre</code>. ¿Y si un director tuviera dos películas cargadas? ¿Aparece dos veces en el menú? ¿Por qué?</li>
+    <li><strong>c)</strong> Su menú trae directores <code>ORDER BY nombre</code>. ¿Y si un director tuviera dos películas cargadas? ¿Aparece dos veces en el menú? ¿Por qué?</li>
   </ol>
+</div>
+
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="b"
+    data-hint1="Lo que viaja al servidor es el <code>value</code>, y no el texto que se ve."
+    data-hint2="Una clave foránea guarda un id, nunca un nombre."
+    data-explanation="El texto de la opción es para quien mira; el value es lo que se envía. Por eso el menú puede mostrar nombres y guardar ids.">
+    <p><strong>Pregunta.</strong> El menú muestra «Lee Unkrich» y su opción lleva <code>value="2"</code>. En <code>director_id</code> se guarda…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) El texto «Lee Unkrich»</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) El número 2, que es el id del director</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Los dos, el número y el nombre</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<h2 id="seg">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  Sentencias preparadas
+</h2>
+
+<p>Las cuatro operaciones del bloque 1 tienen algo en común: todas reciben un dato que escribió otra persona. El nombre de un producto, un precio, el id de la fila que se edita. De cómo ese dato llega a la consulta depende que el sistema sea sólido o que se pueda romper desde un formulario.</p>
+
+<p>Una consulta armada pegando variables llega a la base como <strong>una sola cadena</strong>, y el analizador la lee entera para decidir qué operación ejecutar. Ahí el texto de quien escribe queda mezclado con las palabras de la orden. Un apóstrofo en un nombre cambia la estructura de la consulta, y alguien que sepa lo que hace escribe algo peor. Eso es la <span class="redondeo">inyección SQL</span>.</p>
+
+<p>Una <span class="sub-lapiz">sentencia preparada separa el proceso en dos etapas</span>. Primero manda la consulta con signos de pregunta en el lugar de los valores, y la base la analiza y planifica ahí, sin los datos. Después manda los valores, que se acoplan a un plan ya decidido y no se vuelven a analizar como SQL.</p>
+
+<pre><code class="language-php">// los tres pasos, iguales para las cuatro operaciones
+$sql = "INSERT INTO producto (nombre, precio) VALUES (?, ?)";
+$sentencia = mysqli_prepare($conexion, $sql);        // 1 · el molde
+mysqli_stmt_bind_param($sentencia, 'sd', $nombre, $precio);  // 2 · los datos y su tipo
+mysqli_stmt_execute($sentencia);                     // 3 · ejecutar
+
+// tipos:  s texto   ·   i entero   ·   d con decimales
+// la cadena tiene una letra por cada ?, en el mismo orden</code></pre>
+
+<div class="callout callout-warn">
+  <div class="callout-title">El id también viene de afuera</div>
+  En un <code>UPDATE</code> y en un <code>DELETE</code>, el <code>id</code> del <code>WHERE</code> llega desde el formulario o desde la dirección igual que el nombre. También va con <code>?</code>, y en <code>bind_param</code> queda último, porque ese es el orden de los signos de pregunta.
+</div>
+
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="b"
+    data-hint1="Fijate en qué momento la base decide qué operación va a ejecutar."
+    data-hint2="En la preparada, ese momento ocurre antes de que los valores lleguen."
+    data-explanation="La base analiza y planifica la consulta cuando recibe el molde, sin los datos a la vista. Los valores llegan después, a un plan ya decidido, y por eso no pueden cambiar la operación.">
+    <p><strong>Pregunta.</strong> Con una sentencia preparada, un valor no puede alterar la consulta porque…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) PHP revisa el contenido del valor antes de mandarlo</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Cuando el valor llega, la base ya decidió qué operación ejecuta</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La base guarda el valor entre comillas automáticamente</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<h2 id="p1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  Práctica del bloque 1
+</h2>
+
+<p>Este bloque describe lo que su sistema <strong>ya hace</strong>. La práctica es comprobarlo, y dejar anotado con qué archivo resuelven cada operación: eso es lo que el bloque 2 va a revisar.</p>
+
+<table>
+  <thead>
+    <tr><th>Operación</th><th>Qué hace</th><th>Nuestro archivo</th><th>Anda</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>C</strong> · <code>INSERT</code></td><td>Da de alta una fila desde un formulario</td><td></td><td></td></tr>
+    <tr><td><strong>R</strong> · <code>SELECT</code></td><td>Muestra las filas en el listado</td><td></td><td></td></tr>
+    <tr><td><strong>U</strong> · <code>UPDATE</code></td><td>Guarda los cambios de una fila</td><td></td><td></td></tr>
+    <tr><td><strong>D</strong> · <code>DELETE</code></td><td>Borra una fila</td><td></td><td></td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">Las cuatro juntas se llaman CRUD</div>
+  <em>Create, Read, Update, Delete</em>. Es el conjunto mínimo de operaciones de casi cualquier sistema que administra datos, y ya lo tienen entero. El bloque que sigue no agrega operaciones: mira <strong>cómo están escritas</strong>.
+</div>
+
+<div class="code-check" data-answer="require 'conexion.php';|require('conexion.php');|require_once 'conexion.php';"
+  data-hint1="Es la instrucción que ejecuta otro archivo en este punto y deja lista la variable de la conexión."
+  data-hint2="Va entre comillas y termina con punto y coma. La palabra empieza con «req»."
+  data-hint="Se escribe así: require 'conexion.php';">
+  <p><strong>Escríbanlo.</strong> La línea que las cuatro operaciones tienen en común, arriba de todo, para que <code>$conexion</code> quede disponible.</p>
+  <div class="code-check-row">
+    <input class="code-check-input" aria-label="Línea que incluye el archivo de conexión" placeholder="una línea de PHP">
+    <button type="button" class="btn code-check-btn">Comprobar</button>
+  </div>
+  <div class="code-check-feedback" aria-live="polite"></div>
+</div>
+
+<p class="parte" data-bloque="2"><span>Bloque 2</span> Seguridad<span class="subtitulo">contraseñas, resguardo del sistema y lo que cambia al publicarlo</span></p>
+
+<div class="materiales-clase">
+  <span class="rot">Este bloque se apoya en dos materiales</span>
+  <ul>
+    <li><a href="auditoria-crud.html">Auditar, reparar y proteger el sistema</a> <span class="desc">— las doce comprobaciones sobre el código propio, con su fundamento. Es la parte práctica de todo lo que sigue.</span></li>
+    <li><a href="../deploy/publicar-el-sitio.html">Publicar el sitio</a> <span class="desc">— el despliegue paso a paso, y lo que hay que tener en cuenta al sacar el sistema de la máquina del laboratorio.</span></li>
+  </ul>
+</div>
+
+<h2 id="seg1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  Contraseñas y hash
+</h2>
+
+<p>El login del sistema compara una contraseña. La pregunta es qué guarda la base para poder comparar.</p>
+
+<h3>Importancia</h3>
+
+<p>Una tabla de usuarios con las contraseñas escritas tal cual se tecleó es un problema que <strong>excede al sistema</strong>. Quien llegue a esa tabla se lleva las contraseñas de personas reales, y como casi todo el mundo repite la misma en varios lugares, con esa lista también entra a sus correos. No alcanza con que la tabla sea difícil de alcanzar: hay que guardar de manera que, aunque alguien la lea, no le sirva.</p>
+
+<h3>Cifrar y hashear, dos cosas distintas</h3>
+
+<p>Las dos palabras se usan como sinónimos y nombran cosas diferentes. <strong>Cifrar</strong> sirve para guardar algo que después hay que volver a leer, y por eso tiene vuelta atrás con una clave. <strong>Hashear</strong> sirve para comprobar algo que nunca hace falta volver a leer, y no tiene vuelta atrás: no existe ninguna clave que lo deshaga.</p>
+
+<p>Una contraseña <span class="sub-lapiz">nunca hace falta volver a leerla</span>. Al entrar, el sistema no compara la contraseña guardada con la tecleada: vuelve a calcular el hash de la tecleada y compara los dos resultados. Por eso se hashea y no se cifra, y por eso los sitios serios mandan una contraseña nueva en lugar de la vieja.</p>
+
+<h3>Funciones de hash</h3>
+
+<p>Toma un texto de cualquier largo y devuelve una salida de largo fijo. La misma entrada da siempre la misma salida, así que sirve para comparar. Cambiar una letra cambia toda la salida, así que mirar el hash no acerca a la contraseña. Y para el camino inverso no hay cálculo: la única vía es probar textos hasta que uno dé esa salida.</p>
+
+<p>Ahí está la decisión de diseño de <code>password_hash</code>: el algoritmo es <span class="sub-lapiz">deliberadamente costoso</span>. Calcularlo una vez tarda unos milisegundos, que nadie nota al entrar; probar millones de candidatos tarda años. Agrega además una <span class="redondeo">sal</span>, un valor al azar distinto por contraseña que queda guardado adentro del mismo resultado, para que dos personas con la misma contraseña no queden con el mismo hash.</p>
+
+<svg class="esquema" viewBox="0 0 820 340" role="img" aria-label="El camino de una contraseña. Al crear el usuario, password_hash toma la contraseña tecleada y devuelve un resultado de 60 caracteres que empieza con dólar 2y, y que lleva adentro el algoritmo, el costo y la sal. Ese resultado es lo que se guarda. Al entrar, password_verify toma la contraseña tecleada y el resultado guardado, saca de ahí la sal y el costo, vuelve a calcular y compara, devolviendo verdadero o falso. El camino de vuelta, del resultado guardado a la contraseña, no existe.">
+  <text class="titulo" x="20" y="26">EL CAMINO DE UNA CONTRASEÑA</text>
+
+  <defs>
+    <marker id="ph" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <text class="rotulo" x="20" y="62" font-weight="700">Al crear el usuario</text>
+  <rect class="caja" x="20" y="76" width="200" height="52" rx="8"/>
+  <text class="chico" x="34" y="98">lo que la persona teclea</text>
+  <text class="mono" x="34" y="118">melina2026</text>
+
+  <line class="linea-acento" stroke="currentColor" x1="224" y1="102" x2="330" y2="102" marker-end="url(#ph)"/>
+  <text class="mono" x="277" y="94" text-anchor="middle">password_hash()</text>
+
+  <rect class="caja-acento" x="338" y="66" width="462" height="72" rx="8"/>
+  <text class="mono" x="352" y="90">$2y$10$K9pQ3f...vX8</text>
+  <text class="chico" x="352" y="112">60 caracteres · adentro van el algoritmo, el costo y la sal</text>
+  <text class="chico" x="352" y="130" font-weight="700">esto es lo único que se guarda en la tabla</text>
+
+  <line class="divisoria" x1="20" y1="166" x2="800" y2="166"/>
+
+  <text class="rotulo" x="20" y="196" font-weight="700">Al entrar</text>
+  <rect class="caja" x="20" y="210" width="200" height="52" rx="8"/>
+  <text class="chico" x="34" y="232">lo que teclea ahora</text>
+  <text class="mono" x="34" y="252">melina2026</text>
+
+  <rect class="caja" x="20" y="272" width="200" height="46" rx="8"/>
+  <text class="chico" x="34" y="292">lo guardado en la tabla</text>
+  <text class="mono" x="34" y="310">$2y$10$K9pQ...</text>
+
+  <path class="linea-acento" stroke="currentColor" fill="none" d="M224,236 H286 V266 H330" marker-end="url(#ph)"/>
+  <path class="linea-acento" stroke="currentColor" fill="none" d="M224,295 H286 V266" />
+  <text class="mono" x="240" y="196" text-anchor="start">password_verify()</text>
+
+  <rect class="caja-acento" x="338" y="248" width="200" height="46" rx="8"/>
+  <text class="rotulo" x="352" y="277">true  /  false</text>
+
+  <rect class="caja-alerta" x="560" y="210" width="240" height="108" rx="8"/>
+  <text class="chico" x="574" y="234" font-weight="700">El camino de vuelta</text>
+  <text class="chico" x="574" y="256">del resultado guardado a la</text>
+  <text class="chico" x="574" y="274">contraseña, no existe. Ni para</text>
+  <text class="chico" x="574" y="292">quien robe la tabla, ni para</text>
+  <text class="chico" x="574" y="310">quien programó el sistema.</text>
+</svg>
+
+<h3>Implementación</h3>
+
+<pre><code class="language-php">// 1 · al crear el usuario: se guarda el resultado, nunca la contraseña
+$hash = password_hash($clave, PASSWORD_DEFAULT);
+// ese $hash va a la columna `clave`, que se define VARCHAR(255)
+
+// 2 · al entrar: se compara sin leer nada
+if (password_verify($clave_tecleada, $fila['clave'])) {
+  $_SESSION['usuario'] = $fila['usuario'];
+}
+
+// 3 · lo que no se hace nunca
+// $_SESSION['clave'] = $clave;   &lt;- no se guarda
+// echo $fila['clave'];           &lt;- no se muestra
+// error_log($clave);             &lt;- no se registra</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">De dónde sale el <code>VARCHAR(255)</code></div>
+  Hoy <code>PASSWORD_DEFAULT</code> usa bcrypt, que produce 60 caracteres y empieza con <code>$2y$</code>. El manual de PHP avisa que ese algoritmo por omisión puede cambiar en versiones futuras, y otro algoritmo produce una salida más larga. Con 255 el sistema sigue funcionando el día que eso pase. Con 60 se rompe en silencio: MySQL guarda el hash cortado y el login deja de validar sin dar ningún error.
+</div>
+
+<div class="quiz comprobacion">
+  <h3>Comprobación de lectura</h3>
+  <div class="quiz-q" data-correct="c"
+    data-hint1="Pensá qué hace el sistema con la contraseña cuando alguien entra."
+    data-hint2="Para comparar no hace falta conocer el original."
+    data-explanation="El sistema vuelve a calcular el hash de lo que la persona tecleó y lo compara con el guardado. Nunca necesita el texto original, y por eso puede guardarlo de una forma que no tiene vuelta atrás.">
+    <p><strong>Pregunta.</strong> Un sistema puede guardar la contraseña sin poder leerla porque…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La descifra con una clave que solo el servidor conoce</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) La guarda en un archivo aparte de la base</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Para comparar le alcanza con volver a calcular el hash</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<h2 id="seg2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  Otras cuestiones de seguridad del sistema
+</h2>
+
+<p>Además de las consultas y de las contraseñas, un sistema tiene otros cuatro frentes abiertos. Cada uno está desarrollado en la página de auditoría, con su comprobación.</p>
+
+<table>
+  <thead>
+    <tr><th>Frente</th><th>De qué se trata</th><th>Dónde está</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>La salida hacia la página</td><td>Un dato con etiquetas se vuelve parte del HTML si se imprime sin escapar, y una etiqueta <code>&lt;script&gt;</code> corre en el navegador de quien visite el sitio</td><td><a href="auditoria-crud.html#c4">Comprobación 6</a></td></tr>
+    <tr><td>La comprobación en el servidor</td><td>El <code>required</code> del formulario se desactiva desde el navegador; lo que gobierna es PHP</td><td><a href="auditoria-crud.html#c6">Comprobación 7</a></td></tr>
+    <tr><td>Las credenciales de la base</td><td>El archivo de conexión no va al repositorio, porque el repositorio distribuye</td><td><a href="auditoria-crud.html#c1">Comprobación 1</a></td></tr>
+    <tr><td>Quién puede entrar</td><td>Login contra la base, y una guardia en cada página que escribe — incluidas las que procesan formularios</td><td><a href="auditoria-crud.html#l2">Comprobación 12</a></td></tr>
+  </tbody>
+</table>
+
+<h2 id="seg3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+  Cambios al publicar el sistema
+</h2>
+
+<p>Mientras el sistema corre en <code>localhost</code>, la contraseña vacía de MySQL y el error de PHP en pantalla no le hacen daño a nadie, porque nadie más llega a esa máquina. Publicado, cada una de esas cosas queda a la vista de cualquiera. El despliegue es lo que le da peso a todo lo anterior.</p>
+
+<ul>
+  <li><strong>La credencial protege algo real.</strong> Ya no es <code>root</code> sin contraseña: el panel del hosting da un usuario y una clave que sí importan.</li>
+  <li><strong>Los errores no se muestran.</strong> Cualquiera puede provocar uno y leer los nombres de las tablas.</li>
+  <li><strong>Las direcciones se descubren.</strong> Un archivo que existe y no está enlazado igual se puede pedir: la página de prueba, el <code>.sql</code>, la que genera un hash.</li>
+  <li><strong>El sitio queda a nombre del equipo.</strong> Lo que alguien cargue en un formulario aparece publicado con su dirección.</li>
+</ul>
+
+<p>Los pasos concretos —cuenta, base en el servidor, exportar, importar, subir y el archivo de conexión del servidor— están en <a href="../deploy/publicar-el-sitio.html">Publicar el sitio</a>.</p>
+
+<h2 id="p2">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  Práctica del bloque 2
+</h2>
+
+<p>Sobre las cuatro operaciones que anotaron en la práctica anterior, en este orden.</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">El punto 5 es la auditoría</div>
+  Los cuatro primeros puntos son sobre las consultas. El quinto es recorrer el sistema entero con la lista de comprobaciones: <a href="auditoria-crud.html"><strong>Auditar, reparar y proteger el sistema</strong></a>. Son doce comprobaciones sobre el código propio —las credenciales, los mensajes de error, el juego de caracteres, el motor de las tablas, las consultas, la salida, la validación, el id oculto, el borrado, las contraseñas, el login y la guardia—, cada una con dónde mirar, qué tiene que pasar y cómo se corrige.
+</div>
+
+<ol class="pasos">
+  <li><strong>Localicen las consultas.</strong> Abran los cuatro archivos y miren cómo se arma cada una: si el dato está pegado adentro del texto o si hay signos de pregunta.</li>
+  <li><strong>Pasen primero las que reciben texto.</strong> El <code>INSERT</code> y el <code>UPDATE</code> reciben lo que una persona escribió, así que van primero.</li>
+  <li><strong>Después el <code>DELETE</code> y el <code>SELECT</code> por id</strong>, que reciben un número y también entran por <code>?</code>.</li>
+  <li><strong>Prueben con un apóstrofo.</strong> Carguen un producto llamado <code>Detergente D'Oro</code>. Si se guarda entero, la consulta quedó bien.</li>
+  <li><strong>Recorran la auditoría completa.</strong> <a href="auditoria-crud.html">Auditar, reparar y proteger el sistema</a>: las doce comprobaciones sobre el sistema propio, con la tabla de estado que se entrega llena.</li>
+  <li><strong>Preparen el despliegue.</strong> <a href="../deploy/publicar-el-sitio.html">Publicar el sitio</a>: revisen los tres requisitos previos —que el sistema ande en local, que el archivo de conexión no esté en el repositorio y que no queden rutas con <code>localhost</code>— antes de abrir ninguna cuenta.</li>
+</ol>
+
+<div class="code-check" data-answer="sdi|s d i"
+  data-hint1="Una letra por cada signo de pregunta, en el mismo orden que los valores."
+  data-hint2="El nombre es texto, el precio lleva decimales y el id es un número entero."
+  data-hint="Se escribe así: sdi">
+  <p><strong>Escríbanlo.</strong> La cadena de tipos de un <code>UPDATE</code> que actualiza el nombre y el precio de la fila cuyo id se recibe. Los valores van en ese orden: nombre, precio, id.</p>
+  <div class="code-check-row">
+    <input class="code-check-input" aria-label="Cadena de tipos del UPDATE" placeholder="tres letras">
+    <button type="button" class="btn code-check-btn">Comprobar</button>
+  </div>
+  <div class="code-check-feedback" aria-live="polite"></div>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Si la consulta preparada no guarda</div>
+  Cuenten tres números y comprueben que coincidan: cuántos <code>?</code> tiene la consulta, cuántas letras tiene la cadena de tipos y cuántas variables pasan. Si guarda pero con los datos cambiados de columna, el orden de las variables no es el de los <code>?</code>. Y si el <code>UPDATE</code> modifica todas las filas, falta el <code>WHERE</code>.
 </div>
 
 <h2 id="errores">
@@ -598,7 +971,7 @@ mysqli_stmt_execute($stmt);</code></pre>
   <tr>
     <td>El listado aparece vacío, sin ningún error</td>
     <td>La consulta corrió bien pero la tabla no tiene filas — o el <code>SELECT</code> apunta a otra tabla.</td>
-    <td>Correr <code>SELECT * FROM tu_tabla</code> en phpMyAdmin y comparar el nombre con el de tu código.</td>
+    <td>Correr <code>SELECT * FROM tu_tabla</code> en phpMyAdmin y comparar el nombre con el de su código.</td>
   </tr>
   <tr>
     <td><code>Undefined array key "titulo"</code> al abrir <code>procesar_pelicula.php</code> directo</td>
@@ -639,7 +1012,7 @@ mysqli_stmt_execute($stmt);</code></pre>
 
 <table>
   <tr><th>Término</th><th>Qué significa</th></tr>
-  <tr><td><strong>mysqli</strong></td><td>La familia de funciones de PHP para hablar con MySQL. Todas las de esta clase empiezan con <code>mysqli_</code>.</td></tr>
+  <tr><td><span class="redondeo">mysqli</span></td><td>La familia de funciones de PHP para hablar con MySQL. Todas las de esta clase empiezan con <code>mysqli_</code>.</td></tr>
   <tr><td><strong>Conexión</strong></td><td>El canal entre PHP y MySQL que abre <code>mysqli_connect</code>. Sin el canal, ninguna consulta viaja.</td></tr>
   <tr><td><strong>Host</strong></td><td>Dónde vive la base. En desarrollo es <code>localhost</code>; en producción, la dirección del servidor.</td></tr>
   <tr><td><strong>require</strong></td><td>Instrucción de PHP que ejecuta otro archivo en ese punto. La conexión se incluye así en cada página.</td></tr>
@@ -656,105 +1029,71 @@ mysqli_stmt_execute($stmt);</code></pre>
 
 <h2 id="quiz">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-  Práctica
+  Práctica final
 </h2>
 
 <div id="quiz-final" class="quiz-wrap">
-  <p class="quiz-intro">Ejercicios para repasar los conceptos de la clase y leer código PHP. Leé con atención y resolvé en base a lo abordado.</p>
+  <p class="quiz-intro">Cinco preguntas que cruzan lo de toda la clase. Las de cada sección se responden con lo que acaban de leer; estas piden relacionar dos partes.</p>
 
-  <div class="quiz-q" data-correct="b" data-explanation="Son exactamente los 4 datos que pide mysqli_connect: dónde vive la base (host), con qué usuario (usuario), con qué clave (contraseña) y cuál base abre (base).">
-    <p><strong>1.</strong> ¿Qué cuatro datos necesita PHP para conectarse a tu base?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) El nombre de las tablas y sus columnas</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Host, usuario, contraseña y nombre de la base</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Host, contraseña y el diagrama ER</button>
+  <div class="quiz-q" data-correct="a"
+    data-hint1="Pensá dónde está corriendo el servidor mientras desarrollan."
+    data-hint2="Es la máquina donde levantaron XAMPP."
+    data-explanation="localhost nombra a la computadora donde corre el programa. En desarrollo, el sitio y la base viven en la misma máquina. Al publicar, ese dato pasa a ser la dirección del servidor.">
+    <p><strong>1.</strong> En la conexión de desarrollo, el host <code>localhost</code> significa que la base está…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) En esta misma computadora</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) En internet, en el servidor de la escuela</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) En un nombre provisorio que hay que reemplazar por una IP</button>
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="a" data-explanation="localhost es 'esta misma computadora'. La base y el sitio viven en la misma máquina durante el desarrollo. En un servidor real, ese dato sería la dirección de ese servidor.">
-    <p><strong>2.</strong> En la conexión de desarrollo, el host es <code>localhost</code>. ¿Qué significa?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Que la base está en esta misma computadora</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Que la base está en internet</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Que es un nombre que hay que reemplazar por la IP del curso</button>
+  <div class="quiz-q" data-correct="c"
+    data-hint1="Fijate qué queda disponible después de esa línea."
+    data-hint2="<code>conexion.php</code> abre la conexión y la deja en una variable."
+    data-explanation="require ejecuta el archivo en el punto donde está escrito. Como conexion.php termina abriendo la conexión, después de esa línea la variable $conexion queda disponible.">
+    <p><strong>2.</strong> La línea <code>&lt;?php require 'conexion.php'; ?&gt;</code>…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Copia el texto del archivo para que se vea en la página</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) Devuelve un array, como hacía <code>datos.php</code> en la Clase 4</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Ejecuta el archivo y deja definida la variable <code>$conexion</code></button>
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="c" data-explanation="conexion.php se ejecuta en la página que hace el require y deja definida la variable $conexion. No usa return: no devuelve un valor, deja una variable lista.">
-    <p><strong>3.</strong> La línea <code>&lt;?php require 'conexion.php'; ?&gt;</code> …</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Copia el texto de conexion.php para que se vea en la página</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Devuelve el array de datos, como datos.php en la Clase 4</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Ejecuta conexion.php y deja definida la variable $conexion para usar en la página</button>
+  <div class="quiz-q" data-correct="a"
+    data-hint1="Pensá qué pasa el día que cambia la contraseña de la base."
+    data-hint2="El sistema tiene muchas páginas y una sola base."
+    data-explanation="Los datos de acceso cambian de una máquina a otra y con el tiempo. En un archivo aparte se corrigen en un solo lugar; copiados en cada página, hay que buscarlos uno por uno.">
+    <p><strong>3.</strong> La conexión va en un archivo aparte, en lugar de copiarse en cada página, porque…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Los datos de acceso cambian, y así se tocan en un solo lugar</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) PHP no permite escribir <code>mysqli_connect</code> más de una vez</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Un archivo aparte hace que la consulta sea más rápida</button>
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="b" data-explanation="La conexión se escribe una sola vez en conexion.php y se incluye con require. Si la base cambia, se corrige en un solo lugar, no en cada página.">
-    <p><strong>4.</strong> ¿Por qué la conexión va en un archivo aparte (<code>conexion.php</code>) en vez de copiarse en cada página?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Porque cada página necesita su propia conexión distinta</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Para tener un solo lugar donde esté la llave: si la base cambia, se corrige una vez</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Es obligatorio para que MySQL funcione</button>
+  <div class="quiz-q" data-correct="a"
+    data-hint1="El error lo devuelve la base, no PHP."
+    data-hint2="Es la restricción que declararon en la Clase 7 con <code>FOREIGN KEY</code>."
+    data-explanation="La clave foránea es una restricción que el gestor hace cumplir en cada escritura: se niega a guardar una fila que apunte a un id que no existe. Es el error 1452.">
+    <p><strong>4.</strong> El formulario envía un <code>director_id</code> que no existe y el <code>INSERT</code> falla con «a foreign key constraint fails». Eso pasa porque…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La clave foránea impide guardar una fila que apunte a un id inexistente</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) El campo del formulario llegó vacío</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La tabla <code>directores</code> quedó sin filas</button>
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="a" data-explanation="conexion.php tiene la llave de la base (usuario y contraseña). Se lista en el .gitignore para que Git no lo suba. Lo que se comparte es la plantilla, documentada en documentacion.md.">
-    <p><strong>5.</strong> ¿Por qué <code>conexion.php</code> va en el <code>.gitignore</code>?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Porque tiene los datos de acceso a la base y no deben publicarse</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Porque Git no sabe subir archivos .php</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Porque es un archivo temporal que se borra solo</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-<div class="checkpoint">
-  <p class="checkpoint-title">leé el código</p>
-  <pre><code>&lt;?php
-$resultado = mysqli_query($conexion, 'SELECT * FROM peliculas');
-while ($fila = mysqli_fetch_assoc($resultado)) {
-    echo $fila['titulo'];
-}
-?&gt;</code></pre>
-  <div class="quiz-q" data-correct="c" data-explanation="mysqli_fetch_assoc entrega una fila por vez como array asociativo: las claves son los nombres de las columnas, igual que los arrays de datos.php de la Clase 4.">
-    <p><strong>6.</strong> ¿Qué devuelve <code>mysqli_fetch_assoc($resultado)</code> en cada vuelta del <code>while</code>?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Una columna de la tabla</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) El texto completo de la consulta</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Una fila como array asociativo, con las claves = columnas</button>
-    <div class="quiz-feedback"></div>
-  </div>
-</div>
-
-  <div class="quiz-q" data-correct="b" data-explanation="Los ? son lugares reservados: la consulta se prepara con ellos y el dato se entrega por separado, después. Así el dato no puede romper la consulta ni alterarla (inyección SQL).">
-    <p><strong>7.</strong> En la sentencia preparada <code>'INSERT INTO peliculas (titulo, anio, director_id) VALUES (?, ?, ?)'</code>, ¿qué son los <code>?</code>?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Comodines que la base reemplaza por las columnas</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Lugares reservados, que se completan después con los datos entregados por separado</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Valores que se adivinan solos</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-  <div class="quiz-q" data-correct="c" data-explanation="Es la integridad referencial: el director_id que envió el formulario no existe en directores, y la base rechaza la fila. Es el mismo 1452 de la Clase 7, ahora desde la web.">
-    <p><strong>8.</strong> El formulario envía un <code>director_id</code> que no existe, y el <code>INSERT</code> falla con <em>"a foreign key constraint fails"</em>. ¿Qué significa?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Que el formulario está mal hecho</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Que la base está llena</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Que el id no existe en la tabla apuntada, y la base no deja guardar la fila</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-  <div class="quiz-q" data-correct="b" data-explanation="El menú muestra el nombre (lo que se lee), pero el value es el id (lo que se envía). En la FK va el número, nunca el nombre.">
-    <p><strong>9.</strong> El menú de directores muestra <em>Lee Unkrich</em> pero se envía <code>value="2"</code>. ¿Qué se guarda en <code>director_id</code>?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) El nombre <code>Lee Unkrich</code></button>
-    <button type="button" class="quiz-opt" data-opt="b">b) El <code>id</code> 2</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Las dos cosas</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-  <div class="quiz-q" data-correct="a" data-explanation="El while corta cuando mysqli_fetch_assoc devuelve null, porque $fila queda null y la condición es falsa. No hace falta contar las filas: el resultado se conoce solo.">
-    <p><strong>10.</strong> ¿Cómo sabe el <code>while</code> que ya no quedan más filas para mostrar?</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) Cuando <code>mysqli_fetch_assoc</code> devuelve <code>null</code>, la condición es falsa y el bucle corta</button>
+  <div class="quiz-q" data-correct="a"
+    data-hint1="Pensá qué devuelve la función cuando ya no queda nada por traer."
+    data-hint2="La condición del <code>while</code> es el resultado de la asignación."
+    data-explanation="Cuando ya no quedan filas, mysqli_fetch_assoc devuelve null. Esa asignación da un valor falso y la condición del while deja de cumplirse.">
+    <p><strong>5.</strong> El <code>while</code> del listado termina cuando <code>mysqli_fetch_assoc</code>…</p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Devuelve <code>null</code>, y la condición pasa a ser falsa</button>
     <button type="button" class="quiz-opt" data-opt="b">b) Cuenta las filas con un <code>foreach</code> antes de empezar</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) No corta solo: hay que ponerle un <code>break</code> a mano</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Recibe de la base una señal de que terminó</button>
     <div class="quiz-feedback"></div>
   </div>
 
   <p id="quiz-score"></p>
   <button type="button" id="quiz-reset" class="btn quiz-reset">↻ Volver a hacer el quiz</button>
 
-  <p class="quiz-intro" style="margin-top:32px"><strong>¿Ya terminaste?</strong> Pasá al <a href="clase-08-tp.html">TP de Clase 8</a> — ahí conectás tu web con tu base y la hacés leer y escribir.</p>
+  <p class="quiz-intro" style="margin-top:32px"><strong>¿Ya terminaron?</strong> Pasen al <a href="clase-08-tp.html">TP de Clase 8</a> — ahí conectan su web con su base y la hacen leer y escribir.</p>
 </div>
 
 <h2 id="s7">
@@ -762,14 +1101,14 @@ while ($fila = mysqli_fetch_assoc($resultado)) {
   7. Próximos pasos
 </h2>
 
-<p>Con esta clase se abre la <strong>Etapa 3</strong> del proyecto: PHP y MySQL conectados. Hoy hiciste las dos operaciones que arrancan el CRUD:</p>
+<p>Con esta clase se abre la <strong>Etapa 3</strong> del proyecto: PHP y MySQL conectados. Hoy hicieron las dos operaciones que arrancan el CRUD:</p>
 
 <ul>
   <li><strong>Crear</strong> (C): el formulario que inserta una fila — el <code>INSERT</code> de hoy.</li>
   <li><strong>Leer</strong> (R): el listado que muestra las filas de la base — el <code>SELECT</code> de hoy.</li>
 </ul>
 
-<p>Quedan dos operaciones, y ambas se resuelven con la misma base que ya tenés:</p>
+<p>Quedan dos operaciones, y ambas se resuelven con la misma base que ya tienen:</p>
 
 <ul>
   <li><strong>Actualizar</strong> (U): cuando una fila ya cargada tiene un dato mal, la web debería poder <strong>modificarla</strong> (<code>UPDATE</code>) desde un formulario precargado.</li>

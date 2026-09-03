@@ -19,6 +19,10 @@
   --radius-lg: 14px;
 
   --font-base-size: 16px;
+
+  /* Una sola medida para toda la pagina: mismo borde izquierdo y derecho
+     para el titulo, el texto, las tablas, el codigo y las actividades. */
+  --medida: 900px;
 }
 
 /* ===== Tema oscuro ===== */
@@ -163,7 +167,7 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
-  max-width: 900px;
+  max-width: var(--medida);
   margin: 0 auto;
   padding: 0 1.6em 5em;
   color: var(--ink);
@@ -338,7 +342,7 @@ details[open] summary::before { transform: rotate(90deg); }
 .quiz {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 1.6em;
-  margin: 1.5em 0; box-shadow: var(--shadow);
+  margin-block: 1.5em; box-shadow: var(--shadow);
   border-top: 3px solid var(--warm);
 }
 .quiz h3 { margin-top: 0; color: var(--warm); }
@@ -503,7 +507,7 @@ details[open] summary::before { transform: rotate(90deg); }
 
 /* ─── Checklist de autoverificación (TP) ─── */
 .selfcheck {
-  list-style: none; padding: 1.2em 1.4em; margin: 1.5em 0;
+  list-style: none; padding: 1.2em 1.4em; margin-block: 1.5em;
   background: var(--surface); border: 1px solid var(--border);
   border-left: 3px solid var(--ok); border-radius: var(--radius);
   box-shadow: var(--shadow); transition: background .2s, border-color .2s;
@@ -570,7 +574,7 @@ details[open] summary::before { transform: rotate(90deg); }
    Usada en las teorías (clasificar tarjetas en zonas). Funciona
    con mouse y touch. Antes vivía inline en cada teoría; centralizada acá.
    =========================================================== */
-.drag-activity { margin: 1.2em 0; }
+.drag-activity { margin-block: 1.2em; }
 .drag-pool { display:flex; flex-wrap:wrap; gap:8px; padding:12px; border:1px dashed var(--border); border-radius:10px; min-height:52px; background:var(--surface); }
 .drag-zones { display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; }
 .drop-zone { flex:1 1 220px; border:2px dashed var(--border); border-radius:10px; padding:12px; background:var(--bg); transition:border-color .15s, background .15s; }
@@ -727,3 +731,497 @@ figure.captura figcaption { font-size: .88em; color: var(--ink-light); margin-to
   background: var(--surface);
 }
 .preview-open { font-size: .85em; font-weight: 600; align-self: flex-start; }
+
+/* ============================================================
+   Resaltador, candado y estados del quiz con intentos
+   (agregado con la clase de auditoría del CRUD, 3-9-2026)
+   ============================================================ */
+
+/* --- Marcar el texto mientras se lee --- */
+
+mark.resaltado {
+  background: #fde9a8;
+  color: inherit;
+  border-radius: 3px;
+  padding: .05em .06em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  cursor: pointer;
+}
+body.dark mark.resaltado { background: rgba(243, 199, 107, .3); color: inherit; }
+
+.marcador-btn {
+  position: absolute;
+  z-index: 60;
+  transform: translateY(-50%);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: .45rem .7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.marcador-btn.izquierda { transform: translate(-100%, -50%); }
+.marcador-btn.arriba { transform: none; }
+.marcador-btn:hover { filter: brightness(1.08); }
+
+.marcador-ayuda {
+  font-size: .88rem;
+  color: var(--ink-light);
+  border-left: 3px solid var(--border);
+  padding: .5rem .8rem;
+  margin: 0 0 1.2rem;
+}
+
+/* --- El código de la clase --- */
+
+.candado {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warm);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: .9rem 1rem;
+  margin: 1.4rem 0;
+}
+.candado.abierto { border-left-color: var(--ok); }
+.candado-t { margin: 0 0 .7rem; font-size: .93rem; color: var(--ink-soft); }
+.candado-fila { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.candado-input {
+  font: inherit;
+  padding: .4rem .6rem;
+  min-width: 12rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.candado-input:disabled { opacity: .6; }
+.candado-estado { font-size: .88rem; font-weight: 600; color: var(--ink-soft); }
+.candado.abierto .candado-estado { color: var(--ok); }
+.candado.cerrado .candado-estado { color: var(--warm); }
+
+.cerrado {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: .8rem 1rem;
+  margin: 1rem 0;
+  background: var(--border-soft);
+}
+.cerrado-aviso { margin: 0; font-size: .9rem; color: var(--ink-light); }
+.cerrado .cerrado-texto { display: none; }
+.cerrado.abierto {
+  border-style: solid;
+  border-color: var(--ok);
+  background: var(--surface);
+}
+.cerrado.abierto .cerrado-texto { display: block; }
+
+/* --- Opciones agotadas del quiz con intentos --- */
+
+.quiz-opt:disabled { cursor: default; }
+.quiz-opt:disabled:not(.correct):not(.wrong) { opacity: .55; }
+
+@media print {
+  .marcador-btn, .marcador-ayuda, .candado { display: none; }
+  .cerrado { border-style: solid; }
+}
+
+/* Índice de una página cuyas secciones ya traen su número escrito */
+nav.toc ol.sin-numero { list-style: none; padding-left: 0; }
+
+/* El atributo hidden lo pisa cualquier clase que declare display */
+[hidden] { display: none !important; }
+
+/* Rótulo de parte, en una página dividida en tramos */
+.parte {
+  display: flex;
+  align-items: baseline;
+  gap: .7rem;
+  margin: 2.6rem 0 .2rem;
+  padding-bottom: .45rem;
+  border-bottom: 2px solid var(--accent);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.parte span {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+nav.toc li.toc-parte {
+  margin-top: .6rem;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+}
+
+/* ============================================================
+   Marcas a mano alzada, para señalar sobre el texto
+   (portadas del material de Base de Datos, 3-9-2026)
+   ============================================================ */
+
+/* Concepto redondeado. El óvalo arranca, da la vuelta y se pasa un poco
+   del punto de partida, que es lo que hace la mano al marcar una palabra. */
+:root { --redondeo: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 70' preserveAspectRatio='none'><path d='M70,8 C30,10 8,20 8,35 C8,51 46,63 112,62 C176,61 212,50 212,34 C212,19 172,9 108,8 C88,7.6 68,9 52,13' fill='none' stroke='%23c2543f' stroke-width='2.6' stroke-linecap='round' vector-effect='non-scaling-stroke'/></svg>"); }
+.redondeo {
+  position: relative;
+  font-weight: 650;
+  white-space: nowrap;
+  padding: .2em .9em;
+  margin: 0 .2em;
+  background-image: var(--redondeo);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 138%;
+}
+body.dark { --redondeo: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 70' preserveAspectRatio='none'><path d='M70,8 C30,10 8,20 8,35 C8,51 46,63 112,62 C176,61 212,50 212,34 C212,19 172,9 108,8 C88,7.6 68,9 52,13' fill='none' stroke='%23f08a72' stroke-width='2.6' stroke-linecap='round' vector-effect='non-scaling-stroke'/></svg>"); }
+
+/* Subrayado a mano. La ondulación mínima lo separa del subrayado del navegador. */
+:root { --subrayado: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 12' preserveAspectRatio='none'><path d='M3,8 C55,3 95,10 140,6 C170,3.5 195,7 217,5' fill='none' stroke='%23e2a52b' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/></svg>"); }
+.sub-lapiz {
+  background-image: var(--subrayado);
+  background-repeat: no-repeat;
+  background-position: left calc(100% - 1px);
+  background-size: 100% .42em;
+  padding-bottom: .12em;
+  font-weight: 600;
+}
+body.dark { --subrayado: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 12' preserveAspectRatio='none'><path d='M3,8 C55,3 95,10 140,6 C170,3.5 195,7 217,5' fill='none' stroke='%23f3c76b' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/></svg>"); }
+
+@media print {
+  .redondeo, .sub-lapiz { background-image: none; text-decoration: underline; }
+}
+
+/* Bloque colapsable de ampliación, con el rótulo de qué contiene */
+details.amplia > summary { color: var(--ink-soft); font-size: .95rem; }
+details.amplia > summary .etiqueta {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: .1rem;
+}
+
+/* ============================================================
+   Ancho: una sola medida
+   ============================================================
+   Todo comparte el mismo borde izquierdo y el mismo derecho. Lo que no
+   entra en esa medida scrollea adentro de su propia caja —el overflow-x
+   de pre y de .table-wrap—, en lugar de salirse con margenes negativos
+   y desalinear la pagina. */
+
+body {
+  padding-left: 1.4em;
+  padding-right: 1.4em;
+}
+
+@media (max-width: 620px) {
+  body { padding-left: 1em; padding-right: 1em; }
+  .toc ol { columns: 1; }
+}
+
+/* ============================================================
+   Esquemas conceptuales en SVG
+   ============================================================
+   Dibujan la idea, no los archivos. Los colores salen de las variables
+   del tema, así que acompañan el modo claro y el oscuro sin duplicar
+   el dibujo. El viewBox los deja escalar al ancho disponible. */
+
+.esquema {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  margin-block: 1.6em;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: .6em;
+  box-shadow: var(--shadow);
+}
+.esquema text { fill: currentColor; font-family: inherit; }
+.esquema .rotulo { font-size: 13px; }
+.esquema .titulo { font-size: 14px; font-weight: 700; }
+.esquema .chico { font-size: 11.5px; fill: var(--ink-light); }
+.esquema .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.esquema .caja { fill: var(--bg); stroke: var(--border); stroke-width: 1.5; }
+.esquema .caja-acento { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.esquema .caja-alerta { fill: var(--warm-soft); stroke: var(--warm); stroke-width: 1.5; }
+.esquema .linea { stroke: var(--ink-light); stroke-width: 1.5; fill: none; }
+.esquema .linea-acento { stroke: var(--accent); stroke-width: 2; fill: none; }
+.esquema .divisoria { stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.esquema .acento { fill: var(--accent); }
+
+body.dark .esquema .caja-acento { fill: rgba(129,140,248,.16); }
+body.dark .esquema .caja-alerta { fill: rgba(167,139,250,.16); }
+
+@media (max-width: 640px) { .esquema { padding: .3em; } }
+
+/* Pasos numerados de una práctica */
+ol.pasos { counter-reset: paso; list-style: none; padding-left: 0; }
+ol.pasos > li {
+  counter-increment: paso;
+  position: relative;
+  padding: .1em 0 .9em 2.6em;
+  margin: 0;
+}
+ol.pasos > li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 0; top: .05em;
+  width: 1.75em; height: 1.75em;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .82em; font-weight: 700;
+  color: #fff; background: var(--accent);
+  border-radius: 50%;
+}
+
+/* ============================================================
+   Predecir antes de probar, y diagnóstico cuando no pasa
+   ============================================================
+   Una prueba enseña cuando el resultado se compara con lo que se
+   esperaba. El recuadro de predicción va antes de la prueba; el de
+   diagnóstico, después, y da el orden de búsqueda sin dar la respuesta. */
+
+.prediccion, .diagnostico {
+  border-radius: var(--radius);
+  padding: .85em 1.1em;
+  margin: 1.1em 0;
+  font-size: .96em;
+}
+.prediccion { background: var(--accent-soft); border-left: 3px solid var(--accent); }
+.diagnostico { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--warm); }
+.prediccion .rot, .diagnostico .rot {
+  display: block;
+  font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; margin-bottom: .35em;
+}
+.prediccion .rot { color: var(--accent); }
+.diagnostico .rot { color: var(--warm); }
+.diagnostico ol { margin: .4em 0 0; padding-left: 1.3em; }
+.diagnostico li { margin: .3em 0; }
+body.dark .prediccion { background: rgba(129,140,248,.14); }
+
+/* ============================================================
+   Tablas que entran en el ancho de un teléfono
+   ============================================================
+   Abajo de 560 px la tabla deja de ser tabla y cada fila pasa a ser una
+   tarjeta. El rótulo de cada dato sale del encabezado, que estudiantes.js
+   copia a la celda. Así entra en el ancho, sin scroll horizontal y sin
+   recortar columnas. */
+
+@media (max-width: 560px) {
+  table.apilable, table.apilable tbody, table.apilable tr, table.apilable td {
+    display: block;
+    width: auto;
+  }
+  table.apilable thead { display: none; }
+  table.apilable tr {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: .7em .9em;
+    margin: 0 0 .8em;
+  }
+  table.apilable td {
+    border: 0;
+    padding: .35em 0;
+  }
+  table.apilable td + td { border-top: 1px solid var(--border-soft); }
+  table.apilable td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    display: block;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: .15em;
+  }
+}
+
+/* ============================================================
+   Encontrar el error en el código
+   ============================================================
+   Se muestra un fragmento real con un defecto y se pregunta cuál es.
+   Leer código ajeno buscando qué falla es lo que después se hace sobre
+   el propio, así que la actividad ensaya exactamente eso. */
+
+.encontra-error { margin-block: 1.6em; }
+.encontra-error > .consigna {
+  display: flex; align-items: baseline; gap: .6em;
+  margin: 0 0 .5em;
+  font-weight: 600;
+}
+.encontra-error > .consigna .rot {
+  font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--warm);
+}
+.encontra-error pre { margin: 0 0 .3em; }
+.encontra-error pre code { counter-reset: linea; }
+.encontra-error .ln {
+  display: block;
+  counter-increment: linea;
+  padding-left: 3.2em;
+  text-indent: -3.2em;
+}
+.encontra-error .ln::before {
+  content: counter(linea);
+  display: inline-block;
+  width: 2.2em;
+  margin-right: 1em;
+  text-align: right;
+  color: #6b7280;
+  text-indent: 0;
+}
+.encontra-error .quiz-q { margin-top: .6em; }
+
+/* Cada bloque de la teoría con su color, para que se distingan al recorrer */
+.parte[data-bloque="2"] { border-bottom-color: var(--warm); }
+.parte[data-bloque="2"] span { color: var(--warm); }
+nav.toc li.toc-parte[data-bloque="2"] { color: var(--warm); }
+.parte .subtitulo {
+  display: block;
+  margin-left: auto;
+  font-size: .84rem;
+  font-weight: 400;
+  color: var(--ink-light);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Los materiales de la clase, enlazados entre sí desde cada uno */
+.materiales-clase {
+  grid-column: 1 / -1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 1em 1.2em;
+  margin-block: 1.6em;
+}
+.materiales-clase > .rot {
+  display: block;
+  font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-light);
+  margin-bottom: .7em;
+}
+.materiales-clase ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .55em; }
+@media (min-width: 760px) { .materiales-clase ul { grid-template-columns: 1fr 1fr; gap: .55em 1.6em; } }
+.materiales-clase li { margin: 0; font-size: .94rem; }
+.materiales-clase a { font-weight: 600; }
+.materiales-clase .desc { color: var(--ink-soft); }
+.materiales-clase li.actual { color: var(--ink-light); }
+.materiales-clase li.actual strong { color: var(--ink); }
+
+/* Los desplegables se leían como una línea fina al lado de los recuadros.
+   Con la barra tintada y el signo más se ve que hay algo adentro. */
+details.amplia {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  padding: 0;
+  overflow: hidden;
+}
+details.amplia > summary {
+  padding: .8em 1.1em;
+  background: var(--accent-soft);
+  font-size: 1rem;
+  color: var(--ink);
+  gap: .55em;
+}
+details.amplia > summary:hover { filter: brightness(.98); }
+details.amplia > summary::before {
+  content: "+";
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  width: 1.25em; height: 1.25em;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  color: #fff; background: var(--accent);
+  transform: none;
+}
+details.amplia[open] > summary::before { content: "−"; transform: none; }
+details.amplia[open] > summary { border-bottom: 1px solid var(--border); }
+details.amplia > *:not(summary) { padding-left: 1.1em; padding-right: 1.1em; }
+/* El boton Copiar se posiciona contra .code-wrap: si el sangrado del
+   desplegable se lo come el envoltorio, el boton queda fuera del bloque
+   oscuro. Aca el sangrado va por margen, y el envoltorio coincide con el pre. */
+details.amplia > .code-wrap {
+  padding-left: 0; padding-right: 0;
+  margin-left: 1.1em; margin-right: 1.1em;
+}
+details.amplia > *:last-child { padding-bottom: .9em; }
+details.amplia > summary::after {
+  content: "desplegar";
+  margin-left: auto;
+  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--accent);
+}
+details.amplia[open] > summary::after { content: "plegar"; }
+body.dark details.amplia > summary { background: rgba(129,140,248,.14); }
+
+
+/* ============================================================
+   Tablas
+   ============================================================
+   Se leen de a filas, así que lo que las ordena es el renglón: encabezado
+   con peso, filas alternadas suaves, y la primera columna marcada porque
+   casi siempre es la que nombra la fila. */
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: .96em;
+}
+table thead th {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: .85em 1.05em;
+  border-bottom: 1px solid var(--border);
+  vertical-align: bottom;
+}
+table tbody td {
+  padding: .85em 1.05em;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+  line-height: 1.55;
+}
+table tbody tr:last-child td { border-bottom: 0; }
+table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--bg) 55%, transparent); }
+table tbody tr:hover td { background: var(--accent-soft); }
+table tbody td:first-child { font-weight: 600; color: var(--ink); }
+table td code, table th code { font-size: .92em; }
+
+/* una tabla de comparación, con la primera columna de rótulos */
+table.comparacion td:first-child { background: var(--bg); white-space: nowrap; }
+
+body.dark table thead th { background: rgba(129,140,248,.16); color: var(--ink); }
+body.dark table tbody tr:hover td { background: rgba(129,140,248,.10); }
+
+@media (max-width: 560px) {
+  table.apilable tbody tr:nth-child(even) td { background: transparent; }
+  table.apilable { border-radius: 0; border: 0; box-shadow: none; background: transparent; }
+}
