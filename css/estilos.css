@@ -474,8 +474,8 @@ details[open] summary::before { transform: rotate(90deg); }
 /* ─── Comparación de código antes/después (teoría) ───
    El <pre> mantiene el fondo oscuro de siempre (buen contraste);
    antes/después se distinguen con un borde de color, no con fondo claro. */
-.code-switch { margin: 1em 0; display: grid; gap: .8em; }
-.code-switch .code-wrap { margin: 0; }
+.code-switch { margin: 1em 0; display: grid; gap: .8em; min-width: 0; }
+.code-switch .code-wrap { margin: 0; min-width: 0; overflow-x: auto; }
 .code-switch pre { margin: 0; }
 .code-switch .old { border-left: 4px solid #fb7185; }   /* rojo: el "antes" */
 .code-switch .new { border-left: 4px solid #4ade80; }   /* verde: el "después" */
@@ -727,3 +727,106 @@ figure.captura figcaption { font-size: .88em; color: var(--ink-light); margin-to
   background: var(--surface);
 }
 .preview-open { font-size: .85em; font-weight: 600; align-self: flex-start; }
+
+/* ============================================================
+   Resaltador, candado y estados del quiz con intentos
+   (agregado con la clase de auditoría del CRUD, 3-9-2026)
+   ============================================================ */
+
+/* --- Marcar el texto mientras se lee --- */
+
+mark.resaltado {
+  background: #fde9a8;
+  color: inherit;
+  border-radius: 3px;
+  padding: .05em .06em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  cursor: pointer;
+}
+body.dark mark.resaltado { background: rgba(243, 199, 107, .3); color: inherit; }
+
+.marcador-btn {
+  position: absolute;
+  z-index: 60;
+  transform: translateY(-50%);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: .45rem .7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.marcador-btn.izquierda { transform: translate(-100%, -50%); }
+.marcador-btn.arriba { transform: none; }
+.marcador-btn:hover { filter: brightness(1.08); }
+
+.marcador-ayuda {
+  font-size: .88rem;
+  color: var(--ink-light);
+  border-left: 3px solid var(--border);
+  padding: .5rem .8rem;
+  margin: 0 0 1.2rem;
+}
+
+/* --- El código de la clase --- */
+
+.candado {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warm);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: .9rem 1rem;
+  margin: 1.4rem 0;
+}
+.candado.abierto { border-left-color: var(--ok); }
+.candado-t { margin: 0 0 .7rem; font-size: .93rem; color: var(--ink-soft); }
+.candado-fila { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.candado-input {
+  font: inherit;
+  padding: .4rem .6rem;
+  min-width: 12rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.candado-input:disabled { opacity: .6; }
+.candado-estado { font-size: .88rem; font-weight: 600; color: var(--ink-soft); }
+.candado.abierto .candado-estado { color: var(--ok); }
+.candado.cerrado .candado-estado { color: var(--warm); }
+
+.cerrado {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: .8rem 1rem;
+  margin: 1rem 0;
+  background: var(--border-soft);
+}
+.cerrado-aviso { margin: 0; font-size: .9rem; color: var(--ink-light); }
+.cerrado .cerrado-texto { display: none; }
+.cerrado.abierto {
+  border-style: solid;
+  border-color: var(--ok);
+  background: var(--surface);
+}
+.cerrado.abierto .cerrado-texto { display: block; }
+
+/* --- Opciones agotadas del quiz con intentos --- */
+
+.quiz-opt:disabled { cursor: default; }
+.quiz-opt:disabled:not(.correct):not(.wrong) { opacity: .55; }
+
+@media print {
+  .marcador-btn, .marcador-ayuda, .candado { display: none; }
+  .cerrado { border-style: solid; }
+}
+
+/* Índice de una página cuyas secciones ya traen su número escrito */
+nav.toc ol.sin-numero { list-style: none; padding-left: 0; }
