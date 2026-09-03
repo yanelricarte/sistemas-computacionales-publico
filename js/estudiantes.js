@@ -262,6 +262,26 @@
     }
   })();
 
+  // === Tablas que se apilan en pantallas angostas ===
+  // Cada celda se queda con el rótulo de su columna, para que al apilarse
+  // siga sabiéndose qué es cada dato. El apilado lo hace el CSS; acá solo
+  // se copian los encabezados.
+  (function () {
+    document.querySelectorAll('table').forEach(function (t) {
+      var enc = t.querySelector('thead tr');
+      if (!enc) return;
+      var titulos = Array.prototype.map.call(enc.children, function (c) {
+        return (c.textContent || '').trim();
+      });
+      t.querySelectorAll('tbody tr').forEach(function (fila) {
+        Array.prototype.forEach.call(fila.children, function (celda, i) {
+          if (titulos[i]) celda.setAttribute('data-rotulo', titulos[i]);
+        });
+      });
+      t.classList.add('apilable');
+    });
+  })();
+
   // === "Completá el código" — escribir con feedback ===
   // Markup: <div class="code-check" data-answer="resp1|resp2" data-hint="...">
   //           <p>consigna…</p>

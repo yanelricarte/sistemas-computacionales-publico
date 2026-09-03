@@ -22,29 +22,49 @@
 <div class="hero">
   <div class="eyebrow">Clase 8 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
   <h1>Auditar, reparar y proteger el sistema</h1>
-  <p class="sub">Tu sistema ya <strong>hace</strong> cosas: da de alta, lista, edita y borra. Hoy se responden las dos preguntas que le faltan. La primera es si está <strong>bien hecho</strong>: diez comprobaciones sobre tu propio código, con lo que hay que corregir en cada una. La segunda es si <strong>sabe quién</strong> está del otro lado: un login contra la base y una guardia arriba de cada página que escribe.</p>
+  <p class="sub">El tema de la clase de hoy es la <strong>seguridad de una aplicación web</strong>. Vamos a revisar el código del sistema que ya tienen funcionando, corregir lo que aparezca y agregarle un control de acceso. Los contenidos son: inyección SQL y consultas preparadas, escape de la salida hacia la página, comprobación de los datos en el servidor, resguardo de las credenciales de conexión, contraseñas guardadas con hash, sesiones y autorización por rol.</p>
 </div>
 
 <nav class="toc">
   <h3>En esta página</h3>
   <ol class="sin-numero">
     <li><a href="#s0">Antes de empezar</a></li>
-    <li><a href="#c1">1. La llave, fuera del repositorio</a></li>
-    <li><a href="#c2">2. El juego de caracteres de la conexión</a></li>
-    <li><a href="#c3">3. Las consultas con datos que vienen de afuera</a></li>
-    <li><a href="#c4">4. Lo que se muestra en pantalla</a></li>
-    <li><a href="#c5">5. El motor de las tablas y la clave foránea</a></li>
-    <li><a href="#c6">6. La comprobación del lado del servidor</a></li>
-    <li><a href="#c7">7. El id que viaja escondido</a></li>
-    <li><a href="#c8">8. El enlace que borra</a></li>
-    <li><a href="#c9">9. Las contraseñas guardadas</a></li>
-    <li><a href="#c10">10. Lo que ve el visitante cuando algo sale mal</a></li>
-    <li><a href="#l1">11. El login contra la base</a></li>
-    <li><a href="#l2">12. La guardia</a></li>
+    <li><a href="#cero">Punto de partida</a></li>
+    <li class="toc-parte">Parte 1 · Exposición de información</li>
+    <li><a href="#c1">1. Llave fuera del repositorio</a></li>
+    <li><a href="#c10">2. Mensajes de error en pantalla</a></li>
+    <li class="toc-parte">Parte 2 · Configuración de la base</li>
+    <li><a href="#c2">3. Juego de caracteres de la conexión</a></li>
+    <li><a href="#c5">4. Motor de las tablas y clave foránea</a></li>
+    <li><a href="#afuera">Datos que llegan de afuera</a></li>
+    <li class="toc-parte">Parte 3 · Datos que llegan de afuera</li>
+    <li><a href="#c3">5. Consultas con datos que vienen de afuera</a></li>
+    <li><a href="#c4">6. Datos impresos en la página</a></li>
+    <li><a href="#c6">7. Comprobación del lado del servidor</a></li>
+    <li><a href="#c7">8. Id oculto del formulario</a></li>
+    <li><a href="#c8">9. Enlace que borra</a></li>
+    <li><a href="#memoria">Memoria entre dos pedidos</a></li>
+    <li class="toc-parte">Parte 4 · Control de acceso</li>
+    <li><a href="#c9">10. Contraseñas guardadas</a></li>
+    <li><a href="#l1">11. Login contra la base</a></li>
+    <li><a href="#l2">12. Guardia de acceso</a></li>
     <li><a href="#estado">Estado del equipo</a></li>
     <li><a href="#quiz">Práctica final</a></li>
+    <li><a href="#documentacion">Material para el documento del proyecto</a></li>
+    <li><a href="#transferencia">Para cerrar: el sistema de otro equipo</a></li>
+    <li><a href="#referencias">Referencias</a></li>
   </ol>
 </nav>
+
+<div class="materiales-clase">
+  <span class="rot">Materiales de la Clase 8</span>
+  <ul>
+    <li><a href="clase-08-teoria.html">Teoría de la Clase 8</a> <span class="desc">— Conectar PHP con MySQL: la conexión, el listado que lee la base y el formulario que escribe. Dos bloques, cada uno con su práctica.</span></li>
+    <li><a href="clase-08-tp.html">TP de la Clase 8</a> <span class="desc">— La consigna con los pasos, los checkpoints y la checklist de autoverificación.</span></li>
+    <li class="actual"><strong>Auditoría del CRUD</strong> <span class="desc">— estás acá</span></li>
+    <li><a href="../deploy/publicar-el-sitio.html">Publicar el sitio</a> <span class="desc">— El despliegue paso a paso: hosting, base en el servidor y comprobación de lo publicado.</span></li>
+  </ul>
+</div>
 
 <main>
 
@@ -53,25 +73,121 @@
   Antes de empezar
 </h2>
 
-<p>Trabajen los cuatro sobre la misma máquina: uno maneja y los demás leen. Cada comprobación dice <strong>qué abrir</strong>, <strong>qué tiene que pasar</strong> y <strong>qué corregir</strong> cuando pasa otra cosa. Al final de cada una hay una pregunta corta para responder entre todos antes de seguir.</p>
+<p>El sistema del proyecto ya da de alta, lista, edita y borra. En esta clase van a revisar <em>cómo</em> está hecho eso, corregir lo que aparezca, y agregarle lo que todavía le falta para saber quién lo está usando.</p>
+
+<h3>Contenidos</h3>
+
+<ul>
+  <li>Separación entre código y configuración. El archivo <code>.env</code> y el <code>.gitignore</code>.</li>
+  <li>Mensajes de error y exposición de información del sistema.</li>
+  <li>Juegos de caracteres y el acuerdo de la conexión.</li>
+  <li>Motores de almacenamiento e integridad referencial.</li>
+  <li><span class="redondeo">Inyección SQL</span> y sentencias preparadas.</li>
+  <li>Escape de la salida hacia la página.</li>
+  <li>Validación del lado del servidor. Métodos <code>GET</code> y <code>POST</code>.</li>
+  <li>Funciones de hash, sal y costo, aplicadas al guardado de contraseñas.</li>
+  <li>HTTP sin estado, cookies y <span class="redondeo">sesiones</span>.</li>
+  <li>Autenticación, autorización y control de acceso por rol.</li>
+</ul>
+
+<h3>Trabajo de la clase</h3>
+
+<table>
+  <thead>
+    <tr><th>Parte</th><th>Qué se hace</th><th>Con qué queda el sistema</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1.</strong> Exposición de información</td>
+      <td>Revisar qué muestra el sistema sin querer, y taparlo</td>
+      <td>La conexión fuera del repositorio y los errores fuera de la pantalla del visitante</td>
+    </tr>
+    <tr>
+      <td><strong>2.</strong> Configuración de la base</td>
+      <td>Comprobar el acuerdo de la conexión y el motor de las tablas</td>
+      <td>Las tildes bien en el listado y la clave foránea aplicándose de verdad</td>
+    </tr>
+    <tr>
+      <td><strong>3.</strong> Datos que llegan de afuera</td>
+      <td>Reparar las consultas, la salida y las comprobaciones del servidor</td>
+      <td>El CRUD aguantando un apóstrofo y una etiqueta HTML en un nombre</td>
+    </tr>
+    <tr>
+      <td><strong>4.</strong> Control de acceso</td>
+      <td>Crear la tabla de usuarios y proteger las páginas que escriben</td>
+      <td>Login contra la base, y una guardia arriba de cada página que modifica datos</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Se cierra con la tabla de estado completa y el avance versionado. Las dos primeras partes reúnen fallas que no producen ningún mensaje de error; la tercera y la cuarta empiezan con una explicación teórica que conviene leer antes de tocar el código.</p>
 
 <div class="callout callout-tip">
-  <div class="callout-title">Empiecen por las que fallan calladas</div>
-  Las comprobaciones <a href="#c1">1</a>, <a href="#c2">2</a>, <a href="#c5">5</a> y <a href="#c9">9</a> tienen algo en común: el sistema sigue andando igual y el problema aparece más tarde. Ninguna da un mensaje de error, así que se buscan, no se esperan.
+  <div class="callout-title">Qué entra hoy y qué queda de consulta</div>
+  Esta página es más larga que la clase, a propósito: sirve durante el trabajo y también después. <strong>El núcleo del día</strong> son las diez comprobaciones recorridas y registradas, las consultas del CRUD preparadas y probadas con el apóstrofo, y el commit. Lo que está adentro de un desplegable <em>Ampliación</em>, y las secciones 11 y 12, entran si el tiempo alcanza; si no, quedan para la clase que viene y la página sigue disponible. Nadie tiene que leerla entera en cuatro módulos.
 </div>
 
-<p class="marcador-ayuda"><strong>Para marcar lo importante:</strong> hacé doble clic sobre una palabra para resaltarla, o seleccioná una frase y tocá el botón que aparece al costado. Para sacar una marca, doble clic encima. Lo marcado queda guardado en este navegador. <button type="button" class="btn" data-marcador-limpiar hidden></button></p>
+<details class="amplia">
+  <summary><span class="etiqueta">Cómo usar</span> el material, las actividades y el resaltador</summary>
 
-<p>Las preguntas dan <strong>tres intentos</strong>: si errás, se marca la opción, aparece una pista y seguís probando. La respuesta se muestra recién cuando se agotan.</p>
+  <p>Cada comprobación indica en negrita <strong>dónde mirar</strong>, y desarrolla después <strong>el resultado esperado</strong>, <strong>el síntoma</strong> de que algo anda mal, <strong>el motivo</strong> por el que importa y <strong>la corrección</strong>. Cierra con una actividad de resolución.</p>
+
+  <p>Las actividades admiten tres intentos. Cada error muestra una pista distinta, y la respuesta aparece al agotarlos.</p>
+
+  <p class="marcador-ayuda">El texto se puede resaltar con doble clic sobre una palabra, o seleccionando una frase y usando el botón que aparece al costado. Un doble clic sobre una marca la quita. Las marcas quedan guardadas en este navegador. <button type="button" class="btn" data-marcador-limpiar hidden></button></p>
+</details>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Consigna del día</div>
+  Al terminar la clase, cada equipo entrega tres cosas. <strong>Una</strong>, el sistema con las correcciones aplicadas y versionado, con un commit cuyo mensaje diga qué se arregló. <strong>Dos</strong>, la tabla de estado completa, con lo que andaba, lo que se corrigió, quién lo hizo y qué quedó pendiente con fecha. <strong>Tres</strong>, las tres respuestas del registro del equipo, escritas en la carpeta. Lo demás de esta página —las actividades, las resoluciones cerradas, la práctica final— es para trabajar, y no se entrega.
+</div>
+
+<details class="amplia">
+  <summary><span class="etiqueta">Evaluación</span> Con qué se mira el trabajo de hoy</summary>
+
+  <p>La observación de la clase registra nueve momentos. No hay nota: se anota logrado, parcial o no logrado, y sirve para saber dónde parar y a quién acompañar.</p>
+
+  <ol>
+    <li>Explican por qué el <code>required</code> de un formulario no gobierna lo que llega al servidor.</li>
+    <li>Anticipan el resultado de la prueba del apóstrofo <em>antes</em> de que aparezca en pantalla.</li>
+    <li>Recorrieron las diez comprobaciones y las registraron. Ante «mostrame dónde lo comprobaste», señalan el código.</li>
+    <li>Explican la diferencia entre pegar el dato y prepararlo, sin repetir la definición.</li>
+    <li>Cuántas de las consultas quedaron preparadas <em>y probadas</em>, más el escape de la salida.</li>
+    <li>Explican el camino de ida de una contraseña sin usar la palabra «encriptar».</li>
+    <li>El login entra con el usuario correcto y rechaza el incorrecto, contra la base.</li>
+    <li>La prueba de escribir la dirección de <code>editar.php</code> a mano, hecha delante de la docente.</li>
+    <li>Commit con mensaje que dice qué se arregló, y tabla de estado entregada.</li>
+  </ol>
+</details>
 
 <div class="candado" data-paquete="SOLUCIONES_AUDITORIA"></div>
 
-<h2 id="c1">
-  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-  1. La llave, fuera del repositorio
+<h2 id="cero">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/></svg>
+  Punto de partida
 </h2>
 
-<p><strong>En GitHub.</strong> Entrá a tu repositorio <strong>en GitHub, desde el navegador</strong>, y buscá <code>conexion.php</code> (o como se llame el archivo donde están el usuario y la contraseña de MySQL). Mirar la carpeta de tu máquina no sirve: la pregunta es qué subiste.</p>
+<p>Todo lo que sigue da por hecho que el sistema hace las cuatro operaciones. Antes de empezar, compruébenlo, porque lleva dos minutos y decide el resto del día.</p>
+
+<ol class="pasos">
+  <li>Carguen una fila desde el formulario del sitio.</li>
+  <li>Vean esa fila en el listado.</li>
+  <li>Edítenla y comprueben que el cambio quedó.</li>
+  <li>Bórrenla.</li>
+</ol>
+
+<p><strong>Si las cuatro andan</strong>, sigan con la Parte 1.</p>
+
+<p><strong>Si alguna falla</strong>, ese es su trabajo de hoy y hay que avisarlo. Las comprobaciones <a href="#c1">1</a> y <a href="#c10">10</a>, y las dos explicaciones teóricas, se hacen igual, porque no dependen de que el CRUD esté completo. Las demás quedan para cuando la operación que falta funcione.</p>
+
+<p class="parte"><span>Parte 1</span> Exposición de información</p>
+
+<h2 id="c1">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  1. Llave fuera del repositorio
+</h2>
+
+<p><strong>En GitHub.</strong> Desde el navegador, entren al repositorio del equipo y busquen <code>conexion.php</code> (o como se llame el archivo donde están el usuario y la contraseña de MySQL). La comprobación es sobre lo que subiste, así que se hace en GitHub y no en la carpeta de la máquina.</p>
 
 <p><strong>El resultado esperado.</strong> El archivo no aparece en GitHub.</p>
 
@@ -80,7 +196,7 @@
 <pre><code class="language-bash"># 1) que Git deje de seguirlo de ahora en adelante
 echo "conexion.php" &gt;&gt; .gitignore
 
-# 2) sacarlo del repositorio sin borrarlo de tu maquina
+# 2) sacarlo del repositorio sin borrarlo de la maquina
 git rm --cached conexion.php
 git add .gitignore
 git commit -m "La conexion sale del repositorio"
@@ -88,11 +204,15 @@ git push
 
 # 3) cambiar la contrasena: lo que estuvo subido quedo en el historial</code></pre>
 
-<p>Para que un compañero sepa qué archivo le falta, subí un <code>conexion-ejemplo.php</code> con la forma y sin los datos reales.</p>
+<p>Para que un compañero sepa qué archivo le falta, suban un <code>conexion-ejemplo.php</code> con la forma y sin los datos reales.</p>
 
-<h3>El archivo de configuración y el <code>.gitignore</code></h3>
+<p><strong>El motivo.</strong> Un programa tiene dos clases de contenido. El <strong>código</strong> es el mismo en todas las máquinas donde el sistema corre, y por eso se comparte: para eso existe el repositorio. La <strong>configuración</strong> cambia en cada máquina —la dirección de la base, el usuario, la contraseña— y además es secreta. Un repositorio distribuye: todo lo que entra ahí se copia a cada clon y queda registrado en cada versión. Mezclar las dos clases de contenido en un mismo archivo hace que el secreto se distribuya con el código.</p>
 
-<p>Lo que están haciendo con <code>conexion.php</code> tiene un nombre y una convención. En casi todos los lenguajes ese archivo se llama <strong><code>.env</code></strong> —de <em>environment</em>, el entorno donde corre el sistema— y guarda lo que cambia de una máquina a otra: la dirección de la base, el usuario, la contraseña, las claves de los servicios que el sistema usa. Laravel, Node y Python trabajan así. En el PHP que escriben ustedes, <code>conexion.php</code> cumple exactamente ese papel.</p>
+<details class="amplia">
+  <summary><span class="etiqueta">Ampliación</span> Archivo de configuración y <code>.gitignore</code></summary>
+
+
+<p>Lo que estás haciendo con <code>conexion.php</code> tiene un nombre y una convención. En casi todos los lenguajes ese archivo se llama <strong><code>.env</code></strong> —de <em>environment</em>, el entorno donde corre el sistema— y guarda lo que cambia de una máquina a otra: la dirección de la base, el usuario, la contraseña, las claves de los servicios que el sistema usa. Laravel, Node y Python trabajan así. En el PHP que escriben ustedes, <code>conexion.php</code> cumple exactamente ese papel.</p>
 
 <p>La regla es siempre la misma, y tiene dos mitades:</p>
 
@@ -116,26 +236,68 @@ Thumbs.db</code></pre>
   <div class="callout-title"><code>node_modules</code>, la carpeta que se regenera sola</div>
   Esa carpeta son las <strong>dependencias</strong>: código que escribió otra gente y que el proyecto usa. Se vuelve a bajar entera con un solo comando a partir de <code>package.json</code>, que sí va al repositorio, así que guardarla es de más: son decenas de miles de archivos que hacen lento cada clonado. Con <code>vendor/</code> de PHP pasa lo mismo: se reconstruye desde <code>composer.json</code>.
   <br><br>
-  El criterio que ordena las dos cosas: <strong>al repositorio va lo que ustedes escriben y lo que hace falta para reconstruir el resto.</strong> Queda afuera lo que se regenera solo, y lo que es secreto.
+  El criterio que ordena las dos cosas: <strong>al repositorio va lo que escriben ustedes y lo que hace falta para reconstruir el resto.</strong> Queda afuera lo que se regenera solo, y lo que es secreto.
 </div>
 
-<div class="code-check" data-answer="node_modules/|node_modules"
-  data-hint1="Es una carpeta, así que conviene la barra al final."
-  data-hint2="Es la que baja npm con las dependencias de Node.">
-  <p><strong>Escribilo.</strong> La línea del <code>.gitignore</code> que deja afuera la carpeta de dependencias de Node.</p>
-  <div class="code-check-row">
-    <input class="code-check-input" aria-label="Línea del gitignore para las dependencias de Node" placeholder="una línea">
-    <button type="button" class="btn code-check-btn">Comprobar</button>
-  </div>
-  <div class="code-check-feedback" aria-live="polite"></div>
+</details>
+
+
+
+<div class="quiz-q" data-correct="a"
+  data-hint1="Git guarda todas las versiones anteriores de cada archivo."
+  data-hint2="Pensá qué ve alguien que clona el repositorio y mira los commits viejos."
+  data-explanation="El comando lo saca de ahora en adelante. Los commits anteriores siguen teniendo el archivo con la contraseña adentro, y cualquiera que clone el repositorio los tiene.">
+  <p><strong>Pregunta.</strong> Ya sacaste <code>conexion.php</code> del repositorio y pusheaste. La contraseña que estaba adentro…</p>
+  <button type="button" class="quiz-opt" data-opt="a">a) Sigue estando en el historial, y hay que cambiarla</button>
+  <button type="button" class="quiz-opt" data-opt="b">b) Desaparece del repositorio apenas se hace el push</button>
+  <button type="button" class="quiz-opt" data-opt="c">c) Queda protegida, porque el <code>.gitignore</code> la ignora</button>
+  <div class="quiz-feedback"></div>
 </div>
+
+<h2 id="c10">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+  2. Mensajes de error en pantalla
+</h2>
+
+<p><strong>En todo el código.</strong> Busquen <code>mysqli_error</code> y <code>or die</code> en el código.</p>
+
+<p><strong>El resultado esperado.</strong> El visitante lee una frase común. El detalle técnico queda para ustedes.</p>
+
+<p><strong>El síntoma.</strong> Lo más probable es que tengas esto:</p>
+
+<pre><code class="language-php">mysqli_query($conexion, $sql) or die(mysqli_error($conexion));</code></pre>
+
+<p><strong>El motivo.</strong> Un sistema devuelve dos clases de información cuando algo falla. Una es para quien lo usa, y solo necesita saber que la operación no se completó. La otra es para quien lo programa, y describe qué falló y dónde. Cuando las dos van a la misma pantalla, el sistema le entrega a cualquier visitante una descripción de su propia estructura. Reunir esa descripción es la primera etapa de cualquier intento de entrar a un sistema, y provocarle errores a propósito es la forma más barata de conseguirla.</p>
+
+<p>Ese mensaje muestra los nombres de las tablas y de las columnas, y a veces la ruta del archivo en el servidor.</p>
+
+<p><strong>La corrección.</strong> El detalle va al registro del servidor, y al visitante le llega un aviso común:</p>
+
+<pre><code class="language-php">if (!mysqli_stmt_execute($sentencia)) {
+  error_log(mysqli_error($conexion));
+  header('Location: listado.php?error=guardar');
+  exit;
+}</code></pre>
+
+<p>Mientras desarrollan conviene ver el error completo. Lo que cambia es que el sistema quede así el día que lo muestran.</p>
+
+<div class="quiz-q" data-correct="v"
+  data-hint1="El mensaje nombra la tabla y la columna donde falló la consulta."
+  data-explanation="Con dos o tres errores provocados a propósito, alguien de afuera reconstruye buena parte del esquema: qué tablas hay y cómo se llaman sus columnas. Que el visitante común lo ignore es justamente lo que hace que pase desapercibido.">
+  <p><strong>Verdadero o falso.</strong> El mensaje de error de MySQL le sirve a alguien que quiere entrar al sistema, aunque el visitante común lo ignore.</p>
+  <button type="button" class="quiz-opt" data-opt="v">Verdadero</button>
+  <button type="button" class="quiz-opt" data-opt="f">Falso</button>
+  <div class="quiz-feedback"></div>
+</div>
+
+<p class="parte"><span>Parte 2</span> Configuración de la base</p>
 
 <h2 id="c2">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
-  2. El juego de caracteres de la conexión
+  3. Juego de caracteres de la conexión
 </h2>
 
-<p><strong>En <code>conexion.php</code>.</strong> Abrí tu <code>conexion.php</code> y buscá la línea <code>mysqli_set_charset</code>.</p>
+<p><strong>En <code>conexion.php</code>.</strong> Busquen la línea <code>mysqli_set_charset</code>.</p>
 
 <p><strong>El resultado esperado.</strong> Está, justo después de conectar:</p>
 
@@ -143,14 +305,33 @@ Thumbs.db</code></pre>
 $conexion = mysqli_connect('localhost', 'root', '', 'tu_base');
 mysqli_set_charset($conexion, 'utf8mb4');</code></pre>
 
-<p><strong>La corrección.</strong> Agregala. Sin esa línea las tildes y las eñes salen rotas en el sitio aunque la base esté creada con <code>utf8mb4_unicode_ci</code>: la base guarda bien y el canal las trae mal. Se nota enseguida en el listado, que es la pantalla que va al documento.</p>
+<p><strong>El motivo.</strong> Un <strong>juego de caracteres</strong> es un acuerdo sobre qué bytes representan qué caracteres. En <code>utf8mb4</code> la «ó» ocupa dos bytes; en <code>latin1</code>, donde un solo byte alcanza para 256 caracteres, ocupa uno.</p>
 
-<p><strong>La prueba:</strong> cargá un producto con tilde y miralo en la web.</p>
+<div class="callout callout-info">
+  <div class="callout-title">Dos cosas distintas que se eligen juntas</div>
+  Cuando crearon la base eligieron <code>utf8mb4_unicode_ci</code>, y eso es un <strong>cotejamiento</strong>, no un juego de caracteres. El juego de caracteres es <code>utf8mb4</code>, la primera parte del nombre, y dice cómo se guardan los caracteres. El cotejamiento es el resto, <code>unicode_ci</code>, y dice cómo se comparan y se ordenan: si «Ana» y «ana» son iguales para un <code>WHERE</code> —las letras <code>ci</code> son por <em>case insensitive</em>— y en qué orden salen las tildes en un <code>ORDER BY</code>. Cada cotejamiento pertenece a un juego de caracteres, y por eso el nombre empieza nombrándolo.
+</div>
 
-<div class="code-check" data-answer="mysqli_set_charset($conexion, 'utf8mb4');"
+<p>El problema aparece porque en este recorrido hay <strong>dos acuerdos en juego</strong>, y no tienen por qué coincidir. Uno es el de la tabla, que quedó fijado al crear la base. El otro es el de la <em>conexión</em>, que la biblioteca cliente establece con lo que traiga configurado. Si la tabla guarda en <code>utf8mb4</code> y la conexión pide los datos como <code>latin1</code>, los dos bytes de la «ó» viajan y se reinterpretan como dos caracteres sueltos, que es lo que se ve en pantalla como «Ã³». <code>mysqli_set_charset</code> declara el juego de caracteres de la conexión y la pone de acuerdo con la tabla.</p>
+
+<p><strong>La corrección.</strong> Agréguenla. Sin esa línea las tildes y las eñes salen rotas en el sitio aunque la tabla guarde en <code>utf8mb4</code>. Se nota enseguida en el listado, que es la pantalla que va al documento.</p>
+
+<div class="prediccion"><span class="rot">Antes de correrla</span>
+  Anoten en la carpeta qué creen que van a ver, y por qué. Después corran la prueba y comparen.</div>
+
+<p><strong>La prueba:</strong> carguen un producto con tilde y mírenlo en la web.</p>
+
+<div class="diagnostico"><span class="rot">Si no pasa lo que esperaban</span>
+  <ol>
+    <li>Miren el dato en phpMyAdmin. Si <em>ahí</em> está roto, el problema es anterior: entró mal.</li>
+    <li>Si en phpMyAdmin está bien y en la web sale roto, el problema es el canal, que es lo que corrige esta comprobación.</li>
+    <li>Si sigue roto con la línea puesta, miren que la etiqueta <code>&lt;meta charset="UTF-8"&gt;</code> del HTML también diga UTF-8.</li>
+  </ol></div>
+
+<div class="code-check" data-answer="mysqli_set_charset($conexion, 'utf8mb4');|mysqli_set_charset($conexion,'utf8mb4');|$conexion->set_charset('utf8mb4');"
   data-hint1="Recibe dos cosas: la conexión y el nombre del juego de caracteres."
   data-hint2="El juego de caracteres se escribe entre comillas, sin guion.">
-  <p><strong>Escribilo.</strong> La línea que va justo debajo de <code>mysqli_connect</code> en tu <code>conexion.php</code>.</p>
+  <p><strong>Escribilo.</strong> La línea que va justo debajo de <code>mysqli_connect</code> en el <code>conexion.php</code> del equipo. Escríbanla con <code>$conexion</code> como nombre de la variable.</p>
   <div class="code-check-row">
     <input class="code-check-input" aria-label="Línea que fija el juego de caracteres de la conexión" placeholder="una línea de PHP">
     <button type="button" class="btn code-check-btn">Comprobar</button>
@@ -158,43 +339,224 @@ mysqli_set_charset($conexion, 'utf8mb4');</code></pre>
   <div class="code-check-feedback" aria-live="polite"></div>
 </div>
 
-<h2 id="c3">
-  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
-  3. Las consultas con datos que vienen de afuera
+<h2 id="c5">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+  4. Motor de las tablas y clave foránea
 </h2>
 
-<p><strong>En los archivos del CRUD.</strong> Abrí los archivos que hacen <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code> y el <code>SELECT</code> que busca por <code>id</code>. Mirá cómo se arma la consulta.</p>
+<p><strong>En phpMyAdmin.</strong> Elijan la base y miren la columna <strong>Motor</strong> de la lista de tablas.</p>
+
+<p><strong>El resultado esperado.</strong> Dice <strong>InnoDB</strong> en las tablas que tienen clave foránea.</p>
+
+<p><strong>El motivo.</strong> La <span class="redondeo">integridad referencial</span> es una garantía que el gestor hace cumplir en cada operación de escritura: mientras exista un producto que apunta a un rubro, ese rubro no se puede borrar. Quien la hace cumplir es el <strong>motor de almacenamiento</strong>, que es el componente del gestor que guarda las filas y aplica las restricciones. InnoDB implementa claves foráneas; MyISAM, que es más viejo, no las implementa. Una restricción que el motor no aplica queda como una anotación en el archivo <code>.sql</code>, con la misma fuerza que un comentario: la relación del modelo existe en el diagrama y no en los datos.</p>
+
+<p><strong>El síntoma.</strong> Con <strong>MyISAM</strong>, el <code>FOREIGN KEY</code> que escribieron en el <code>CREATE TABLE</code> se acepta y se descarta en silencio.</p>
+
+<div class="prediccion"><span class="rot">Antes de correrla</span>
+  Escriban qué esperan que pase al borrar ese rubro. La respuesta dice si creen que la relación existe.</div>
+
+<p><strong>La prueba que decide:</strong> intenten borrar un rubro que tenga productos.</p>
+
+<pre><code>CON LA RELACION VIVA          SIN RELACION (MyISAM)
+
+  ERROR 1451                    el rubro se borra
+  Cannot delete or update       y los productos quedan
+  a parent row: a foreign       apuntando a un id que
+  key constraint fails          ya no existe</code></pre>
+
+<p><strong>La corrección.</strong> <em>Operaciones → Motor de almacenamiento → InnoDB</em>, y vuelvan a declarar la clave foránea en <em>Estructura → Vista de relaciones</em>.</p>
+
+<div class="quiz-q" data-correct="c"
+  data-hint1="La cláusula estaba escrita en el CREATE TABLE y la base la aceptó sin protestar."
+  data-hint2="Miren la columna Motor en la lista de tablas de phpMyAdmin."
+  data-explanation="MyISAM acepta la sintaxis de FOREIGN KEY y la descarta. Por eso la relación figura en el .sql, no aparece en Vista de relaciones y el 1451 no sale nunca.">
+  <p><strong>Pregunta.</strong> Borrás un rubro que tiene productos y se borra sin dar ningún error. La causa más probable es…</p>
+  <button type="button" class="quiz-opt" data-opt="a">a) La clave foránea se declaró en la tabla equivocada</button>
+  <button type="button" class="quiz-opt" data-opt="b">b) Los productos tienen <code>id_rubro</code> en <code>NULL</code></button>
+  <button type="button" class="quiz-opt" data-opt="c">c) La tabla está en MyISAM y la clave foránea se descartó al crearla</button>
+  <div class="quiz-feedback"></div>
+</div>
+
+<h2 id="afuera">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+  Datos que llegan de afuera
+</h2>
+
+<p>El sitio corre en su servidor. El navegador de quien lo visita corre en la computadora de esa persona. Son dos programas en dos máquinas, y se comunican por HTTP mandándose texto: el navegador arma un pedido, lo manda, su PHP lo lee y contesta. Después la conexión se cierra.</p>
+
+<p>Esa persona controla su navegador. Puede escribir en los campos lo que quiera, cambiar la dirección en la barra, abrir las herramientas de desarrollo y editar el HTML antes de enviarlo, o armar el pedido con una herramienta cualquiera sin pasar por su página. Ninguna de esas cosas requiere saber programar.</p>
+
+<p>Así que lo que llega a su PHP es texto escrito por otra persona, y entra por cuatro puertas.</p>
+
+<svg class="esquema" viewBox="0 0 820 330" role="img" aria-label="El navegador está en la máquina de otra persona y manda texto al servidor por cuatro puertas: POST del formulario, GET de la dirección, POST del campo oculto y la cookie. El servidor tiene que tratar ese texto como dato y comprobarlo antes de usarlo.">
+  <text class="titulo" x="20" y="26">LAS CUATRO PUERTAS</text>
+  <rect class="caja-alerta" x="20" y="52" width="230" height="200" rx="10"/>
+  <text class="rotulo" x="36" y="80" font-weight="700">La máquina de esa persona</text>
+  <text class="chico" x="36" y="104">El navegador corre acá,</text>
+  <text class="chico" x="36" y="122">y esa persona lo controla.</text>
+  <text class="chico" x="36" y="152">Puede escribir cualquier cosa,</text>
+  <text class="chico" x="36" y="170">cambiar la dirección, editar el</text>
+  <text class="chico" x="36" y="188">HTML antes de enviarlo, o armar</text>
+  <text class="chico" x="36" y="206">el pedido sin abrir la página.</text>
+  <rect class="caja-acento" x="570" y="52" width="230" height="200" rx="10"/>
+  <text class="rotulo" x="586" y="80" font-weight="700">Su servidor</text>
+  <text class="chico" x="586" y="104">Acá corre su PHP, y es el único</text>
+  <text class="chico" x="586" y="122">lugar donde se puede decidir</text>
+  <text class="chico" x="586" y="140">si ese texto sirve.</text>
+  <text class="chico" x="586" y="172" font-weight="700">1 · tratarlo como dato</text>
+  <text class="chico" x="586" y="190">nunca como instrucción</text>
+  <text class="chico" x="586" y="218" font-weight="700">2 · comprobarlo</text>
+  <text class="chico" x="586" y="236">antes de usarlo</text>
+  <defs>
+    <marker id="pta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g class="linea" stroke="currentColor" marker-end="url(#pta)">
+    <line x1="252" y1="88" x2="562" y2="88"/>
+    <line x1="252" y1="130" x2="562" y2="130"/>
+    <line x1="252" y1="172" x2="562" y2="172"/>
+    <line x1="252" y1="214" x2="562" y2="214"/>
+  </g>
+  <g class="mono" text-anchor="middle">
+    <text x="407" y="82">$_POST</text><text x="407" y="124">$_GET</text>
+    <text x="407" y="166">$_POST</text><text x="407" y="208">$_COOKIE</text>
+  </g>
+  <g class="chico" text-anchor="middle">
+    <text x="407" y="104">el formulario</text><text x="407" y="146">la dirección</text>
+    <text x="407" y="188">el campo oculto</text><text x="407" y="230">la cookie</text>
+  </g>
+  <text class="chico" x="410" y="288" text-anchor="middle">Las cuatro llegan igual: como texto, escrito por otra persona, desde otra máquina.</text>
+  <text class="rotulo" x="410" y="312" text-anchor="middle" font-weight="700">Todo lo que viene del navegador es una propuesta. El servidor decide.</text>
+</svg>
+
+<p>Con ese texto hay dos cosas para hacer, y la mitad de las fallas que van a buscar hoy salen de confundirlas.</p>
+
+<h3>Tratar el texto como dato</h3>
+
+<p>Una consulta armada pegando variables llega a la base como una sola cadena, y el analizador de MySQL la lee entera para decidir qué operación ejecutar. Ahí el texto que escribió el visitante queda mezclado con las palabras de la consulta, y si contiene una comilla o un punto y coma cambia la estructura de la orden. Eso es la <span class="redondeo">inyección SQL</span>.</p>
+
+<p>Una sentencia preparada separa el proceso en dos etapas. Primero manda la consulta con signos de pregunta en el lugar de los valores, y la base la analiza y planifica ahí, sin los datos. Después manda los valores, que se acoplan a un plan ya decidido y <span class="sub-lapiz">no se vuelven a analizar como SQL</span>. Por eso una comilla adentro de un valor es una comilla y nada más (comprobación <a href="#c3">5</a>). Es la defensa principal que recomienda OWASP para inyección, y la única que no depende de acordarse de escapar cada vez.</p>
+
+<p>Del lado de la salida pasa algo equivalente. Un dato que se imprime dentro del HTML se vuelve parte del documento que el navegador interpreta, y una etiqueta escrita en un campo de texto se ejecuta como si la hubieran escrito ustedes. <code>htmlspecialchars</code> convierte esos caracteres en entidades para que se muestren en lugar de interpretarse (comprobación <a href="#c4">6</a>). El escape depende de <em>dónde</em> aterriza el dato, porque no se escapa igual el cuerpo del HTML que el valor de un atributo. Desde PHP 8.1 el valor por omisión de <code>htmlspecialchars</code> ya escapa las comillas simples además de las dobles; en versiones anteriores había que pedirlo con <code>ENT_QUOTES</code>, y por eso todavía se ve escrito así en mucho código.</p>
+
+<h3>Comprobar el texto antes de usarlo</h3>
+
+<p>Que el campo llegó, que el número es un número, que el id existe y que corresponde a esta persona. Esa comprobación corre en el servidor. La que hace el navegador —<code>required</code>, <code>maxlength</code>, el desplegable con tres opciones— es una ayuda para quien completa el formulario de buena fe, y se desactiva desde las herramientas de desarrollo o se saltea armando el pedido a mano (comprobaciones <a href="#c6">7</a> y <a href="#c7">8</a>).</p>
+
+<div class="quiz-q" data-correct="c"
+  data-hint1="Pensá qué puede hacer alguien que abre las herramientas de desarrollo antes de apretar Enviar."
+  data-hint2="El navegador corre en la máquina de esa persona, no en la tuya."
+  data-explanation="Un pedido HTTP se puede armar sin pasar por su página: con las herramientas del navegador, con una extensión o con un comando. Por eso lo único que gobierna es lo que comprueba el servidor.">
+  <p><strong>Pregunta.</strong> Un formulario de ustedes tiene <code>required</code>, <code>maxlength="50"</code> y un <code>&lt;select&gt;</code> con tres opciones. Lo que puede llegar a su PHP es…</p>
+  <button type="button" class="quiz-opt" data-opt="a">a) Solo lo que esas tres reglas permiten</button>
+  <button type="button" class="quiz-opt" data-opt="b">b) Solo lo que permiten las reglas, salvo que la persona sepa programar</button>
+  <button type="button" class="quiz-opt" data-opt="c">c) Cualquier texto, de cualquier largo, con cualquier valor</button>
+  <div class="quiz-feedback"></div>
+</div>
+
+<p class="parte"><span>Parte 3</span> Datos que llegan de afuera</p>
+
+<h2 id="c3">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+  5. Consultas con datos que vienen de afuera
+</h2>
+
+<p><strong>En los archivos del CRUD.</strong> Los cuatro que hacen <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code> y el <code>SELECT</code> que busca por <code>id</code>. Miren cómo se arma cada consulta.</p>
 
 <p><strong>El resultado esperado.</strong> El dato viaja aparte de la consulta, con un signo de pregunta en su lugar.</p>
 
-<p><strong>La corrección.</strong> Vas a ver la variable pegada adentro del texto:</p>
+<p><strong>El síntoma.</strong> La variable pegada adentro del texto de la consulta:</p>
 
 <pre><code class="language-php">$sql = "INSERT INTO producto (nombre) VALUES ('$nombre')";   // asi no</code></pre>
 
 <p>Escrito así, lo que el visitante teclea <strong>se convierte en parte de la consulta</strong>. Un producto que se llame <code>Detergente D'Oro</code> ya rompe el <code>INSERT</code> por el apóstrofo; alguien que sepa lo que hace escribe un nombre que borra una tabla.</p>
 
-<pre><code>ANATOMIA DE LAS DOS FORMAS
+<p><strong>El motivo.</strong> Está desarrollado en <a href="#afuera">Datos que llegan de afuera</a>. En una consulta armada por concatenación, el texto del visitante y las palabras de la orden llegan mezclados en una sola cadena, y el analizador de la base los lee juntos. Una sentencia preparada separa el análisis de la sentencia de la entrega de los valores, y un valor que llega después no puede modificar una operación ya planificada.</p>
 
-  PEGADO                              PREPARADO
-  "... VALUES ('$nombre')"            "... VALUES (?)"
-   el dato ENTRA a la consulta         el dato viaja APARTE
-   y puede cambiar lo que hace         y no cambia lo que hace
+<p><strong>La corrección.</strong> Cada consulta que recibe algo del formulario o de la URL pasa a tres pasos: el molde con los <code>?</code>, los datos con su tipo, y la ejecución.</p>
 
-  1) prepare   el molde con los ?
-  2) bind      los datos y su tipo     s texto   i entero   d decimal
-  3) execute   la base los pone        en el lugar del ?, como DATOS</code></pre>
+<svg class="esquema" viewBox="0 0 820 340" role="img" aria-label="Comparación entre una consulta armada por concatenación, donde la orden y el dato llegan mezclados en una sola cadena y la base los analiza juntos, y una sentencia preparada, donde primero llega la orden con signos de pregunta y la base la analiza y planifica sin los datos, y después llegan los valores, que se acoplan a un plan ya decidido y no se vuelven a analizar como SQL.">
+  <text class="titulo" x="20" y="26">LAS DOS FORMAS DE MANDAR UNA CONSULTA</text>
 
-<p><strong>La prueba:</strong> cargá un producto con un apóstrofo en el nombre. Con la sentencia preparada se guarda entero; sin ella, salta un error de sintaxis de SQL.</p>
+  <defs>
+    <marker id="pt2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
 
-<div class="quiz-q" data-correct="b"
-  data-hint1="La pregunta es si el dato llega a formar parte del texto de la consulta."
-  data-hint2="En la preparada, la base recibe primero el molde y después los datos, en dos viajes."
-  data-explanation="El molde y los datos viajan separados, así que el apóstrofo nunca es leído como parte de la consulta: entra como un carácter más del nombre.">
-  <p><strong>Pregunta.</strong> Con una sentencia preparada, un producto llamado <code>O'Higgins</code>…</p>
-  <button type="button" class="quiz-opt" data-opt="a">a) Da error hasta que se le saque el apóstrofo</button>
-  <button type="button" class="quiz-opt" data-opt="b">b) Se guarda entero, porque el dato viaja aparte de la consulta</button>
-  <button type="button" class="quiz-opt" data-opt="c">c) Se guarda como <code>O\'Higgins</code>, con la barra adelante</button>
-  <div class="quiz-feedback"></div>
+  <text class="rotulo" x="20" y="62" font-weight="700">Pegado</text>
+  <rect class="caja-alerta" x="20" y="74" width="330" height="58" rx="8"/>
+  <text class="mono" x="34" y="99">"INSERT ... VALUES ('$nombre')"</text>
+  <text class="chico" x="34" y="120">una sola cadena, con el dato adentro</text>
+  <line class="linea" stroke="currentColor" x1="354" y1="103" x2="480" y2="103" marker-end="url(#pt2)"/>
+  <rect class="caja" x="488" y="74" width="312" height="58" rx="8"/>
+  <text class="rotulo" x="502" y="99">La base analiza todo junto</text>
+  <text class="chico" x="502" y="120">y el dato puede cambiar la orden</text>
+
+  <line class="divisoria" x1="20" y1="156" x2="800" y2="156"/>
+
+  <text class="rotulo" x="20" y="186" font-weight="700">Preparado</text>
+  <text class="chico" x="103" y="186">— dos viajes</text>
+
+  <rect class="caja-acento" x="20" y="198" width="330" height="52" rx="8"/>
+  <text class="chico" x="34" y="218" font-weight="700">1 · la orden, con ? en lugar de los valores</text>
+  <text class="mono" x="34" y="239">"INSERT ... VALUES (?)"</text>
+  <line class="linea-acento" stroke="currentColor" x1="354" y1="224" x2="480" y2="224" marker-end="url(#pt2)"/>
+  <rect class="caja" x="488" y="198" width="312" height="52" rx="8"/>
+  <text class="rotulo" x="502" y="222">La base analiza y planifica</text>
+  <text class="chico" x="502" y="241">sin los datos a la vista</text>
+
+  <rect class="caja-acento" x="20" y="262" width="330" height="52" rx="8"/>
+  <text class="chico" x="34" y="282" font-weight="700">2 · los valores, con su tipo</text>
+  <text class="mono" x="34" y="303">'s'  →  Detergente D'Oro</text>
+  <line class="linea-acento" stroke="currentColor" x1="354" y1="288" x2="480" y2="288" marker-end="url(#pt2)"/>
+  <rect class="caja" x="488" y="262" width="312" height="52" rx="8"/>
+  <text class="rotulo" x="502" y="286">Se acoplan al plan ya decidido</text>
+  <text class="chico" x="502" y="305" font-weight="700">no se vuelven a analizar como SQL</text>
+</svg>
+
+<div class="prediccion"><span class="rot">Antes de correrla</span>
+  Miren cómo está escrita su consulta y anoten qué creen que va a pasar. Recién después prueben.</div>
+
+<p><strong>La prueba:</strong> carguen un producto con un apóstrofo en el nombre. Con la sentencia preparada se guarda entero; sin ella, salta un error de sintaxis de SQL.</p>
+
+<div class="diagnostico"><span class="rot">Si no pasa lo que esperaban</span>
+  <ol>
+    <li>Si esperaban el error y no salió, fíjense si esa consulta ya estaba preparada, o si el sistema tiene otra capa que escapa el dato antes.</li>
+    <li>Si la pasaron a preparada y igual falla, cuenten los <code>?</code>, las letras de la cadena de tipos y las variables. Los tres números tienen que coincidir.</li>
+    <li>Si guarda pero con los datos cambiados de columna, el orden de las variables no es el de los <code>?</code>.</li>
+  </ol></div>
+
+
+
+<div class="encontra-error">
+  <p class="consigna"><span class="rot">Encontrá el error</span> Este alta funciona y guarda las filas. Lean las cuatro líneas antes de contestar.</p>
+  <pre><code class="nohighlight"><span class="ln">&lt;?php</span>
+<span class="ln">$nombre = $_POST['nombre'];</span>
+<span class="ln">$sql = "INSERT INTO producto (nombre) VALUES ('$nombre')";</span>
+<span class="ln">mysqli_query($conexion, $sql);</span>
+<span class="ln">header('Location: listado.php'); exit;</span></code></pre>
+  <div class="quiz-q" data-correct="b"
+    data-hint1="Fijate en qué momento el texto del visitante pasa a formar parte de la consulta."
+    data-hint2="La línea 3 arma una sola cadena con la orden y el dato adentro."
+    data-explanation="En la línea 3 el contenido de $nombre queda escrito dentro del texto de la consulta, así que la base lo lee junto con la orden. Un apóstrofo la rompe y algo peor la cambia. Las otras tres líneas están bien.">
+    <p><strong>¿Cuál es el problema?</strong></p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La línea 2, porque toma el dato de <code>$_POST</code> sin comprobarlo</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) La línea 3, porque el dato queda adentro del texto de la consulta</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La línea 5, porque redirige antes de saber si el <code>INSERT</code> funcionó</button>
+    <div class="quiz-feedback"></div>
+    <div class="code-check arreglo" data-answer="$sql = &quot;INSERT INTO producto (nombre) VALUES (?)&quot;;|$sql = 'INSERT INTO producto (nombre) VALUES (?)';"
+    data-hint1="La variable sale de adentro del texto y en su lugar queda una marca."
+    data-hint2="Es la misma consulta, con un signo de pregunta donde estaba $nombre."
+    data-hint="Se escribe así: $sql = "INSERT INTO producto (nombre) VALUES (?)";">
+    <p><strong>Ahora arréglenlo.</strong> Escriban la línea 3 como tiene que quedar, con el molde de la sentencia preparada.</p>
+    <div class="code-check-row">
+      <input class="code-check-input" aria-label="Línea 3 corregida" placeholder="la línea completa">
+      <button type="button" class="btn code-check-btn">Comprobar</button>
+    </div>
+    <div class="code-check-feedback" aria-live="polite"></div>
+  </div>
 </div>
 
 <div class="cerrado" data-sol="preparada">
@@ -204,26 +566,36 @@ mysqli_set_charset($conexion, 'utf8mb4');</code></pre>
 
 <h2 id="c4">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-  4. Lo que se muestra en pantalla
+  6. Datos impresos en la página
 </h2>
 
-<p><strong>En el listado y en la ficha.</strong> El listado y la ficha, donde se imprime lo que trae la base.</p>
+<p><strong>En el listado y en la ficha.</strong> Busquen los lugares donde se imprime lo que trae la base.</p>
 
 <p><strong>El resultado esperado.</strong> Cada dato pasa por <code>htmlspecialchars</code>.</p>
 
-<p><strong>La corrección.</strong> La sentencia preparada cuida lo que <em>entra</em> a la base; esto cuida lo que <em>sale</em> hacia la página. Un dato con <code>&lt;</code> o con comillas se mete en el HTML y descuadra la tabla; con un poco más de intención, se mete una etiqueta <code>&lt;script&gt;</code> que corre en el navegador de quien visite el sitio.</p>
+<p><strong>El motivo.</strong> La sentencia preparada cuida lo que <em>entra</em> a la base; esto cuida lo que <em>sale</em> hacia la página. Un dato con <code>&lt;</code> o con comillas se mete en el HTML y descuadra la tabla; con un poco más de intención, se mete una etiqueta <code>&lt;script&gt;</code> que corre en el navegador de quien visite el sitio.</p>
 
-<p><strong>La prueba:</strong> cargá un producto llamado <code>Cera &lt;b&gt;extra&lt;/b&gt;</code> y mirá el listado. Tiene que verse el nombre tal cual lo escribiste, con los signos incluidos.</p>
+<div class="prediccion"><span class="rot">Antes de correrla</span>
+  Anoten si esperan ver los signos <code>&lt;b&gt;</code> en pantalla o la palabra en negrita, y por qué.</div>
+
+<p><strong>La prueba:</strong> carguen un producto llamado <code>Cera &lt;b&gt;extra&lt;/b&gt;</code> y miren el listado. Tiene que verse el nombre tal cual lo escribieron, con los signos incluidos.</p>
+
+<div class="diagnostico"><span class="rot">Si no pasa lo que esperaban</span>
+  <ol>
+    <li>Si sale en negrita, falta <code>htmlspecialchars</code> en el lugar donde se imprime ese dato.</li>
+    <li>Si lo pusieron y sigue en negrita, están escapando una variable y mostrando otra. Comparen el nombre exacto.</li>
+    <li>Miren también el formulario de edición: el <code>value</code> es otro lugar donde se imprime, y suele quedar sin escapar.</li>
+  </ol></div>
 
 <div class="callout callout-warn">
-  <div class="callout-title">La comilla doble en el value</div>
+  <div class="callout-title">Comilla doble en el value</div>
   En el <code>value</code> del formulario de edición. Una comilla doble corta el atributo y el campo sale roto por la mitad.
 </div>
 
 <div class="quiz-q" data-correct="f"
   data-hint1="Una actúa cuando el dato va hacia la base; la otra, cuando va hacia la página."
   data-explanation="La preparada evita que el dato cambie lo que la consulta hace. Lo que el dato provoca al imprimirse en el HTML es otro problema, y lo resuelve htmlspecialchars.">
-  <p><strong>Verdadero o falso.</strong> Con las consultas ya preparadas, un producto llamado <code>Cera &lt;b&gt;extra&lt;/b&gt;</code> se muestra bien en el listado.</p>
+  <p><strong>Verdadero o falso.</strong> Con las consultas ya preparadas, el listado muestra <code>Cera &lt;b&gt;extra&lt;/b&gt;</code> tal como lo escribieron, con los signos a la vista.</p>
   <button type="button" class="quiz-opt" data-opt="v">Verdadero</button>
   <button type="button" class="quiz-opt" data-opt="f">Falso</button>
   <div class="quiz-feedback"></div>
@@ -234,64 +606,56 @@ mysqli_set_charset($conexion, 'utf8mb4');</code></pre>
   <pre class="cerrado-texto"><code></code></pre>
 </div>
 
-<h2 id="c5">
-  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-  5. El motor de las tablas y la clave foránea
-</h2>
-
-<p><strong>En phpMyAdmin.</strong> En phpMyAdmin, elegí tu base y mirá la columna <strong>Motor</strong> de la lista de tablas.</p>
-
-<p><strong>El resultado esperado.</strong> Dice <strong>InnoDB</strong> en las tablas que tienen clave foránea.</p>
-
-<p><strong>La corrección.</strong> Con <strong>MyISAM</strong>, el <code>FOREIGN KEY</code> que escribiste en el <code>CREATE TABLE</code> se acepta y se descarta en silencio. La relación queda escrita en el <code>.sql</code> y no existe en la base.</p>
-
-<p><strong>La prueba que decide:</strong> intentá borrar un rubro que tenga productos.</p>
-
-<pre><code>CON LA RELACION VIVA          SIN RELACION (MyISAM)
-
-  ERROR 1451                    el rubro se borra
-  Cannot delete or update       y los productos quedan
-  a parent row: a foreign       apuntando a un id que
-  key constraint fails          ya no existe</code></pre>
-
-<p><strong>Corrección:</strong> <em>Operaciones → Motor de almacenamiento → InnoDB</em>, y volvé a declarar la clave foránea en <em>Estructura → Vista de relaciones</em>.</p>
-
-<div class="quiz-q" data-correct="c"
-  data-hint1="La cláusula estaba escrita en el CREATE TABLE y la base la aceptó sin protestar."
-  data-hint2="Mirá la columna Motor en la lista de tablas de phpMyAdmin."
-  data-explanation="MyISAM acepta la sintaxis de FOREIGN KEY y la descarta. Por eso la relación figura en el .sql, no aparece en Vista de relaciones y el 1451 no sale nunca.">
-  <p><strong>Pregunta.</strong> Borrás un rubro que tiene productos y se borra sin dar ningún error. La causa más probable es…</p>
-  <button type="button" class="quiz-opt" data-opt="a">a) La clave foránea se declaró en la tabla equivocada</button>
-  <button type="button" class="quiz-opt" data-opt="b">b) Los productos tienen <code>id_rubro</code> en <code>NULL</code></button>
-  <button type="button" class="quiz-opt" data-opt="c">c) La tabla está en MyISAM y la clave foránea se descartó al crearla</button>
-  <div class="quiz-feedback"></div>
-</div>
-
 <h2 id="c6">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
-  6. La comprobación del lado del servidor
+  7. Comprobación del lado del servidor
 </h2>
 
-<p><strong>En los archivos que procesan formularios.</strong> Los archivos que procesan un formulario, arriba de todo, antes del <code>INSERT</code> o del <code>UPDATE</code>.</p>
+<p><strong>En los archivos que procesan formularios.</strong> Miren arriba de todo, antes del <code>INSERT</code> o del <code>UPDATE</code>.</p>
 
 <p><strong>El resultado esperado.</strong> Antes de tocar la base, PHP comprueba lo que llegó: que el campo esté, que el número sea un número, que el valor tenga sentido.</p>
 
-<p><strong>La corrección.</strong> El <code>required</code> y el <code>maxlength</code> del formulario son una ayuda para quien lo completa de buena fe. Se desactivan desde las herramientas del navegador en diez segundos, y también se saltean mandando el pedido sin pasar por tu página. La comprobación que gobierna es la de PHP, porque corre en el servidor y nadie la puede tocar.</p>
+<p><strong>El motivo.</strong> El <code>required</code> y el <code>maxlength</code> del formulario son una ayuda para quien lo completa de buena fe. Se desactivan desde las herramientas del navegador en diez segundos, y también se saltean mandando el pedido sin pasar por su página. La comprobación que gobierna es la de PHP, porque corre en el servidor y nadie la puede tocar.</p>
 
 <div class="callout callout-warn">
   <div class="callout-title">El <code>exit;</code> que falta</div>
   Cada <code>header('Location: ...')</code> lleva un <code>exit;</code> en la línea siguiente. Sin él, PHP redirige <strong>y sigue ejecutando</strong> el archivo: la validación aparenta funcionar y la escritura se hace igual. Es una falla que no da ningún error.
 </div>
 
-<div class="code-check" data-answer="exit;|exit|die;|die"
-  data-hint1="Son cuatro letras y un punto y coma."
-  data-hint2="Es lo que corta la ejecución del archivo ahí mismo.">
-  <p><strong>Escribilo.</strong> La línea que va inmediatamente después de cada <code>header('Location: …')</code>.</p>
-  <div class="code-check-row">
-    <input class="code-check-input" aria-label="Línea que va después del header" placeholder="una línea de PHP">
-    <button type="button" class="btn code-check-btn">Comprobar</button>
+
+
+<div class="encontra-error">
+  <p class="consigna"><span class="rot">Encontrá el error</span> Esta validación rechaza el nombre vacío y avisa. Aun así, guarda la fila vacía.</p>
+  <pre><code class="nohighlight"><span class="ln">&lt;?php</span>
+<span class="ln">$nombre = trim($_POST['nombre'] ?? '');</span>
+<span class="ln"></span>
+<span class="ln">if ($nombre === '') {</span>
+<span class="ln">  header('Location: alta.php?error=vacio');</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln">$sentencia = mysqli_prepare($conexion, "INSERT INTO producto (nombre) VALUES (?)");</span>
+<span class="ln">mysqli_stmt_bind_param($sentencia, 's', $nombre);</span>
+<span class="ln">mysqli_stmt_execute($sentencia);</span></code></pre>
+  <div class="quiz-q" data-correct="c"
+    data-hint1="La redirección se manda y el aviso llega. Miren qué pasa con las líneas de abajo."
+    data-hint2="<code>header</code> agrega una cabecera a la respuesta y devuelve el control a la línea siguiente."
+    data-explanation="Falta un exit; en la línea 6, adentro del if. Sin él, PHP manda la cabecera y sigue ejecutando el archivo, así que el INSERT se hace igual con el nombre vacío. El navegador después va a la página del aviso, y por eso parece que la validación funcionó.">
+    <p><strong>¿Cuál es el problema?</strong></p>
+    <button type="button" class="quiz-opt" data-opt="a">a) La línea 2, porque <code>trim</code> no alcanza para validar</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) La línea 8, porque la consulta tendría que comprobar el nombre otra vez</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) La línea 6, porque falta cortar la ejecución después de redirigir</button>
+    <div class="quiz-feedback"></div>
+    <div class="code-check arreglo" data-answer="exit;|exit|die;|die|exit();"
+    data-hint1="Son cuatro letras y un punto y coma."
+    data-hint2="Es lo que corta la ejecución del archivo en ese punto, para que las líneas de abajo no se ejecuten."
+    data-hint="Se escribe así: exit;">
+    <p><strong>Ahora arréglenlo.</strong> Escriban la línea que falta. Va adentro del <code>if</code>, después del <code>header</code>.</p>
+    <div class="code-check-row">
+      <input class="code-check-input" aria-label="Línea que falta" placeholder="una línea">
+      <button type="button" class="btn code-check-btn">Comprobar</button>
+    </div>
+    <div class="code-check-feedback" aria-live="polite"></div>
   </div>
-  <div class="code-check-feedback" aria-live="polite"></div>
 </div>
 
 <div class="cerrado" data-sol="servidor">
@@ -301,14 +665,16 @@ mysqli_set_charset($conexion, 'utf8mb4');</code></pre>
 
 <h2 id="c7">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="m2 2 20 20"/></svg>
-  7. El id que viaja escondido
+  8. Id oculto del formulario
 </h2>
 
-<p><strong>En el formulario de edición.</strong> El formulario de edición, el campo <code>&lt;input type="hidden" name="id"&gt;</code>.</p>
+<p><strong>En el formulario de edición.</strong> Busquen el campo <code>&lt;input type="hidden" name="id"&gt;</code>.</p>
 
 <p><strong>El resultado esperado.</strong> El archivo que procesa la edición comprueba que ese id sea un número y que la fila exista, antes de escribir.</p>
 
-<p><strong>La corrección.</strong> <em>Escondido</em> quiere decir que no se ve en la pantalla. Cualquiera que abra las herramientas del navegador cambia ese número y manda el formulario con otro id: edita una fila que nunca abrió.</p>
+<p><strong>El motivo.</strong> <em>Escondido</em> quiere decir que no se ve en la pantalla. Cualquiera que abra las herramientas del navegador cambia ese número, manda el formulario con otro id y edita una fila que nunca abrió.</p>
+
+<p><strong>La corrección.</strong> El id se comprueba antes de escribir:</p>
 
 <pre><code class="language-php">$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 if (!$id) {
@@ -331,18 +697,25 @@ if (!$id) {
 
 <h2 id="c8">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-  8. El enlace que borra
+  9. Enlace que borra
 </h2>
 
-<p><strong>En el listado.</strong> El listado, el enlace o el botón de borrar.</p>
+<p><strong>En el listado.</strong> Fíjense cómo está hecho el enlace o el botón de borrar.</p>
 
 <p><strong>El resultado esperado.</strong> El borrado sale de un formulario por <strong>POST</strong>, con una confirmación antes.</p>
 
-<p><strong>La corrección.</strong> Vas a ver algo así:</p>
+<p><strong>El síntoma.</strong> Un enlace común, como cualquier otro:</p>
 
 <pre><code class="language-html">&lt;a href="borrar.php?id=3"&gt;Borrar&lt;/a&gt;</code></pre>
 
-<p>Escrito así, la dirección <code>borrar.php?id=3</code> borra una fila con solo escribirla en la barra. Y como es un enlace común, lo puede pedir cualquier cosa que recorra la página sin intención de borrar nada.</p>
+<p>Escrito así, la dirección <code>borrar.php?id=3</code> borra una fila con solo escribirla en la barra.</p>
+
+<p><strong>El motivo.</strong> La especificación de HTTP define a <code>GET</code> como un método <strong>seguro</strong>, en el sentido preciso de que pedirlo no debería producir ningún efecto sobre los datos. Los rastreadores de los buscadores, los antivirus y el propio navegador cuando adelanta enlaces cuentan con eso, y siguen los enlaces de una página sin preguntar. Un borrado detrás de un enlace se ejecuta solo.</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Alcance de POST, y el ataque que no evita</div>
+  Pasar el borrado a <code>POST</code> evita que se dispare por accidente y respeta lo que el protocolo dice de cada método. <strong>No impide</strong> que alguien arme el pedido a propósito. Un formulario alojado en otro sitio puede enviar un <code>POST</code> al de ustedes, y si esa persona tiene la sesión abierta, la cookie podría viajar sola con el pedido. Ese ataque se llama <strong>CSRF</strong>. Los navegadores actuales lo dificultan por su cuenta —de manera predeterminada no mandan la cookie en un pedido que viene de otro sitio, con una política llamada <em>SameSite</em>—, pero eso es una defensa del navegador y no del sistema. La que corresponde escribir es un valor de un solo uso que la página genera y el servidor comprueba. Queda para más adelante; hoy alcanza con conocer el límite.
+</div>
 
 <div class="quiz-q" data-correct="v"
   data-hint1="Pensá qué recibe borrar.php cuando alguien escribe la dirección en la barra."
@@ -358,12 +731,144 @@ if (!$id) {
   <pre class="cerrado-texto"><code></code></pre>
 </div>
 
-<h2 id="c9">
-  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-  9. Las contraseñas guardadas
+<h2 id="memoria">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+  Memoria entre dos pedidos
 </h2>
 
-<p><strong>En la tabla de usuarios y en el login.</strong> La tabla de usuarios en phpMyAdmin y el archivo que procesa el login.</p>
+<p>HTTP es un protocolo <span class="redondeo">sin estado</span>. Cada pedido se interpreta por sí solo, con la información que trae adentro, y el servidor no guarda nada de un pedido para el siguiente: contesta, cierra la conexión y se olvida. Cuando esa misma persona hace clic en el enlace siguiente, llega un pedido nuevo que para el servidor no tiene ninguna relación con el anterior.</p>
+
+<p>Entonces, si alguien se identifica en <code>login.php</code>, ¿cómo se entera <code>editar.php</code>, en el pedido siguiente, de que esa persona ya entró? El protocolo por sí solo no lo resuelve. Lo resuelve un mecanismo agregado, las <strong>cookies</strong>, que le permiten al servidor pedirle al navegador que guarde un dato y lo devuelva en cada pedido posterior al mismo sitio.</p>
+
+<p>Sobre eso PHP construye las <strong>sesiones</strong>. Al llamar a <code>session_start()</code>, el servidor genera un identificador, lo manda en una cookie —que por omisión se llama <code>PHPSESSID</code>— y crea de su lado un espacio de almacenamiento asociado a ese identificador. Lo que el programa escribe en <code>$_SESSION</code> queda ahí, en el servidor, y nunca viaja al navegador.</p>
+
+<svg class="esquema" viewBox="0 0 820 360" role="img" aria-label="Cómo se sostiene una sesión entre dos pedidos. En el primer pedido el login valida, el servidor abre un espacio con un identificador y guarda adentro el usuario y el rol, y la respuesta se lleva una cookie con el identificador solo. En el segundo pedido el navegador manda esa cookie sin que nadie la escriba, y session_start reabre el mismo espacio y deja $_SESSION con lo que hay adentro. El navegador lleva la llave y el servidor guarda el contenido.">
+  <text class="titulo" x="20" y="26">CÓMO SE SOSTIENE UNA SESIÓN</text>
+
+  <defs>
+    <marker id="pt3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <text class="chico" x="140" y="52" text-anchor="middle" font-weight="700">NAVEGADOR</text>
+  <text class="chico" x="620" y="52" text-anchor="middle" font-weight="700">SERVIDOR</text>
+  <line class="divisoria" x1="380" y1="40" x2="380" y2="340"/>
+
+  <text class="rotulo" x="20" y="86" font-weight="700">Pedido 1</text>
+  <rect class="caja" x="20" y="98" width="240" height="42" rx="8"/>
+  <text class="rotulo" x="34" y="125">usuario y contraseña</text>
+  <line class="linea-acento" stroke="currentColor" x1="264" y1="119" x2="472" y2="119" marker-end="url(#pt3)"/>
+  <rect class="caja-acento" x="480" y="90" width="320" height="70" rx="8"/>
+  <text class="rotulo" x="494" y="114">Abre un espacio y lo numera</text>
+  <text class="mono" x="494" y="136">7f3a…</text>
+  <text class="chico" x="560" y="136">usuario = melina · es_admin = 1</text>
+
+  <rect class="caja-alerta" x="20" y="176" width="240" height="42" rx="8"/>
+  <text class="chico" x="34" y="196" font-weight="700">COOKIE</text>
+  <text class="mono" x="94" y="196">7f3a…</text>
+  <text class="chico" x="34" y="211">el número solo</text>
+  <line class="linea-acento" stroke="currentColor" x1="472" y1="197" x2="266" y2="197" marker-end="url(#pt3)"/>
+  <text class="chico" x="370" y="188" text-anchor="middle">la respuesta se la lleva</text>
+
+  <line class="divisoria" x1="20" y1="238" x2="800" y2="238"/>
+
+  <text class="rotulo" x="20" y="268" font-weight="700">Pedido 2</text>
+  <rect class="caja" x="20" y="280" width="240" height="42" rx="8"/>
+  <text class="rotulo" x="34" y="300">editar.php</text>
+  <text class="chico" x="34" y="316">manda la cookie sola</text>
+  <line class="linea-acento" stroke="currentColor" x1="264" y1="301" x2="472" y2="301" marker-end="url(#pt3)"/>
+  <rect class="caja-acento" x="480" y="272" width="320" height="58" rx="8"/>
+  <text class="mono" x="494" y="295">session_start()</text>
+  <text class="chico" x="494" y="316">reabre ese espacio y llena $_SESSION</text>
+
+  <text class="rotulo" x="410" y="352" text-anchor="middle" font-weight="700">El navegador lleva la llave. El servidor guarda el contenido.</text>
+</svg>
+
+<p>De ahí se siguen dos cosas que gobiernan lo que queda del día.</p>
+
+<p><code>session_start()</code> va en <strong>cada</strong> página que necesite saber quién entró. Cada pedido llega solo, y hay que volver a abrir el espacio de la sesión en cada uno. Por eso la guardia se incluye en todas las páginas que escriben, y no solamente en el login.</p>
+
+<p>Y un valor guardado en <code>$_SESSION</code> lo escribió su propio programa y quedó del lado del servidor, mientras que un valor de un campo oculto viajó hasta el navegador y volvió. Del valor de la sesión se puede confiar, y el del campo oculto se comprueba, porque tienen orígenes distintos. Es la distinción de <a href="#afuera">Datos que llegan de afuera</a> aplicada a la sesión.</p>
+
+<div class="quiz-q" data-correct="b"
+  data-hint1="Fíjense cuál de los dos valores hizo el viaje de ida y vuelta hasta el navegador."
+  data-hint2="Lo que está en la sesión lo escribió su propio programa y quedó en el servidor."
+  data-explanation="El id del hidden viajó al navegador y volvió, así que pudo cambiar en el camino. El es_admin de la sesión lo escribió su PHP al validar el login y quedó guardado del lado del servidor.">
+  <p><strong>Pregunta.</strong> En una misma página tienen <code>$_SESSION['es_admin']</code> y un <code>&lt;input type="hidden" name="id"&gt;</code>. Hay que desconfiar de…</p>
+  <button type="button" class="quiz-opt" data-opt="a">a) Los dos por igual, porque los dos llegan en un pedido</button>
+  <button type="button" class="quiz-opt" data-opt="b">b) Del <code>id</code> del campo oculto</button>
+  <button type="button" class="quiz-opt" data-opt="c">c) Del <code>es_admin</code>, porque una cookie se puede editar</button>
+  <div class="quiz-feedback"></div>
+</div>
+
+<p class="parte"><span>Parte 4</span> Control de acceso</p>
+
+<h2 id="c9">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  10. Contraseñas guardadas
+</h2>
+
+<p><strong>En el login.</strong> Abran el archivo que procesa el login y busquen de dónde saca el usuario y la contraseña.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Esta comprobación hoy da un hallazgo</div>
+  Lo más probable es que el sistema todavía tenga los usuarios escritos adentro del código, como quedaron en la Clase 2. Eso es el resultado de la comprobación: se anota en la tabla de estado y se corrige en la sección <a href="#l1">11</a>, cuando la tabla <code>usuarios</code> se crea. Lo que sigue es el estado al que hay que llegar.
+</div>
+
+
+
+<h3>Consecuencias de guardarla legible</h3>
+
+<p>Una tabla de usuarios con las contraseñas escritas tal cual se tecleó es un problema que excede al sistema. Quien llegue a esa tabla —por una copia mal guardada, por una consulta expuesta, por cualquiera de las diez comprobaciones de esta página— se lleva las contraseñas de personas reales. Y como casi todo el mundo repite la misma contraseña en varios lugares, con esa lista también entra al correo y a las redes de esas personas.</p>
+
+<p>Por eso el sistema tiene que poder <strong>comprobar</strong> una contraseña sin <strong>conservarla</strong>. Suena contradictorio, y es exactamente lo que resuelve el hash.</p>
+
+<h3>Cifrar y hashear, dos cosas distintas</h3>
+
+<p>Las dos palabras se usan como sinónimos y nombran cosas distintas.</p>
+
+<table>
+  <thead>
+    <tr><th></th><th>Cifrar</th><th>Hashear</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Para qué</strong></td><td>Guardar algo que después hay que <em>volver a leer</em></td><td>Comprobar algo que <em>nunca</em> hace falta volver a leer</td></tr>
+    <tr><td><strong>Vuelta atrás</strong></td><td>Sí, con la clave</td><td>No existe: no hay clave que lo deshaga</td></tr>
+    <tr><td><strong>Ejemplo</strong></td><td>Un mensaje que el destinatario tiene que poder leer</td><td>Una contraseña, que solo hay que comparar</td></tr>
+  </tbody>
+</table>
+
+<p>Una contraseña <span class="sub-lapiz">nunca hace falta volver a leerla</span>. Cuando alguien entra al sistema, no se compara la contraseña guardada con la tecleada: se vuelve a calcular el hash de la tecleada y se comparan los dos resultados. Por eso se hashea y no se cifra — y por eso, cuando en un sitio piden la contraseña olvidada, mandan una nueva en lugar de la vieja.</p>
+
+<h3>Funciones de hash</h3>
+
+<p>Una <strong>función de hash</strong> toma un texto de cualquier largo y devuelve una salida de largo fijo. La misma entrada da siempre la misma salida, y por eso sirve para comparar sin guardar el original: al validar el login se vuelve a calcular y se mira si coincide con lo guardado. Cambiar una sola letra de la contraseña cambia toda la salida, así que dos contraseñas parecidas dan resultados que no se parecen, y mirar el hash no acerca a la contraseña.</p>
+
+<p>Para el camino inverso no hay cálculo. La única vía es probar textos hasta que uno dé esa salida. El algoritmo de <code>password_hash</code> es <span class="sub-lapiz">deliberadamente costoso</span>, y eso es lo que lo vuelve útil para guardar contraseñas. Calcularlo una vez tarda unos milisegundos, que nadie nota al entrar al sistema; probar millones de candidatos tarda un tiempo que vuelve el ataque impracticable. Ese costo es un parámetro que se puede subir a medida que las computadoras se hacen más rápidas.</p>
+
+<p><code>password_hash</code> agrega además una <span class="redondeo">sal</span>: un valor al azar distinto para cada contraseña, que se guarda adentro del mismo resultado junto con el algoritmo usado y el costo. La sal hace que dos personas que eligieron la misma contraseña queden con hashes distintos, y deja sin efecto las tablas de hashes calculadas de antemano. <code>password_verify</code> lee de ahí la sal y el costo, recalcula con esos mismos parámetros y compara.</p>
+
+<h3>Tres momentos del guardado</h3>
+
+<pre><code class="language-php">// 1 · al crear el usuario: se guarda el resultado, nunca la contraseña
+$hash = password_hash($clave, PASSWORD_DEFAULT);
+// ... y $hash es lo que va a la columna `clave` de la tabla
+
+// 2 · al entrar: se compara sin leer nada
+if (password_verify($clave_tecleada, $fila['clave'])) {
+  // la contraseña era la correcta
+}
+
+// 3 · nunca, en ningún momento
+// $_SESSION['clave'] = $clave;      &lt;- no se guarda
+// echo $fila['clave'];              &lt;- no se muestra
+// error_log($clave);                &lt;- no se registra</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">De dónde sale el <code>VARCHAR(255)</code></div>
+  Hoy <code>PASSWORD_DEFAULT</code> usa bcrypt, que produce 60 caracteres y empieza con <code>$2y$</code>. El manual de PHP advierte que ese algoritmo por omisión <strong>puede cambiar</strong> en versiones futuras, y un algoritmo distinto produce una salida más larga. La columna se define en 255 para que el sistema siga funcionando cuando eso pase, sin tener que migrar la tabla. Definirla en 60 funciona hoy y se rompe en silencio el día que cambie.
+</div>
 
 <p><strong>El resultado esperado.</strong> Cuatro cosas juntas: en la tabla la contraseña se ve como un texto largo que empieza con <code>$2y$</code>; se guarda con <code>password_hash($clave, PASSWORD_DEFAULT)</code>; se comprueba con <code>password_verify</code>; y la columna es <code>VARCHAR(255)</code>.</p>
 
@@ -376,9 +881,10 @@ if (!$id) {
   guardada + tecleada  ──password_verify()──►  true / false
 
   El camino de vuelta no existe: la contrasena no se lee en la tabla,
-  tampoco la leen ustedes. Por eso "olvide mi contrasena" entrega una nueva.</code></pre>
+  tampoco la lee quien la programo. Por eso "olvide mi contrasena"
+  entrega una nueva.</code></pre>
 
-<p><strong>La corrección.</strong> Tres formas distintas, con la misma raíz:</p>
+<p><strong>El síntoma.</strong> Tres formas distintas, con la misma raíz:</p>
 
 <ul>
   <li><strong>La contraseña se lee en la tabla.</strong> Está guardada tal cual se tecleó: quien abra la base tiene las contraseñas de todos. Y como la gente repite contraseñas, se lleva también las de otros lados.</li>
@@ -397,44 +903,14 @@ if (!$id) {
   <div class="quiz-feedback"></div>
 </div>
 
-<h2 id="c10">
-  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-  10. Lo que ve el visitante cuando algo sale mal
-</h2>
-
-<p><strong>En todo el código.</strong> Buscá <code>mysqli_error</code> y <code>or die</code> en tu código.</p>
-
-<p><strong>El resultado esperado.</strong> El visitante lee una frase común. El detalle técnico queda para ustedes.</p>
-
-<p><strong>La corrección.</strong> Lo más probable es que tengas esto:</p>
-
-<pre><code class="language-php">mysqli_query($conexion, $sql) or die(mysqli_error($conexion));</code></pre>
-
-<p>Ese mensaje le muestra a cualquiera los nombres de tus tablas y de tus columnas, y a veces la ruta del archivo en el servidor. Es el primer lugar donde mira alguien que quiere entrar.</p>
-
-<pre><code class="language-php">if (!mysqli_stmt_execute($sentencia)) {
-  error_log(mysqli_error($conexion));
-  header('Location: listado.php?error=guardar');
-  exit;
-}</code></pre>
-
-<p>Mientras desarrollan conviene ver el error completo. Lo que cambia es que el sistema quede así el día que lo muestran.</p>
-
-<div class="quiz-q" data-correct="v"
-  data-hint1="La diferencia está en quién lo lee: ustedes en su máquina, o cualquiera en el sitio publicado."
-  data-explanation="Mientras desarrollan, el error completo es la información que necesitan. Lo que cambia es el estado en que queda el sistema el día que lo muestran.">
-  <p><strong>Verdadero o falso.</strong> Mientras desarrollan en su máquina conviene ver el mensaje de error completo de MySQL.</p>
-  <button type="button" class="quiz-opt" data-opt="v">Verdadero</button>
-  <button type="button" class="quiz-opt" data-opt="f">Falso</button>
-  <div class="quiz-feedback"></div>
-</div>
-
 <h2 id="l1">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
-  11. El login contra la base
+  11. Login contra la base
 </h2>
 
-<p>Hasta acá el sistema hace bien lo que hace. Todavía no sabe <strong>quién</strong> lo está usando: escribir <code>borrar.php?id=3</code> en la barra borra una fila, y nadie preguntó nada.</p>
+<p>Hasta acá el sistema hace bien lo que hace, y sigue abierto a cualquiera. Escriban <code>editar.php?id=1</code> en la barra de direcciones, sin haber entrado con ningún usuario, y van a ver que el formulario se abre igual y que la fila se puede guardar. Nadie preguntó <strong>quiénes</strong> son.</p>
+
+<p><strong>El motivo.</strong> <span class="redondeo">Autenticar</span> es establecer cuál de las identidades registradas está detrás de un pedido. El sistema no puede reconocer a una persona, así que le pide una <strong>prueba</strong> que solo esa persona puede producir: la contraseña. La comparación tiene una condición que parece contradictoria y que resuelve el hash — el sistema tiene que poder verificar la contraseña sin conservarla. Guardar el resultado de la función, y no la contraseña, es lo que permite comprobar sin saber.</p>
 
 <p>En la Clase 2 armaron un login con los usuarios escritos adentro del código, con un comentario que decía «esto se reemplaza por BD cuando entremos a MySQL». Hoy se cumple.</p>
 
@@ -451,7 +927,7 @@ if (!$id) {
 
 <pre><code class="language-php">&lt;?php echo password_hash('la-que-elijan', PASSWORD_DEFAULT); ?&gt;</code></pre>
 
-<p>Copiás lo que sale a phpMyAdmin, como valor de <code>clave</code>. Tiene que empezar con <code>$2y$</code> y medir 60 caracteres.</p>
+<p>Copian lo que sale a phpMyAdmin, como valor de <code>clave</code>. Tiene que empezar con <code>$2y$</code> y medir 60 caracteres.</p>
 
 <div class="callout callout-info">
   <div class="callout-title">El mismo aviso para los dos errores</div>
@@ -470,16 +946,18 @@ if (!$id) {
 </div>
 
 <div class="cerrado" data-sol="login">
-  <p class="cerrado-aviso">El <code>procesar-login.php</code> completo, con la consulta preparada y la sesión — se abre con el código de la clase.</p>
+  <p class="cerrado-aviso">El <code>procesar-login.php</code> completo, con la sentencia preparada y la sesión — se abre con el código de la clase.</p>
   <pre class="cerrado-texto"><code></code></pre>
 </div>
 
 <h2 id="l2">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-  12. La guardia
+  12. Guardia de acceso
 </h2>
 
-<p>Un login que entra y sale no protege nada por sí solo: las páginas tienen que preguntar. La comprobación se escribe una vez, en un archivo, y se incluye arriba de todo lo que escribe en la base.</p>
+<p>Un login identifica a quien entra. Proteger las páginas es un paso aparte, y lo hace cada página preguntando por la sesión. La comprobación se escribe una vez, en un archivo, y se incluye arriba de todo lo que escribe en la base.</p>
+
+<p><strong>El motivo.</strong> El control de acceso se aplica <span class="sub-lapiz">en el punto donde ocurre la operación</span>, y no en la puerta de entrada del sistema. La razón es la que vienen viendo desde el principio del día: cada pedido llega solo y por su cuenta, así que no hay ninguna «puerta» por la que todos tengan que pasar. Cualquier archivo <code>.php</code> del proyecto es una dirección alcanzable, y responde tanto si alguien llegó ahí desde el menú como si escribió la dirección. Por eso la comprobación se repite en cada archivo que modifica datos, incluidos los que procesan formularios y no muestran nada.</p>
 
 <pre><code>LA GUARDIA
 
@@ -494,22 +972,81 @@ if (!$id) {
   Esconder el enlace cambia lo que se ve.
   La guardia cambia lo que se puede hacer.</code></pre>
 
-<p><strong>La prueba:</strong> cerrá la sesión y escribí la dirección de <code>editar.php?id=1</code> a mano. Tiene que mandarte al login.</p>
+<div class="prediccion"><span class="rot">Antes de correrla</span>
+  Escriban qué páginas creen que quedaron protegidas y cuáles no. Después prueben una por una.</div>
+
+<p><strong>La prueba:</strong> cierren la sesión y escriban la dirección de <code>editar.php?id=1</code> a mano. Tiene que mandarlos al login.</p>
+
+<div class="diagnostico"><span class="rot">Si no pasa lo que esperaban</span>
+  <ol>
+    <li>Si entra igual, comprueben que el <code>require</code> de la guardia esté en la <strong>primera</strong> línea, antes de cualquier salida.</li>
+    <li>Si aparece un aviso sobre <em>headers already sent</em>, hay un espacio o un salto de línea antes del <code>&lt;?php</code>.</li>
+    <li>Si <code>editar.php</code> redirige pero la fila igual se guarda, falta la guardia en <code>procesar_edicion.php</code>, que es la que escribe.</li>
+  </ol></div>
 
 <div class="callout callout-tip">
   <div class="callout-title">Identificado y autorizado son dos cosas</div>
-  <strong>Quién sos</strong> lo resuelve el login. <strong>Qué podés hacer</strong> lo resuelve el rol: la columna <code>es_admin</code> guardada en la sesión, comprobada en las páginas de alta de artículos, rubros y marcas.
+  <strong>Quiénes son</strong> lo resuelve el login. <strong>Qué pueden hacer</strong> lo resuelve el rol: la columna <code>es_admin</code> guardada en la sesión, comprobada en las páginas de alta de artículos, rubros y marcas.
 </div>
 
-<div class="quiz-q" data-correct="c"
-  data-hint1="Un formulario se puede enviar sin haber abierto antes la página que lo muestra."
-  data-hint2="Pensá cuál de esos archivos es el que efectivamente escribe en la base."
-  data-explanation="editar.php muestra el formulario y procesar_edicion.php escribe. Proteger solo el que se ve deja abierto justamente al que modifica los datos.">
-  <p><strong>Pregunta.</strong> Pusiste la guardia en <code>editar.php</code> y no en <code>procesar_edicion.php</code>. Con eso…</p>
-  <button type="button" class="quiz-opt" data-opt="a">a) Alcanza, porque al formulario solo se llega desde <code>editar.php</code></button>
-  <button type="button" class="quiz-opt" data-opt="b">b) Alcanza, porque la sesión ya quedó comprobada una vez</button>
-  <button type="button" class="quiz-opt" data-opt="c">c) La página que escribe queda sin proteger</button>
-  <div class="quiz-feedback"></div>
+
+
+<div class="encontra-error">
+  <p class="consigna"><span class="rot">Encontrá el error</span> El sistema tiene login y guardia. Igual se puede editar una fila sin haber entrado.</p>
+  <pre><code class="nohighlight"><span class="ln">// editar.php</span>
+<span class="ln">require 'guardia.php';</span>
+<span class="ln">// ... muestra el formulario con los datos de la fila</span>
+<span class="ln"></span>
+<span class="ln">// procesar_edicion.php</span>
+<span class="ln">require 'conexion.php';</span>
+<span class="ln">$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);</span>
+<span class="ln">// ... hace el UPDATE</span></code></pre>
+  <div class="quiz-q" data-correct="a"
+    data-hint1="Miren cuál de los dos archivos es el que escribe en la base."
+    data-hint2="Un formulario se puede enviar sin haber abierto antes la página que lo muestra."
+    data-explanation="La guardia está en la página que se ve y falta en la que escribe. Alguien puede mandar el POST directamente a procesar_edicion.php, sin pasar nunca por editar.php, y el UPDATE se hace igual.">
+    <p><strong>¿Cuál es el problema?</strong></p>
+    <button type="button" class="quiz-opt" data-opt="a">a) Falta la guardia en <code>procesar_edicion.php</code>, que es el que escribe</button>
+    <button type="button" class="quiz-opt" data-opt="b">b) La guardia tendría que estar después del <code>require</code> de la conexión</button>
+    <button type="button" class="quiz-opt" data-opt="c">c) Falta comprobar el id en <code>editar.php</code> además de en el que procesa</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+
+<div class="drag-activity" data-key="auditoria-guardia">
+  <p class="drag-help">Arrastren cada archivo a su columna, o toquen la tarjeta y después la columna. Las ocho páginas son de un sistema como el suyo.</p>
+  <div class="drag-pool" aria-label="Páginas del sistema para clasificar">
+    <div class="drag-chip" data-id="g1" data-target="abierta" data-why="El listado público es lo que el visitante tiene que poder ver: sin guardia." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>listado.php</div>
+    <div class="drag-chip" data-id="g2" data-target="guardia" data-why="Muestra el formulario de edición, así que solo entra quien inició sesión." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>editar.php</div>
+    <div class="drag-chip" data-id="g3" data-target="guardia" data-why="Es el que escribe el UPDATE en la base. Sin guardia acá, la de editar.php no sirve." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>procesar_edicion.php</div>
+    <div class="drag-chip" data-id="g4" data-target="abierta" data-why="La ficha de un producto es parte del sitio público." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>ficha.php</div>
+    <div class="drag-chip" data-id="g5" data-target="guardia" data-why="Da de alta filas nuevas." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>alta.php</div>
+    <div class="drag-chip" data-id="g6" data-target="guardia" data-why="Ejecuta el DELETE. Es el que más importa proteger." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>procesar_borrado.php</div>
+    <div class="drag-chip" data-id="g7" data-target="abierta" data-why="Es la página donde alguien se identifica: si llevara guardia, nadie podría entrar nunca." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>login.php</div>
+    <div class="drag-chip" data-id="g8" data-target="guardia" data-why="Da de alta rubros, que en el modelo es tarea de administración." tabindex="0" role="button"><span class="dz-mark" aria-hidden="true"></span>alta_rubro.php</div>
+  </div>
+  <div class="drag-zones">
+    <div class="drop-zone" data-zone="guardia" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en Lleva guardia">
+      <h4>Lleva guardia</h4>
+      <p class="hint">escribe en la base</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="drop-zone" data-zone="abierta" tabindex="0" role="button" aria-label="Colocar la tarjeta seleccionada en Queda abierta">
+      <h4>Queda abierta</h4>
+      <p class="hint">el visitante la tiene que ver</p>
+      <div class="zone-items"></div>
+    </div>
+    <div class="code-check arreglo" data-answer="require 'guardia.php';|require('guardia.php');|require_once 'guardia.php';|include 'guardia.php';"
+    data-hint1="Es la misma línea que ya está en editar.php."
+    data-hint2="La instrucción ejecuta otro archivo en ese punto; el nombre va entre comillas."
+    data-hint="Se escribe así: require 'guardia.php';">
+    <p><strong>Ahora arréglenlo.</strong> Escriban la línea que hay que agregar a <code>procesar_edicion.php</code>.</p>
+    <div class="code-check-row">
+      <input class="code-check-input" aria-label="Línea que falta en el archivo que escribe" placeholder="una línea de PHP">
+      <button type="button" class="btn code-check-btn">Comprobar</button>
+    </div>
+    <div class="code-check-feedback" aria-live="polite"></div>
+  </div>
 </div>
 
 <div class="cerrado" data-sol="guardia">
@@ -522,29 +1059,76 @@ if (!$id) {
   Estado del equipo
 </h2>
 
-<p>Esto es la producción escrita del día, y va como anexo del documento de la Olimpíada. Tildá cada línea cuando la comprobación quedó hecha <em>y</em> corregida. Lo tildado se guarda en este navegador.</p>
+<p>Esto es la producción escrita del día, y va como anexo del documento de la Olimpíada. Tilden cada línea cuando la comprobación quedó hecha <em>y</em> corregida. Lo tildado se guarda en este navegador.</p>
 
 <div class="selfcheck" data-key="auditoria-crud">
   <div class="selfcheck-head">
-    <span>Las doce comprobaciones</span>
+    <span>Comprobaciones del día</span>
     <span class="selfcheck-count"></span>
   </div>
   <ul>
     <li><input type="checkbox" id="au-1"><label for="au-1">1. <code>conexion.php</code> fuera del repositorio, con <code>.gitignore</code>.</label></li>
-    <li><input type="checkbox" id="au-2"><label for="au-2">2. <code>mysqli_set_charset</code> puesto, y una tilde comprobada en el listado.</label></li>
-    <li><input type="checkbox" id="au-3"><label for="au-3">3. Las cuatro consultas del CRUD, preparadas y probadas con el apóstrofo.</label></li>
-    <li><input type="checkbox" id="au-4"><label for="au-4">4. <code>htmlspecialchars</code> en el listado y en el <code>value</code>, probado con <code>&lt;b&gt;</code>.</label></li>
-    <li><input type="checkbox" id="au-5"><label for="au-5">5. Motor InnoDB y el 1451 apareciendo al borrar un padre con hijos.</label></li>
-    <li><input type="checkbox" id="au-6"><label for="au-6">6. Comprobación en el servidor, y un <code>exit;</code> después de cada <code>header</code>.</label></li>
-    <li><input type="checkbox" id="au-7"><label for="au-7">7. El id del formulario, comprobado antes de escribir.</label></li>
-    <li><input type="checkbox" id="au-8"><label for="au-8">8. Borrado por POST con confirmación.</label></li>
-    <li><input type="checkbox" id="au-9"><label for="au-9">9. Contraseñas con <code>password_hash</code> y columna de 255.</label></li>
-    <li><input type="checkbox" id="au-10"><label for="au-10">10. <code>mysqli_error</code> fuera de la pantalla del visitante.</label></li>
+    <li><input type="checkbox" id="au-2"><label for="au-2">2. <code>mysqli_error</code> fuera de la pantalla del visitante.</label></li>
+    <li><input type="checkbox" id="au-3"><label for="au-3">3. <code>mysqli_set_charset</code> puesto, y una tilde comprobada en el listado.</label></li>
+    <li><input type="checkbox" id="au-4"><label for="au-4">4. Motor InnoDB y el 1451 apareciendo al borrar un padre con hijos.</label></li>
+    <li><input type="checkbox" id="au-5"><label for="au-5">5. Las cuatro consultas del CRUD, preparadas y probadas con el apóstrofo.</label></li>
+    <li><input type="checkbox" id="au-6"><label for="au-6">6. <code>htmlspecialchars</code> en el listado y en el <code>value</code>, probado con <code>&lt;b&gt;</code>.</label></li>
+    <li><input type="checkbox" id="au-7"><label for="au-7">7. Comprobación en el servidor, y un <code>exit;</code> después de cada <code>header</code>.</label></li>
+    <li><input type="checkbox" id="au-8"><label for="au-8">8. El id del formulario, comprobado antes de escribir.</label></li>
+    <li><input type="checkbox" id="au-9"><label for="au-9">9. Borrado por POST con confirmación.</label></li>
+    <li><input type="checkbox" id="au-10"><label for="au-10">10. Contraseñas con <code>password_hash</code> y columna de 255.</label></li>
     <li><input type="checkbox" id="au-11"><label for="au-11">11. El login entra con un usuario que está en la base.</label></li>
-    <li><input type="checkbox" id="au-12"><label for="au-12">12. La guardia probada escribiendo la dirección a mano.</label></li>
+    <li><input type="checkbox" id="au-12"><label for="au-12">12. Guardia de acceso probada escribiendo la dirección a mano.</label></li>
     <li><input type="checkbox" id="au-13"><label for="au-13">Commit hecho, con el mensaje que dice qué se arregló.</label></li>
   </ul>
 </div>
+
+<h3>Sistematización</h3>
+
+<p>Las ideas centrales del día, ordenadas por parte. Conviene copiarlas a la carpeta: son las que vuelven en todo lo que sigue del año.</p>
+
+<table>
+  <thead>
+    <tr><th>Parte</th><th>La idea</th><th>Dónde se vio</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1.</strong> Exposición de información</td>
+      <td>Un sistema expone dos cosas sin querer: sus <strong>credenciales</strong>, cuando la configuración viaja con el código, y su <strong>estructura</strong>, cuando el error técnico llega a la pantalla del visitante. La configuración vive fuera del código y fuera del repositorio.</td>
+      <td>Comprobaciones 1 y 2</td>
+    </tr>
+    <tr>
+      <td><strong>2.</strong> Configuración de la base</td>
+      <td>Lo que está <strong>declarado</strong> y lo que la base <strong>aplica</strong> pueden no coincidir. Una clave foránea sobre MyISAM y un cotejamiento sin el charset de la conexión son dos formas del mismo problema: figura escrito y no rige.</td>
+      <td>Comprobaciones 3 y 4</td>
+    </tr>
+    <tr>
+      <td><strong>3.</strong> Datos que llegan de afuera</td>
+      <td>Todo lo que llega del navegador es una <strong>propuesta</strong>, y el servidor decide. De ahí salen las dos obligaciones: tratar el texto como dato —preparada hacia la base, escape hacia la página— y comprobarlo en el servidor, porque lo que comprueba el navegador se desactiva.</td>
+      <td>Comprobaciones 5 a 9</td>
+    </tr>
+    <tr>
+      <td><strong>4.</strong> Control de acceso</td>
+      <td>HTTP no tiene memoria, así que la sesión es una <strong>llave en el navegador y contenido en el servidor</strong>. Una contraseña se comprueba sin conservarse: se hashea, no se cifra. Y estar identificado no es tener permiso, así que el control va en cada página que escribe.</td>
+      <td>Comprobaciones 10 a 12</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-tip">
+  <div class="callout-title">La frase que las cruza</div>
+  Un sistema que anda todavía puede estar mal hecho, y la diferencia no se ve mirando la pantalla: se ve leyendo el código con una pregunta en la mano. Eso fue la clase de hoy.
+</div>
+
+<h3>Registro del equipo</h3>
+
+<p>Tres preguntas para responder entre los cuatro y escribir en la carpeta. Miran el recorrido, no el resultado.</p>
+
+<ol class="pasos">
+  <li>De las doce comprobaciones, cuál nos enteramos hoy de que existía.</li>
+  <li>Qué nos costó más, y si fue entender la idea o hacerlo funcionar — son dos dificultades distintas.</li>
+  <li>Qué haríamos distinto desde el principio si empezáramos el sistema de nuevo mañana.</li>
+</ol>
 
 <div class="callout callout-warn">
   <div class="callout-title">Si la comprobación 1 dio que la conexión estaba subida</div>
@@ -574,7 +1158,7 @@ if (!$id) {
   <div class="quiz-q" data-correct="c"
     data-hint1="Las cuatro tienen algo en común con el error 1451 que no aparece."
     data-hint2="Ninguna interrumpe nada mientras se usa el sistema."
-    data-explanation="Ese es el criterio con el que están ordenadas en la hoja: se buscan porque no avisan. Las demás se manifiestan solas la primera vez que alguien las toca.">
+    data-explanation="Ese es el criterio con el que están ordenadas en esta página: se buscan porque no avisan. Las demás se manifiestan solas la primera vez que alguien las toca.">
     <p><strong>2.</strong> La conexión subida a GitHub, la conexión sin <code>utf8mb4</code>, la tabla en MyISAM y la columna de clave corta comparten…</p>
     <button type="button" class="quiz-opt" data-opt="a">a) Que se corrigen todas desde phpMyAdmin</button>
     <button type="button" class="quiz-opt" data-opt="b">b) Que aparecen solo cuando el sistema se publica</button>
@@ -582,36 +1166,14 @@ if (!$id) {
     <div class="quiz-feedback"></div>
   </div>
 
-  <div class="quiz-q" data-correct="a"
-    data-hint1="El listado y la ficha son las páginas que el visitante tiene que poder ver."
-    data-hint2="La guardia se pone donde el sistema escribe, no donde muestra."
-    data-explanation="El listado público y la ficha se dejan abiertos a propósito: son el sitio. La guardia va en las páginas que dan de alta, editan y borran, y en las que procesan esos formularios.">
-    <p><strong>3.</strong> Las páginas que quedan <em>sin</em> guardia son…</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) El listado público y la ficha</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Las que procesan formularios, porque no se ven</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Ninguna: la guardia va en todas</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
   <div class="quiz-q" data-correct="c"
-    data-hint1="Una responde quién sos; la otra, qué podés hacer."
+    data-hint1="Una responde quiénes son; la otra, qué pueden hacer."
     data-hint2="Con el login resuelto, todavía falta decidir quién da de alta rubros."
     data-explanation="El login autentica: dice quién entró. El rol autoriza: dice qué puede hacer esa persona. Un sistema puede tener lo primero y no lo segundo, y ahí cualquier usuario logueado borra lo que quiera.">
-    <p><strong>4.</strong> Un sistema con login pero sin rol…</p>
+    <p><strong>3.</strong> Un sistema con login pero sin rol…</p>
     <button type="button" class="quiz-opt" data-opt="a">a) Está protegido igual, porque hay que entrar con contraseña</button>
     <button type="button" class="quiz-opt" data-opt="b">b) No puede tener vista de administrador</button>
     <button type="button" class="quiz-opt" data-opt="c">c) Sabe quién es cada uno, y les permite lo mismo a todos</button>
-    <div class="quiz-feedback"></div>
-  </div>
-
-  <div class="quiz-q" data-correct="b"
-    data-hint1="Pensá qué pasa con las líneas que están debajo del header."
-    data-hint2="Es la misma razón por la que una validación puede aparentar funcionar."
-    data-explanation="header() manda una cabecera y devuelve el control. Sin exit, todo lo que sigue se ejecuta: la escritura se hace igual, y el navegador después va a la página del aviso.">
-    <p><strong>5.</strong> El <code>exit;</code> después de <code>header('Location: …')</code> hace falta porque…</p>
-    <button type="button" class="quiz-opt" data-opt="a">a) La redirección no funciona sin él</button>
-    <button type="button" class="quiz-opt" data-opt="b">b) Sin él, PHP sigue ejecutando el resto del archivo</button>
-    <button type="button" class="quiz-opt" data-opt="c">c) Cierra la conexión con la base</button>
     <div class="quiz-feedback"></div>
   </div>
 
@@ -619,9 +1181,94 @@ if (!$id) {
   <button type="button" id="quiz-reset" class="btn" style="display:none">Volver a empezar</button>
 </div>
 
+<h2 id="documentacion">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+  Material para el documento del proyecto
+</h2>
+
+<p>La auditoría produce dos clases de resultado, y solo una va al documento del proyecto. Lo que se corrigió es <strong>parte del sistema</strong> y se cuenta como tal; lo que se encontró es <strong>registro de trabajo</strong> y va como anexo.</p>
+
+<table class="comparacion">
+  <thead>
+    <tr><th>Qué</th><th>Dónde va</th><th>Cómo se escribe</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Las decisiones técnicas</td>
+      <td>En el cuerpo del documento, donde se describe el sistema</td>
+      <td>Como característica, no como arreglo: «las consultas usan sentencias preparadas», «las contraseñas se guardan con <code>password_hash</code>», «las páginas que modifican datos exigen sesión iniciada»</td>
+    </tr>
+    <tr>
+      <td>La tabla de estado completa</td>
+      <td>Como anexo</td>
+      <td>Tal como quedó, con lo que andaba, lo que se corrigió y quién. Es la evidencia de que el sistema se revisó contra un criterio</td>
+    </tr>
+    <tr>
+      <td>Lo que quedó pendiente</td>
+      <td>Como anexo, al pie de la tabla</td>
+      <td>Con fecha. Un pendiente declarado vale más que un pendiente omitido</td>
+    </tr>
+    <tr>
+      <td>Las capturas de las pruebas</td>
+      <td>Como anexo</td>
+      <td>El listado con las tildes bien, el producto con apóstrofo guardado entero, el error 1451 al borrar un padre, la redirección al login</td>
+    </tr>
+    <tr>
+      <td>El commit</td>
+      <td>En el documento, donde se nombra el repositorio</td>
+      <td>La dirección del repositorio y la fecha del último commit</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Lo que no se escribe</div>
+  Ni las credenciales de la base, ni el contenido de <code>conexion.php</code>, ni una contraseña de usuario, ni capturas donde se vea alguna de esas cosas. Si la comprobación 1 dio que la conexión estaba subida, eso se corrige y no se cuenta: lo que se documenta es que la configuración vive fuera del repositorio.
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Por qué la tabla puntúa</div>
+  La grilla de la Olimpíada evalúa, en autorregulación, que el equipo «referencie la información y registre para volver a utilizarla». Una tabla de estado completa, con fecha y responsables, es exactamente esa evidencia. Sin ella, el trabajo se hizo igual y no queda registro de que se hizo.
+</div>
+
+<h2 id="transferencia">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+  Para cerrar: el sistema de otro equipo
+</h2>
+
+<p>Todo el trabajo de hoy fue sobre el sistema propio, que es donde importa. Esta última actividad hace la pregunta que dice si el criterio quedó: <strong>¿sirve sobre un sistema que no conocen?</strong></p>
+
+<p>Junten su equipo con otro e intercambien los proyectos. Con la misma lista de comprobaciones, recorran el sistema del otro equipo durante quince minutos y anoten <strong>tres hallazgos</strong>, cada uno con el número de la comprobación y el archivo donde está. Después devuélvanlos en voz alta.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Cómo se devuelve un hallazgo</div>
+  Se nombra la comprobación, se muestra el lugar y se dice qué pasaría. «En <code>procesar_alta.php</code>, línea 12, la consulta está armada por concatenación: un producto con apóstrofo la rompe.» No se toca el código del otro equipo, y no se dice si está bien o mal hecho el sistema — se señala una comprobación y su evidencia.
+</div>
+
+<p>Encontrar en un sistema ajeno lo que se buscó en el propio es la prueba de que lo aprendido dejó de ser una lista de pasos y pasó a ser un criterio.</p>
+
+<h2 id="referencias">
+  <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  Referencias
+</h2>
+
+<p>Las fuentes en las que se apoya esta clase. Las de OWASP son el material de consulta habitual de la industria para cada uno de estos temas, y están en inglés; las del manual de PHP tienen traducción al castellano.</p>
+
+<ul class="refs">
+  <li>Fielding, R., Nottingham, M. y Reschke, J. (eds.). (2022). <em>HTTP Semantics</em> (RFC 9110). Internet Engineering Task Force. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">rfc-editor.org/rfc/rfc9110</a> — define HTTP y la noción de método seguro que ordena la comprobación 9.</li>
+  <li>Barth, A. (2011). <em>HTTP State Management Mechanism</em> (RFC 6265). Internet Engineering Task Force. <a href="https://www.rfc-editor.org/rfc/rfc6265" target="_blank" rel="noopener">rfc-editor.org/rfc/rfc6265</a> — las cookies, sobre las que se construyen las sesiones.</li>
+  <li>OWASP Foundation. (s. f.). <em>SQL Injection Prevention Cheat Sheet</em>. OWASP Cheat Sheet Series. Recuperado el 3 de septiembre de 2026 de <a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">cheatsheetseries.owasp.org</a></li>
+  <li>OWASP Foundation. (s. f.). <em>Cross Site Scripting Prevention Cheat Sheet</em>. Recuperado el 3 de septiembre de 2026 de <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">cheatsheetseries.owasp.org</a> — el escape según dónde aterriza el dato.</li>
+  <li>OWASP Foundation. (s. f.). <em>Password Storage Cheat Sheet</em>. Recuperado el 3 de septiembre de 2026 de <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" target="_blank" rel="noopener">cheatsheetseries.owasp.org</a></li>
+  <li>OWASP Foundation. (s. f.). <em>Session Management Cheat Sheet</em>. Recuperado el 3 de septiembre de 2026 de <a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html" target="_blank" rel="noopener">cheatsheetseries.owasp.org</a></li>
+  <li>OWASP Foundation. (s. f.). <em>Cross-Site Request Forgery Prevention Cheat Sheet</em>. Recuperado el 3 de septiembre de 2026 de <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">cheatsheetseries.owasp.org</a> — el límite de POST que se nombra en la comprobación 9.</li>
+  <li>The PHP Group. (s. f.). <em>Manual de PHP</em>. Recuperado el 3 de septiembre de 2026 de <a href="https://www.php.net/manual/es/" target="_blank" rel="noopener">php.net/manual/es</a> — en particular <code>mysqli_prepare</code>, <code>mysqli_stmt_bind_param</code>, <code>htmlspecialchars</code>, <code>password_hash</code>, <code>password_verify</code> y <code>session_start</code>.</li>
+  <li>Oracle Corporation. (s. f.). <em>MySQL Reference Manual</em>. Recuperado el 3 de septiembre de 2026 de <a href="https://dev.mysql.com/doc/refman/8.0/en/" target="_blank" rel="noopener">dev.mysql.com/doc/refman</a> — motores de almacenamiento y restricciones <code>FOREIGN KEY</code>.</li>
+</ul>
+
 <h2 id="cierre">
   <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-  Antes de irse
+  Cierre y continuidad
 </h2>
 
 <p>Un commit con lo corregido, y el mensaje que diga qué se arregló. La tabla de estado terminada, con lo que quedó pendiente y para cuándo.</p>
@@ -646,6 +1293,174 @@ if (!$id) {
 <script src="../js/cripto.js"></script>
 <script src="../js/soluciones-auditoria.js"></script>
 <script src="../js/candado.js"></script>
+
+<script>
+/* Clasificar: arrastre (mouse+touch) y, además, tap/teclado para colocar. Accesible. */
+(function () {
+  var activities = Array.prototype.slice.call(document.querySelectorAll('.drag-activity'));
+  if (!activities.length) return;
+  activities.forEach(function (act) {
+  var pool  = act.querySelector('.drag-pool');
+  var zones = Array.prototype.slice.call(act.querySelectorAll('.drop-zone'));
+  var chips = Array.prototype.slice.call(act.querySelectorAll('.drag-chip'));
+  var selected = null, dragging = null, placeholder = null, ox = 0, oy = 0, sx = 0, sy = 0, moved = false;
+  var THRESH = 6;
+  var KEY = 'sc-drag-' + (act.getAttribute('data-key') || 'x');
+
+  function save() {
+    try {
+      var st = {};
+      chips.forEach(function (c) { var z = c.closest('.drop-zone'); st[c.getAttribute('data-id')] = z ? z.getAttribute('data-zone') : 'pool'; });
+      localStorage.setItem(KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+  function restore() {
+    try {
+      var st = JSON.parse(localStorage.getItem(KEY) || '{}');
+      chips.forEach(function (c) {
+        var zoneName = st[c.getAttribute('data-id')];
+        if (!zoneName || zoneName === 'pool') return;
+        var z = zones.filter(function (zz) { return zz.getAttribute('data-zone') === zoneName; })[0];
+        if (z) z.querySelector('.zone-items').appendChild(c);
+      });
+    } catch (e) {}
+  }
+
+  function place(chip, zone) {
+    var dest = (zone && zone !== pool) ? zone.querySelector('.zone-items') : pool;
+    dest.appendChild(chip);
+    chip.classList.remove('ok', 'bad');
+    var m = chip.querySelector('.dz-mark'); if (m) m.textContent = '';
+    var w = chip.querySelector('.dz-why'); if (w) w.remove();
+    save();
+  }
+  function clearSel() { if (selected) selected.classList.remove('selected'); selected = null; act.classList.remove('has-selection'); }
+  function selectChip(chip) {
+    if (selected === chip) { clearSel(); return; }
+    clearSel(); selected = chip; chip.classList.add('selected'); act.classList.add('has-selection');
+  }
+  function zoneUnder(x, y) {
+    if (dragging) dragging.style.visibility = 'hidden';
+    var el = document.elementFromPoint(x, y);
+    if (dragging) dragging.style.visibility = '';
+    if (!el) return null;
+    return el.closest('.drop-zone') || (el.closest('.drag-pool') ? pool : null);
+  }
+  function endDrag(chip) {
+    chip.classList.remove('dragging');
+    chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = ''; chip.style.width = '';
+    if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+    placeholder = null;
+    zones.forEach(function (zz) { zz.classList.remove('over'); });
+    dragging = null;
+  }
+
+  /* En lugar de setPointerCapture (que causa problemas en táctil
+     al combinarlo con position:fixed), usamos listeners a nivel
+     document que se agregan al empezar el arrastre y se quitan
+     al soltar. Así el chip sigue al dedo/mouse en cualquier
+     dispositivo sin "escaparse". */
+  function onPointerMove(e) {
+    if (!moved && (Math.abs(e.clientX - sx) > THRESH || Math.abs(e.clientY - sy) > THRESH)) {
+      moved = true; dragging = chips.filter(function (c) { return c === e.target || c.contains(e.target); })[0];
+      if (!dragging) return;
+      var r = dragging.getBoundingClientRect();
+      ox = sx - r.left; oy = sy - r.top;
+      /* Reservar el lugar de la tarjeta con un placeholder del mismo tamaño:
+         al pasar a position:fixed sale del flujo y, sin esto, el pool se colapsa
+         y las zonas saltan hacia arriba en pleno arrastre (drop cae mal, sobre todo en mobile). */
+      placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.width = r.width + 'px'; placeholder.style.height = r.height + 'px';
+      dragging.parentNode.insertBefore(placeholder, dragging);
+      dragging.style.width = r.width + 'px'; dragging.style.position = 'fixed'; dragging.style.zIndex = '9999';
+      dragging.classList.add('dragging'); clearSel();
+    }
+    if (dragging) {
+      dragging.style.left = (e.clientX - ox) + 'px';
+      dragging.style.top  = (e.clientY - oy) + 'px';
+      var z = zoneUnder(e.clientX, e.clientY);
+      zones.forEach(function (zz) { zz.classList.toggle('over', zz === z); });
+    }
+  }
+  function onPointerUp(e) {
+    if (dragging) { var chip = dragging; var z = zoneUnder(e.clientX, e.clientY); endDrag(chip); place(chip, z); }
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('pointerdown', function (e) {
+      sx = e.clientX; sy = e.clientY; moved = false; dragging = null;
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    });
+    chip.addEventListener('pointercancel', function () {
+      if (dragging) endDrag(dragging);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+    });
+    chip.addEventListener('click', function (e) {
+      if (!moved) { e.stopPropagation(); selectChip(chip); }
+    });
+    chip.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectChip(chip); }
+    });
+  });
+
+  zones.concat([pool]).forEach(function (zone) {
+    zone.addEventListener('click', function (e) {
+      if (selected && !dragging) {
+        if (e.target.closest('.drag-chip')) return;
+        var s = selected; place(s, zone); clearSel(); s.focus();
+      }
+    });
+    if (zone !== pool) zone.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && selected) { e.preventDefault(); var s = selected; place(s, zone); clearSel(); s.focus(); }
+    });
+  });
+
+  var btn = act.querySelector('.drag-check');
+  var fb  = act.querySelector('.drag-feedback');
+  btn.addEventListener('click', function () {
+    var ok = 0;
+    chips.forEach(function (chip) {
+      var z = chip.closest('.drop-zone');
+      var good = z && z.getAttribute('data-zone') === chip.getAttribute('data-target');
+      chip.classList.toggle('ok', !!good);
+      chip.classList.toggle('bad', !good);
+      var m = chip.querySelector('.dz-mark'); if (m) m.textContent = good ? '✓ ' : '✗ ';
+      var targetZone = zones.filter(function (zz) { return zz.getAttribute('data-zone') === chip.getAttribute('data-target'); })[0];
+      var zoneName = targetZone ? targetZone.querySelector('h4').textContent : chip.getAttribute('data-target');
+      var why = chip.querySelector('.dz-why');
+      if (!why) { why = document.createElement('span'); why.className = 'dz-why'; chip.appendChild(why); }
+      why.textContent = good ? chip.getAttribute('data-why') : 'Va en ' + zoneName + '. ' + chip.getAttribute('data-why');
+      if (good) ok++;
+    });
+    var all = ok === chips.length;
+    fb.textContent = all
+      ? '¡Perfecto! ' + ok + '/' + chips.length + ' bien ubicadas.'
+      : ok + '/' + chips.length + ' bien. Revisá las marcadas con ✗ y volvé a moverlas.';
+    fb.className = 'drag-feedback ' + (all ? 'all-ok' : 'partial');
+  });
+
+  var resetBtn = act.querySelector('.drag-reset');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    clearSel();
+    chips.forEach(function (c) {
+      pool.appendChild(c);
+      c.classList.remove('ok', 'bad', 'selected');
+      var m = c.querySelector('.dz-mark'); if (m) m.textContent = '';
+      var w = c.querySelector('.dz-why'); if (w) w.remove();
+    });
+    fb.textContent = ''; fb.className = 'drag-feedback';
+    try { localStorage.removeItem(KEY); } catch (e) {}
+  });
+
+  restore();
+  });
+})();
+</script>
 
 </body>
 </html>
