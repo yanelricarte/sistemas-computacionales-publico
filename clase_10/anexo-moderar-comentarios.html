@@ -34,6 +34,7 @@
     <li><a href="#s3">Trampas para bots</a></li>
     <li><a href="#s4">El filtro de palabras y su techo</a></li>
     <li><a href="#s5">La capa de IA: clasificar en vez de listar</a></li>
+    <li><a href="#s5b">Sacar la clave y conectarla</a></li>
     <li><a href="#s6">El módulo completo</a></li>
     <li><a href="#s7">El panel del docente</a></li>
     <li><a href="#s8">Orden de implementación</a></li>
@@ -207,6 +208,26 @@ echo htmlspecialchars($fila['texto'], ENT_QUOTES, 'UTF-8');</code></pre>
 <p>Llamar a la API manda el texto del comentario a un servidor de Google, y el nivel gratuito puede usar lo enviado para mejorar el modelo. La regla es clara: <strong>mandar solo el texto del comentario</strong>, nunca el nombre de quien comenta ni datos personales, y avisar que la moderación usa un servicio externo. Si eso no se puede garantizar, la cola manual del docente es la respuesta correcta.</p>
 
 <p>La llamada queda aislada en la función <code>moderar_con_ia</code>: si el proveedor cambia, se cambia una función y el resto del sistema no se toca. Y cuando la API no responde (sin internet, límite de cuota 429, error), la función devuelve 0: no se publica solo lo que no se pudo comprobar.</p>
+
+<h3 id="s5b">
+  Sacar la clave y conectarla
+</h3>
+
+<p>El AI Studio de Google genera la clave en unos pasos, sin tarjeta de crédito. Del lado del código, conectar la API se reduce a dos constantes: <code>MOD_API_KEY</code> con la clave y <code>MOD_MODELO</code> con el modelo vigente.</p>
+
+<ol>
+  <li><strong>Entrar a <a href="https://aistudio.google.com">aistudio.google.com</a></strong> con la cuenta de Google del grupo y aceptar los términos la primera vez.</li>
+  <li><strong>Abrir el panel de claves</strong> (Get API key · Obtener clave de API) y elegir <em>Create API key</em>. Se genera una clave larga que empieza con <code>AIza...</code>.</li>
+  <li><strong>Copiarla y pegarla</strong> en <code>MOD_API_KEY</code>. Si el proyecto guarda la configuración aparte del código (como el sitio de ejemplo de la materia), la clave va en ese archivo de configuración, que no se sube al repositorio.</li>
+  <li><strong>Probar con un comentario de prueba</strong> claramente inadecuado pero sin insultos (por ejemplo «esto es una estafa, me robaron»): si quedó pendiente, el modelo lo clasificó y marcó; si se publicó solo, algo no quedó conectado.</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">La clave es un secreto</div>
+  <p>Si una clave sube a un repositorio público queda en el historial de git para siempre, aunque después se borre. Si eso pasa, se revoca en AI Studio y se genera otra. El nivel gratuito no cobra, pero puede usar lo enviado para mejorar el modelo: por eso solo se manda el texto del comentario.</p>
+</div>
+
+<p>La cuota gratuita es por día y por proyecto. Cuando se agota, la API responde <code>429</code> y <code>moderar_con_ia</code> devuelve 0: el comentario va a la cola en lugar de publicarse sin comprobar. La moderación no se rompe, solo deja de clasificar hasta que la cuota se renueva. Y la llamada necesita internet en el servidor donde corre el sitio: si el aula no lo garantiza, se deja <code>MOD_API_KEY</code> en <code>''</code> y se trabaja con la moderación estricta.</p>
 
 <h2 id="s6">
   El módulo completo
