@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clase 8 — Auditar, reparar y proteger el sistema</title>
+<title>Clase 10 — Auditar, reparar y proteger el sistema</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="stylesheet" href="../css/estilos.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
@@ -20,7 +20,7 @@
 <div id="progress"></div>
 
 <div class="hero">
-  <div class="eyebrow">Clase 8 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <div class="eyebrow">Clase 10 · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
   <h1>Auditar, reparar y proteger el sistema</h1>
   <p class="sub">El tema de la clase de hoy es la <strong>seguridad de una aplicación web</strong>. Vamos a revisar el código del sistema que ya tienen funcionando, corregir lo que aparezca y agregarle un control de acceso. Los contenidos son: inyección SQL y consultas preparadas, escape de la salida hacia la página, comprobación de los datos en el servidor, resguardo de las credenciales de conexión, contraseñas guardadas con hash, sesiones y autorización por rol.</p>
 </div>
@@ -57,12 +57,11 @@
 </nav>
 
 <div class="materiales-clase">
-  <span class="rot">Materiales de la Clase 8</span>
+  <span class="rot">Materiales de la Clase 10</span>
   <ul>
-    <li><a href="clase-08-teoria.html">Teoría de la Clase 8</a> <span class="desc">— Conectar PHP con MySQL: la conexión, el listado que lee la base y el formulario que escribe. Dos bloques, cada uno con su práctica.</span></li>
-    <li><a href="clase-08-tp.html">TP de la Clase 8</a> <span class="desc">— La consigna con los pasos, los checkpoints y la checklist de autoverificación.</span></li>
     <li class="actual"><strong>Auditoría del CRUD</strong> <span class="desc">— estás acá</span></li>
     <li><a href="../deploy/publicar-el-sitio.html">Publicar el sitio</a> <span class="desc">— El despliegue paso a paso: hosting, base en el servidor y comprobación de lo publicado.</span></li>
+    <li><a href="anexo-moderar-comentarios.html">Anexo: moderar una sección de comentarios</a> <span class="desc">— Cola de moderación, trampas para bots y clasificación con IA para un sistema con comentarios.</span></li>
   </ul>
 </div>
 
@@ -1276,8 +1275,8 @@ if (password_verify($clave_tecleada, $fila['clave'])) {
 <p>Y lo que sigue: las páginas del sistema que faltan proteger, la validación completa del lado del servidor con sus mensajes al usuario, y el listado con <code>JOIN</code> mostrando el rubro y la marca por su nombre.</p>
 
 <p class="mat-links">
-  <a href="clase-08-teoria.html"><strong>Teoría de Clase 8</strong></a> ·
-  <a href="clase-08-tp.html"><strong>TP de Clase 8</strong></a> ·
+  <a href="../clase_8/clase-08-teoria.html"><strong>Teoría de Clase 8</strong></a> ·
+  <a href="../clase_8/clase-08-tp.html"><strong>TP de Clase 8</strong></a> ·
   <a href="../clase_9/clase-09-teoria.html"><strong>Teoría de Clase 9</strong></a>
 </p>
 

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 10 — Anexo: moderar una sección de comentarios</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+
+<div class="theme-controls" role="toolbar" aria-label="Preferencias de visualización">
+  <button id="toggleBig" type="button" title="Tamaño de texto (tecla +)" aria-pressed="false">A+</button>
+  <button id="toggleDark" type="button" title="Tema claro / oscuro (tecla D)" aria-pressed="false">🌙</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" type="button" title="Volver arriba" aria-label="Volver arriba">↑</button>
+
+<div id="progress"></div>
+
+<div class="hero">
+  <div class="eyebrow">Clase 10 · Anexo · Proyecto, Diseño e Implementación de Sistemas Computacionales · 7°</div>
+  <h1>Moderar una sección de comentarios</h1>
+  <p class="sub">En la Clase 10 revisaron cómo proteger el sistema cuando los datos llegan de afuera. La sección de comentarios es ese caso en su forma más directa: cualquier persona manda texto a la base y ese texto se muestra después en la página de todos. Este anexo aplica lo que ya vieron —<strong>consulta preparada, escape, sesiones y rol</strong>— al momento de publicar, y agrega lo que el CRUD no tenía: una <strong>cola de moderación</strong>, <strong>trampas para bots</strong> y, como nivel opcional, una <strong>IA gratuita</strong> que clasifica.</p>
+</div>
+
+<nav class="toc">
+  <h3>En esta página</h3>
+  <ol>
+    <li><a href="#s0">Un comentario es un dato que llega de afuera</a></li>
+    <li><a href="#s1">La base que ya vieron: escapar y validar</a></li>
+    <li><a href="#s2">La columna estado: la decisión central</a></li>
+    <li><a href="#s3">Trampas para bots</a></li>
+    <li><a href="#s4">El filtro de palabras y su techo</a></li>
+    <li><a href="#s5">La capa de IA: clasificar en vez de listar</a></li>
+    <li><a href="#s6">El módulo completo</a></li>
+    <li><a href="#s7">El panel del docente</a></li>
+    <li><a href="#s8">Orden de implementación</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<h2 id="s0">
+  Un comentario es un dato que llega de afuera
+</h2>
+
+<p>Un sistema que guarda comentarios enfrenta tres problemas que se confunden entre sí y que conviene separar, porque cada uno tiene un frente distinto:</p>
+
+<table>
+  <thead>
+    <tr><th>Problema</th><th>De dónde viene</th><th>El frente</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Texto que rompe la página (XSS)</td>
+      <td>Una persona que escribe HTML o JavaScript como comentario</td>
+      <td>Escapar la salida, como en la Clase 10</td>
+    </tr>
+    <tr>
+      <td>Spam</td>
+      <td>Un bot que llena el formulario solo, rápido y en cantidad</td>
+      <td>Trampas anti-bot</td>
+    </tr>
+    <tr>
+      <td>Insultos y palabras inadecuadas</td>
+      <td>Una persona que ofende</td>
+      <td>Cola de revisión + filtros</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Ninguna herramienta resuelve los tres a la vez, y ningún filtro de palabras resuelve solo el tercero: se evade con facilidad y no entiende contexto. Lo que se defiende bien es una estructura en capas que termina siempre en una decisión humana para lo dudoso.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">La regla de oro</div>
+  Ante la duda, el comentario no se publica: queda pendiente en la cola del docente. Y si un filtro se equivoca, la equivocación cuesta una revisión, no un borrado.
+</div>
+
+<h2 id="s1">
+  La base que ya vieron: escapar y validar
+</h2>
+
+<p>Dos reglas de la Clase 10 se aplican igual a un comentario:</p>
+
+<ul>
+  <li><strong>Guardar con sentencia preparada.</strong> El texto del comentario es un dato de afuera más: el camino hacia la base es el mismo que recorren los nombres del CRUD, y la defensa contra la inyección SQL es la misma.</li>
+  <li><strong>Mostrar con escape.</strong> Cada comentario que se imprime en la página pasa por <code>htmlspecialchars</code>:</li>
+</ul>
+
+<pre><code class="language-php">// al mostrar un comentario aprobado se escapa lo que vino de afuera
+echo htmlspecialchars($fila['texto'], ENT_QUOTES, 'UTF-8');</code></pre>
+
+<p>A esto se suma la validación del lado del servidor: el comentario existe, no está vacío y no pasa el largo de la columna (500 caracteres en el ejemplo de este anexo). Las funciones <code>mb_strlen</code> y <code>mb_strtolower</code> usan la extensión <code>mbstring</code>, que suele estar activa en el hosting.</p>
+
+<h2 id="s2">
+  La columna estado: la decisión central
+</h2>
+
+<p>La decisión más importante de esta sección es de diseño y no de código: un comentario tiene un <strong>estado</strong>, y la página solo muestra los aprobados. Eso convierte el problema “que no se publique nada inadecuado” en una operación de base de datos.</p>
+
+<pre><code class="language-sql">CREATE TABLE comentario (
+  id     INT AUTO_INCREMENT PRIMARY KEY,
+  texto  VARCHAR(500) NOT NULL,
+  estado TINYINT NOT NULL DEFAULT 0,   -- 0 pendiente · 1 aprobado
+  creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  -- Si los comentarios se guardan con cuenta (recomendado), agregá:
+  --   usuario_id INT NOT NULL,
+  --   FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+);</code></pre>
+
+<p><code>estado</code> vale 0 (pendiente) o 1 (aprobado). El script de guardado asigna el estado al insertar, y las páginas del sistema muestran solo las filas con <code>estado = 1</code>. Lo que quedó pendiente lo ve el docente y lo aprueba o lo descarta.</p>
+
+<p>Con esa columna hay dos modos de trabajo:</p>
+
+<ul>
+  <li><strong>Moderación estricta:</strong> todo lo nuevo queda pendiente y el docente aprueba uno por uno. Es la opción más simple y elimina el problema de raíz: nada ajeno llega a publicarse. Su costo es revisar todo.</li>
+  <li><strong>Publicación con revisión:</strong> lo nuevo se publica si pasó las comprobaciones (filtro local o IA) y lo dudoso queda pendiente. Ahorra revisión y deja pasar lo que las comprobaciones no vieron.</li>
+</ul>
+
+<p>Para un sitio de curso, la arrancada recomendada es la estricta. El módulo de este anexo trae una llave (<code>MOD_ESTRICTO</code>) para pasar de un modo al otro sin tocar el resto del código.</p>
+
+<h2 id="s3">
+  Trampas para bots
+</h2>
+
+<p>Un bot no lee la página como una persona: completa todos los campos, lo hace en fracciones de segundo y puede repetirlo cientos de veces. Tres comprobaciones baratas, sin librerías, aprovechan esas diferencias:</p>
+
+<ul>
+  <li><strong>Honeypot.</strong> Un campo que el humano no ve (por CSS, con <code>display:none</code>) y que un bot completa porque llena todo. Si ese campo llega con contenido, quien envió no era una persona, y el comentario se descarta en silencio.</li>
+  <li><strong>Tiempo mínimo.</strong> Al cargar el formulario se guarda un momento; si el comentario llega antes de 3 segundos, no lo escribió una persona.</li>
+  <li><strong>Límite de frecuencia.</strong> Una cantidad máxima de comentarios por sesión en una ventana de tiempo, guardando los momentos en <code>$_SESSION</code>.</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">Contar por sesión y no por IP</div>
+  En una escuela muchos alumnos comparten la misma dirección detrás del proxy. Un límite por IP penaliza a todos los que comparten la conexión; un límite por sesión solo alcanza a quien lo supera.
+</div>
+
+<p>El formulario manda, junto al comentario, los dos campos que necesitan esas comprobaciones:</p>
+
+<pre><code class="language-html">&lt;form method="post" action="comentario_guardar.php">
+  &lt;textarea name="comentario" maxlength="500" required>&lt;/textarea>
+
+  &lt;!-- Honeypot: invisible al humano --&gt;
+  &lt;input type="text" name="web" style="display:none" tabindex="-1" autocomplete="off">
+
+  &lt;!-- Marca de tiempo de carga del formulario --&gt;
+  &lt;input type="hidden" name="marcador" value="&lt;?= time() ?>">
+
+  &lt;button type="submit">Publicar comentario&lt;/button>
+&lt;/form></code></pre>
+
+<h2 id="s4">
+  El filtro de palabras y su techo
+</h2>
+
+<p>Un filtro por lista solo sirve como <strong>pre-marca</strong>: detecta variantes conocidas de palabras conocidas y no entiende contexto. En este anexo se usa de una sola manera: lo que el filtro marca va a la cola, y una persona decide. No censura con asteriscos y no borra.</p>
+
+<p>Para que sirva de algo, el texto se compara limpio: en minúsculas, sin acentos y con los números y símbolos que reemplazan letras (el “leet”) llevados a su letra. La función <code>texto_limpio</code> hace ese trabajo y está en el módulo de la sección 6, junto con la lista <code>$MOD_PALABRAS</code>, que se completa con las palabras propias en forma base.</p>
+
+<table>
+  <thead>
+    <tr><th>Forma que escribe la persona</th><th>¿La atrapa texto_limpio?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Mayúsculas y tildes</td>
+      <td>Sí: pasa a minúsculas y quita acentos</td>
+    </tr>
+    <tr>
+      <td>Números y símbolos por letras (leet)</td>
+      <td>Sí, los del mapa básico: 4→a, 0→o, 3→e, 1→i…</td>
+    </tr>
+    <tr>
+      <td>Letras separadas o repetidas a propósito</td>
+      <td>No: la lista se compara por palabra completa</td>
+    </tr>
+    <tr>
+      <td>Lenguaje nuevo, ironía o contexto</td>
+      <td>No: ninguna lista conoce lo que no está cargado</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">Por qué no alcanza una lista</div>
+  La lista conoce solo lo que cargaron y solo las variantes que el código contempla. El filtro acelera la revisión; la cola la cierra.
+</div>
+
+<h2 id="s5">
+  La capa de IA: clasificar en vez de listar
+</h2>
+
+<p>Un clasificador entiende el texto en lugar de compararlo con una lista: distingue un insulto de una crítica dura, y una variante rara no lo esquiva porque no necesita conocerla. La opción accesible desde PHP es la <strong>API de Gemini</strong>, cuyo nivel gratuito funciona sin tarjeta de crédito y con buen español. La clave se obtiene en <a href="https://aistudio.google.com">aistudio.google.com</a> sin configurar facturación.</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">Por qué Gemini y no otra</div>
+  <ul>
+    <li><strong>Perspective API</strong> (Google) fue durante años el estándar para medir toxicidad y <strong>se retira a fin de 2026</strong>: no conviene empezar un proyecto sobre una herramienta que se apaga.</li>
+    <li><strong>OpenAI Moderation</strong> es gratuita por llamada, pero activar una cuenta OpenAI pide registrar un método de pago aunque nunca cobre.</li>
+    <li><strong>Google Cloud Natural Language</strong> tiene cuota gratis, pero exige una cuenta con facturación.</li>
+  </ul>
+</div>
+
+<p>Llamar a la API manda el texto del comentario a un servidor de Google, y el nivel gratuito puede usar lo enviado para mejorar el modelo. La regla es clara: <strong>mandar solo el texto del comentario</strong>, nunca el nombre de quien comenta ni datos personales, y avisar que la moderación usa un servicio externo. Si eso no se puede garantizar, la cola manual del docente es la respuesta correcta.</p>
+
+<p>La llamada queda aislada en la función <code>moderar_con_ia</code>: si el proveedor cambia, se cambia una función y el resto del sistema no se toca. Y cuando la API no responde (sin internet, límite de cuota 429, error), la función devuelve 0: no se publica solo lo que no se pudo comprobar.</p>
+
+<h2 id="s6">
+  El módulo completo
+</h2>
+
+<p>Dos archivos: <code>moderador.php</code> decide el estado de un comentario, y <code>comentario_guardar.php</code> recibe el POST, corre las comprobaciones y guarda. <code>moderador.php</code> se guarda junto al resto del código y se requiere desde el guardado.</p>
+
+<p>Las piezas de <code>moderador.php</code>:</p>
+
+<ul>
+  <li><code>texto_limpio()</code> y <code>tiene_palabra_marcada()</code> — el filtro local de la sección 4.</li>
+  <li><code>moderar($texto)</code> — decide el estado según las llaves de configuración.</li>
+  <li><code>moderar_con_ia($texto)</code> — la llamada a Gemini de la sección 5.</li>
+</ul>
+
+<pre><code>
+moderar($texto)
+  ├─ 0 · MOD_ESTRICTO activo ─────────────► 0   todo a la cola del docente
+  ├─ 1 · el filtro marca una palabra ──────► 0
+  ├─ 2 · sin clave de IA configurada ──────► 1   se publica directo
+  └─ 3 · con IA, ¿el texto es adecuado?
+         ├─ true ─────────────────────────► 1
+         └─ false · sin respuesta · 429 ──► 0
+</code></pre>
+
+<h3>moderador.php</h3>
+
+<pre><code class="language-php">&lt;?php
+// moderador.php · Anexo de la Clase 10
+// Decide si un comentario se publica (devuelve 1) o entra a la cola (0).
+
+// Configuración ----------------------------------------------------------
+// Moderación estricta: true = ningún comentario se publica solo, el docente
+// aprueba todos. false = se publica directo lo que pasa los filtros.
+define('MOD_ESTRICTO', true);
+// Clave de la API de Gemini (AI Studio). Dejá '' para usar solo el filtro local.
+define('MOD_API_KEY', '');
+// Modelo gratuito vigente; consultá el actual en AI Studio.
+define('MOD_MODELO', 'gemini-2.5-flash');
+
+// Palabras marcadas: formas base, en minúsculas y sin acentos.
+// Este filtro es un apoyo que pre-marca; la cola de revisión decide.
+$MOD_PALABRAS = ['ejemplo1', 'ejemplo2'];
+
+// Filtro local ------------------------------------------------------------
+function texto_limpio(string $texto): string {
+    $texto = mb_strtolower($texto, 'UTF-8');
+    $texto = strtr($texto, [
+        'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
+    ]);
+    // Leet: números y símbolos que reemplazan letras.
+    $leet = ['4' => 'a', '@' => 'a', '0' => 'o', '3' => 'e', '1' => 'i', '5' => 's', '$' => 's'];
+    $texto = strtr($texto, $leet);
+    return $texto;
+}
+
+function tiene_palabra_marcada(string $texto, array $lista): bool {
+    $limpio = texto_limpio($texto);
+    foreach ($lista as $palabra) {
+        // \b pide límite de palabra: evita que coincida adentro de otra.
+        if (preg_match('/\b' . preg_quote($palabra, '/') . '\b/u', $limpio)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Decisión ------------------------------------------------------------------
+function moderar(string $texto): int {
+    global $MOD_PALABRAS;
+
+    // 0) Modo estricto: todo a la cola, decide el docente.
+    if (MOD_ESTRICTO) {
+        return 0;
+    }
+
+    // 1) El filtro local marcó una variante conocida: revisión humana.
+    if (tiene_palabra_marcada($texto, $MOD_PALABRAS)) {
+        return 0;
+    }
+
+    // 2) Sin clave de IA configurada: nada más que comprobar, se publica.
+    if (MOD_API_KEY === '') {
+        return 1;
+    }
+
+    // 3) Con IA: el texto salió limpio del filtro, que decida el modelo.
+    return moderar_con_ia($texto);
+}
+
+function moderar_con_ia(string $texto): int {
+    $instrucciones = 'Clasificá este comentario de un sitio educativo.
+Respondé SOLO con JSON, por ejemplo {"adecuado": true} o {"adecuado": false}.
+Inadecuado = insulto, grosería, acoso, discriminación o spam.';
+
+    // El comentario va como parte separada, no interpolado en la instrucción.
+    $cuerpo = json_encode(['contents' => [
+        ['role' => 'user', 'parts' => [
+            ['text' => $instrucciones],
+            ['text' => $texto],
+        ]],
+    ]]);
+
+    $ctx = stream_context_create(['http' => [
+        'method'  => 'POST',
+        'header'  => "Content-Type: application/json\r\n",
+        'content' => $cuerpo,
+        'timeout' => 8,
+    ]]);
+
+    $resp = @file_get_contents(
+        'https://generativelanguage.googleapis.com/v1beta/models/' . MOD_MODELO
+        . ':generateContent?key=' . MOD_API_KEY,
+        false,
+        $ctx
+    );
+
+    // Sin respuesta (sin internet, cuota 429, error): a la cola.
+    // Nunca se publica solo lo que no se pudo comprobar.
+    if ($resp === false) {
+        return 0;
+    }
+
+    $datos   = json_decode($resp, true);
+    $textoIA = $datos['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    $textoIA = trim(str_replace(['```json', '```'], '', $textoIA));
+    $clas    = json_decode($textoIA, true);
+
+    // Sin clasificación legible: también a la cola.
+    if (!isset($clas['adecuado'])) {
+        return 0;
+    }
+
+    return $clas['adecuado'] ? 1 : 0;
+}</code></pre>
+
+<h3>comentario_guardar.php</h3>
+
+<pre><code class="language-php">&lt;?php
+// comentario_guardar.php · Anexo de la Clase 10
+require_once 'conexion.php';   // el que ya tiene su sistema
+require_once 'moderador.php';
+session_start();
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: index.php');
+    exit;
+}
+
+// 1) Honeypot: el humano no ve este campo. Si viene lleno, es un bot:
+//    se descarta en silencio, sin mensaje que le enseñe dónde falló.
+if (trim($_POST['web'] ?? '') !== '') {
+    exit;
+}
+
+// 2) Tiempo mínimo: cargar el formulario y enviarlo en menos de 3 s es de bot.
+$carga = (int)($_POST['marcador'] ?? 0);
+if (time() - $carga &lt; 3) {
+    header('Location: index.php?aviso=rapido');
+    exit;
+}
+
+// 3) Contenido: existe, no vacío, dentro del largo que permite la tabla.
+$texto = trim($_POST['comentario'] ?? '');
+if ($texto === '' || mb_strlen($texto) > 500) {
+    header('Location: index.php?aviso=invalido');
+    exit;
+}
+
+// 4) Decisión: 1 publica directo, 0 queda en la cola del docente.
+$estado = moderar($texto);
+
+// 5) Guardar con sentencia preparada. El texto se escapa al MOSTRARLO.
+$stmt = $conexion->prepare('INSERT INTO comentario (texto, estado) VALUES (?, ?)');
+$stmt->bind_param('si', $texto, $estado);
+$stmt->execute();
+
+$aviso = $estado === 1 ? 'publicado' : 'pendiente';
+header('Location: index.php?ok=' . $aviso);</code></pre>
+
+<h2 id="s7">
+  El panel del docente
+</h2>
+
+<p>Las páginas que aprueban y descartan se protegen con la guardia de acceso de la Clase 10: solo las abre quien tiene el rol docente. Listar lo pendiente alcanza con una consulta y el escape de siempre:</p>
+
+<pre><code class="language-php">// pendientes.php · se protege con la guardia de la Clase 10 (rol docente)
+$res = $conexion->query('SELECT id, texto, creado FROM comentario WHERE estado = 0 ORDER BY creado');
+while ($fila = $res->fetch_assoc()) {
+    echo '&lt;article>';
+    echo '&lt;p>' . htmlspecialchars($fila['texto'], ENT_QUOTES, 'UTF-8') . '&lt;/p>';
+    echo '&lt;a href="aprobar.php?id=' . $fila['id'] . '">Aprobar&lt;/a> · ';
+    echo '&lt;a href="descartar.php?id=' . $fila['id'] . '">Descartar&lt;/a>';
+    echo '&lt;/article>';
+}</code></pre>
+
+<p>Aprobar cambia el estado, y la condición <code>AND estado = 0</code> evita que dos pestañas aprueben dos veces la misma fila. El id llega por <code>GET</code> y se valida como entero, como en la Clase 10:</p>
+
+<pre><code class="language-php">// aprobar.php · pasa a aprobada la fila que sigue pendiente
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if ($id) {
+    $stmt = $conexion->prepare('UPDATE comentario SET estado = 1 WHERE id = ? AND estado = 0');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+}
+header('Location: pendientes.php');</code></pre>
+
+<p>Descartar es el mismo patrón con un <code>DELETE</code> preparado. Y un botón “Reportar” en cada comentario publicado hace el camino inverso: baja la fila a 0 con el mismo <code>UPDATE</code>, y es la versión comunitaria de la cola: quien ve algo inadecuado lo manda a revisión.</p>
+
+<h2 id="s8">
+  Orden de implementación
+</h2>
+
+<ol>
+  <li><strong>La tabla con estado.</strong> Agregar <code>estado</code>, mostrar solo <code>estado = 1</code>, escapar la salida y validar el largo en el servidor.</li>
+  <li><strong>Las trampas anti-bot</strong> en el guardado: honeypot, tiempo mínimo y límite por sesión.</li>
+  <li><strong>El filtro local</strong> como pre-marca, con el panel del docente para lo marcado.</li>
+  <li><strong>La moderación estricta encendida</strong> (<code>MOD_ESTRICTO = true</code>). La publicación automática se habilita recién cuando los filtros aciertan de forma estable.</li>
+  <li><strong>La capa de IA</strong> (opcional): la clave de Gemini y la revisión de lo que clasifica.</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">La regla de oro, otra vez</div>
+  Lo que el sistema no puede decidir con seguridad va a la cola. La cola hace que un filtro imperfecto no cueste un comentario legítimo ni deje pasar uno inadecuado.
+</div>
+
+<p>En el documento del proyecto, la parte que conviene explicar es la decisión: qué estado tiene un comentario, quién lo cambia y por qué la página muestra solo lo aprobado.</p>
+
+<p class="mat-links">
+  <a href="auditoria-crud.html"><strong>← Auditoría del CRUD (Clase 10)</strong></a> ·
+  <a href="../deploy/publicar-el-sitio.html"><strong>Publicar el sitio</strong></a>
+</p>
+
+<div class="nav">
+  <a href="../">← Volver al inicio</a>
+</div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/estudiantes.js"></script>
+
+</body>
+</html>
